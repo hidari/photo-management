@@ -4,7 +4,7 @@
  * `config.ts` としてコピーし、プレースホルダーを適切な値に変更してください。
  */
 
-import type { Config } from 'types/config';
+import type { Config } from './types/config.ts';
 
 export const config: Config = {
   // 名前
