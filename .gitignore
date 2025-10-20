@@ -1,0 +1,16 @@
+# IDE Configs
+/.idea/
+
+# Node packages directory
+/node_modules/
+
+# Tools
+/config.ts
+/Output/
+
+# Test coverage
+/coverage/
+coverage.lcov
+
+# Claude Code
+/.claude/

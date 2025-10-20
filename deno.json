@@ -1,0 +1,10 @@
+{
+  "tasks": {
+    "test": "deno test --allow-read --allow-write --coverage=coverage/ && deno coverage coverage/ --lcov --output=coverage.lcov && deno run --allow-read --allow-run tests/helpers/check-coverage.ts 50",
+    "readme": "deno run --allow-read --allow-write tools/generate-readme.ts"
+  },
+  "nodeModulesDir": "auto",
+  "imports": {
+    "types/": "./types/"
+  }
+}
