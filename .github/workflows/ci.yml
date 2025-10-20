@@ -35,16 +35,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Create config for type check
+      - name: Create config for type check and tests
         run: cp config.example.ts config.ts
-
-      - name: Type check
-        run: deno check tools/**/*.ts tests/**/*.ts
 
       - name: Lint and Format check
         run: pnpm run lint
 
-      - name: Run tests with coverage
+      - name: Run type check, tests, and coverage
         run: deno task test
 
       - name: Create coverage summary
