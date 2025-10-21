@@ -526,7 +526,9 @@ export async function uploadFile(
       '\r\n'
   );
 
-  const filePart = new TextEncoder().encode(`--${boundary}\r\nContent-Type: application/zip\r\n\r\n`);
+  const filePart = new TextEncoder().encode(
+    `--${boundary}\r\nContent-Type: application/zip\r\n\r\n`
+  );
 
   const closingBoundary = new TextEncoder().encode(`\r\n--${boundary}--`);
 
