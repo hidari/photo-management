@@ -8,8 +8,8 @@ import {
   loadTomlConfig,
   moveTomlFile,
 } from '../tools/generate-directories.ts';
-import { testConfig } from './helpers/test-config.ts';
 import type { Event } from '../types/directory-config.ts';
+import { testConfig } from './helpers/test-config.ts';
 
 /**
  * テスト用の一時ディレクトリ
@@ -136,7 +136,12 @@ Deno.test('buildDirectoryStructure: イベント情報から正しいディレ�
   );
   assertEquals(
     structure.models[0].distDir,
-    join(testConfig.developedDirectoryBase, '20251012_アコスタATC', 'Aさん', '20251012_アコスタATC_テスト太郎撮影_Aさん')
+    join(
+      testConfig.developedDirectoryBase,
+      '20251012_アコスタATC',
+      'Aさん',
+      '20251012_アコスタATC_テスト太郎撮影_Aさん'
+    )
   );
   assertEquals(
     structure.models[0].readmePath,
