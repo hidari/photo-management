@@ -2,6 +2,35 @@
 
 写真管理用のドキュメントやツールなどのセットを管理するリポジトリです。
 
+## 必要な環境
+
+このリポジトリのツールを使用するには **Deno** が必要です。
+
+### Denoのインストール
+
+**macOS / Linux:**
+```bash
+curl -fsSL https://deno.land/install.sh | sh
+```
+
+**Windows (PowerShell):**
+```powershell
+irm https://deno.land/install.ps1 | iex
+```
+
+**Homebrew (macOS):**
+```bash
+brew install deno
+```
+
+インストール後、以下のコマンドでバージョンを確認できます：
+
+```bash
+deno --version
+```
+
+詳細なインストール手順は [Deno公式サイト](https://deno.land/) を参照してください。
+
 ## セットアップ
 
 ### 1. 設定ファイルの作成
@@ -43,17 +72,23 @@ deno task readme --template ./templates/README.eta --output ./custom/path/README
 イベント情報を記載したTOMLファイルから、モデルごとの配布用ディレクトリ構造を自動生成します。
 
 1. 設定ファイルの作成
-    - `directory.config.example.toml` を `directory.config.toml` にコピーして、イベント情報を記入してください：
-        ```bash
-        cp directory.config.example.toml directory.config.toml
-        ```
+
+`directory.config.example.toml` を `directory.config.toml` にコピーして、イベント情報を記入してください：
+```bash
+cp directory.config.example.toml directory.config.toml
+```
+
 2. イベント情報の編集
-    - `directory.config.toml` を開き、イベント情報を記入してください：
+
+`directory.config.toml` を開き、イベント情報を記入してください：
+
 3. ディレクトリ構造の生成
-    - 以下のコマンドでディレクトリ構造を作成します：
-        ```bash
-         deno task dirs
-        ```
+
+以下のコマンドでディレクトリ構造を作成します：
+
+```bash
+ deno task dirs
+```
 
 各配布ディレクトリには自動的に `_README.txt` が生成され、実行後に `directory.config.toml` はイベントディレクトリ内に移動されます。
 
