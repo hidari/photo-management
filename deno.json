@@ -1,9 +1,10 @@
 {
   "tasks": {
-    "test": "deno check tools/**/*.ts tests/**/*.ts && deno test --allow-read --allow-write --allow-run --coverage=coverage/ && deno coverage coverage/ --lcov --output=coverage.lcov && deno run --allow-read --allow-run tests/helpers/check-coverage.ts 45",
+    "test": "deno check tools/**/*.ts tests/**/*.ts && deno test --allow-read --allow-write --allow-run --allow-env --coverage=coverage/ && deno coverage coverage/ --lcov --output=coverage.lcov && deno run --allow-read --allow-run tests/helpers/check-coverage.ts 45",
     "readme": "deno run --allow-read --allow-write tools/generate-readme.ts",
     "dirs": "deno run --allow-read --allow-write tools/generate-directories.ts",
-    "archive": "deno run --allow-read --allow-write --allow-run tools/archive-distribution-dirs.ts"
+    "archive": "deno run --allow-read --allow-write --allow-run tools/archive-distribution-dirs.ts",
+    "upload": "deno run --allow-read --allow-write --allow-net --allow-env tools/upload-archives.ts"
   },
   "nodeModulesDir": "auto",
   "imports": {
