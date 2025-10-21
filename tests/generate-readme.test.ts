@@ -151,7 +151,10 @@ Deno.test('renderTemplate: 空の配列を含むデータでも正常にレン�
   const outputPath = join(TEST_DIR, 'output.txt');
 
   await Deno.mkdir(TEST_DIR, { recursive: true });
-  await Deno.writeTextFile(templatePath, 'Admin: <%= it.administrator %>, Contacts: <%= it.contacts.length %>');
+  await Deno.writeTextFile(
+    templatePath,
+    'Admin: <%= it.administrator %>, Contacts: <%= it.contacts.length %>'
+  );
 
   const emptyContactsConfig = {
     ...testConfig,

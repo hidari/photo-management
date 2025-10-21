@@ -1,5 +1,5 @@
 import { assertEquals } from 'https://deno.land/std@0.208.0/assert/mod.ts';
-import { join, basename } from 'https://deno.land/std@0.208.0/path/mod.ts';
+import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import {
   archiveAllDistributions,
   checkArchiveTool,
