@@ -46,6 +46,9 @@ jobs:
 
       - name: Create coverage summary
         if: always()
+        env:
+          LANG: C.UTF-8
+          LC_ALL: C.UTF-8
         run: |
           echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
