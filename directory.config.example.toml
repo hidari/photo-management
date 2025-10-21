@@ -1,0 +1,22 @@
+# イベント用ディレクトリ構造作成の設定ファイル
+# このファイルをコピーして directory.config.toml として使用してください
+
+[[events]]
+date = "20251012"
+event_name = "アコスタATC"
+
+[[events.models]]
+name = "Aさん"
+sns = "https://twitter.com/example_a"
+
+[[events.models]]
+name = "Bさん"
+sns = "https://twitter.com/example_b"
+
+[[events.models]]
+name = "Cさん"
+sns = "https://instagram.com/example_c"
+
+[[events.models]]
+name = "Dさん"
+sns = "https://twitter.com/example_d"
