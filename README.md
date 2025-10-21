@@ -32,10 +32,33 @@ deno task readme
 
 デフォルトでは `./Output/_README.txt` に出力されます。
 
-### オプション指定
-
-テンプレートや出力先をカスタマイズできます：
+オプション指定としてテンプレートや出力先をカスタマイズできます：
 
 ```bash
 deno task readme --template ./templates/README.eta --output ./custom/path/README.txt
+```
+
+### イベント用ディレクトリ構造作成
+
+イベント情報を記載したTOMLファイルから、モデルごとの配布用ディレクトリ構造を自動生成します。
+
+1. 設定ファイルの作成
+    - `directory.config.example.toml` を `directory.config.toml` にコピーして、イベント情報を記入してください：
+        ```bash
+        cp directory.config.example.toml directory.config.toml
+        ```
+2. イベント情報の編集
+    - `directory.config.toml` を開き、イベント情報を記入してください：
+3. ディレクトリ構造の生成
+    - 以下のコマンドでディレクトリ構造を作成します：
+        ```bash
+         deno task dirs
+        ```
+
+各配布ディレクトリには自動的に `_README.txt` が生成され、実行後に `directory.config.toml` はイベントディレクトリ内に移動されます。
+
+カスタム設定ファイルを使用する場合：
+
+```bash
+deno task dirs --config ./path/to/custom.toml
 ```
