@@ -20,4 +20,7 @@ export interface Config {
 
   /** 現像済み画像の保存先ベースディレクトリ */
   developedDirectoryBase: string;
+
+  /** アーカイブ作成に使用するコマンド（デフォルト: 'rip'） */
+  archiveTool?: string;
 }

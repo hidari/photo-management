@@ -48,8 +48,9 @@ cp config.example.ts config.ts
 - `administrator`: あなたの名前
 - `contacts`: 連絡先となるSNSアカウント（X、Blueskyなど）
 - `developedDirectoryBase`: 現像済み画像を保存するディレクトリのパス
+- `archiveTool`: 配布用zipファイルを作成するツールを指定（オプション）
 
-## 基本的な使い方
+## 各ツールの基本的な使い方
 
 ### README生成
 
@@ -97,3 +98,29 @@ cp directory.config.example.toml directory.config.toml
 ```bash
 deno task dirs --config ./path/to/custom.toml
 ```
+
+### 配布用アーカイブ作成
+
+作成した配布用ディレクトリをzip形式にアーカイブします。
+
+```bash
+# 最新のイベントを自動検出してアーカイブ
+deno task archive
+```
+
+スクリプトは以下の動作をします：
+1. 最新のイベントディレクトリを自動検出
+2. 配布用ディレクトリの一覧を表示
+3. 確認後、各ディレクトリをzipにアーカイブ
+
+イベントディレクトリまたは設定ファイルを指定する場合：
+
+```bash
+# イベントディレクトリを指定
+deno task archive --event-dir ./path/to/20251012_アコスタATC
+
+# TOMLファイルを直接指定
+deno task archive --config ./path/to/directory.config.toml
+```
+
+**注意**: デフォルトでは [rip](https://github.com/hidari/rip-zip) コマンドを使用します。別のアーカイブツールを使用する場合は `config.ts` の `archiveTool` を設定してください。

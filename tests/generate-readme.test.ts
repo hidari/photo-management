@@ -140,3 +140,54 @@ Deno.test('renderTemplate: 複雑なデータ構造が正しくレンダリン�
 
   await cleanup();
 });
+
+/**
+ * 空のデータでのレンダリングテスト
+ */
+Deno.test('renderTemplate: 空の配列を含むデータでも正常にレンダリングされる', async () => {
+  await cleanup();
+
+  const templatePath = join(TEST_DIR, 'empty-template.eta');
+  const outputPath = join(TEST_DIR, 'output.txt');
+
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+  await Deno.writeTextFile(templatePath, 'Admin: <%= it.administrator %>, Contacts: <%= it.contacts.length %>');
+
+  const emptyContactsConfig = {
+    ...testConfig,
+    contacts: [],
+  };
+
+  await renderTemplate(templatePath, emptyContactsConfig, outputPath);
+
+  const output = await Deno.readTextFile(outputPath);
+  assertEquals(output, 'Admin: テスト太郎, Contacts: 0');
+
+  await cleanup();
+});
+
+/**
+ * 同じファイルへの上書きテスト
+ */
+Deno.test('renderTemplate: 既存ファイルを上書きできる', async () => {
+  await cleanup();
+
+  const templatePath = join(TEST_DIR, 'template.eta');
+  const outputPath = join(TEST_DIR, 'output.txt');
+
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+  await Deno.writeTextFile(templatePath, 'First: <%= it.administrator %>');
+
+  // 最初のレンダリング
+  await renderTemplate(templatePath, testConfig, outputPath);
+  let output = await Deno.readTextFile(outputPath);
+  assertEquals(output, 'First: テスト太郎');
+
+  // テンプレートを変更して再レンダリング
+  await Deno.writeTextFile(templatePath, 'Second: <%= it.administrator %>');
+  await renderTemplate(templatePath, testConfig, outputPath);
+  output = await Deno.readTextFile(outputPath);
+  assertEquals(output, 'Second: テスト太郎');
+
+  await cleanup();
+});

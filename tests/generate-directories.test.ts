@@ -299,3 +299,54 @@ sns = "https://twitter.com/b"
 
   await cleanup();
 });
+
+/**
+ * createDirectoriesのテスト: 既に存在するディレクトリ
+ */
+Deno.test('createDirectories: 既に存在するディレクトリでもエラーにならない', async () => {
+  await cleanup();
+
+  const event: Event = {
+    date: '20251012',
+    event_name: 'テストイベント',
+    models: [{ name: 'テストモデル', sns: 'https://twitter.com/test' }],
+  };
+
+  const testConfigLocal = { ...testConfig, developedDirectoryBase: TEST_DIR };
+  const structure = buildDirectoryStructure(event, testConfigLocal);
+
+  // 1回目の作成
+  await createDirectories(structure);
+
+  // 2回目の作成（既に存在する）
+  await createDirectories(structure);
+
+  // エラーにならず、ディレクトリが存在することを確認
+  const distDirExists = await exists(structure.models[0].distDir);
+  assertEquals(distDirExists, true);
+
+  await cleanup();
+});
+
+/**
+ * moveTomlFileのテスト: ファイル名が保持される
+ */
+Deno.test('moveTomlFile: 元のファイル名が保持される', async () => {
+  await cleanup();
+
+  const sourcePath = join(TEST_DIR, 'custom-name.toml');
+  const destDir = join(TEST_DIR, 'destination');
+
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+  await Deno.mkdir(destDir, { recursive: true });
+  await Deno.writeTextFile(sourcePath, '# test toml');
+
+  await moveTomlFile(sourcePath, destDir);
+
+  // 移動先にcustom-name.tomlとして存在することを確認
+  const destPath = join(destDir, 'custom-name.toml');
+  const destExists = await exists(destPath);
+  assertEquals(destExists, true);
+
+  await cleanup();
+});
