@@ -205,7 +205,7 @@ async function main() {
   console.log(`   ✅ '${archiveTool}' が利用可能です`);
   console.log();
 
-  let tomlPath: string | null = null;
+  let tomlPath: string | null;
 
   // TOMLファイルのパスを決定
   if (args.config) {
