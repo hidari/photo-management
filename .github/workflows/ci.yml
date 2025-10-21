@@ -54,5 +54,5 @@ jobs:
           echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          deno coverage coverage/ --detailed >> $GITHUB_STEP_SUMMARY
+          deno coverage coverage/ >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
