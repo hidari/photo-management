@@ -443,6 +443,9 @@ export async function ensurePhotoDistributionFolder(accessToken: string): Promis
       if (response.ok) {
         return folderId;
       }
+
+      // エラーレスポンスのbodyを消費
+      await response.text();
     } catch {
       // フォルダが見つからない場合は再作成
     }

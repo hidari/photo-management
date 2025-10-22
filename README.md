@@ -109,9 +109,10 @@ deno task archive
 ```
 
 スクリプトは以下の動作をします：
-1. 最新のイベントディレクトリを自動検出
-2. 配布用ディレクトリの一覧を表示
-3. 確認後、各ディレクトリをzipにアーカイブ
+1. アーカイブツールの確認（未設定の場合は自動セットアップ）
+2. 最新のイベントディレクトリを自動検出
+3. 配布用ディレクトリの一覧を表示
+4. 確認後、各ディレクトリをzipにアーカイブ
 
 イベントディレクトリまたは設定ファイルを指定する場合：
 
@@ -123,7 +124,23 @@ deno task archive --event-dir ./path/to/20251012_アコスタATC
 deno task archive --config ./path/to/directory.config.toml
 ```
 
-**注意**: デフォルトでは [rip](https://github.com/hidari/rip-zip) コマンドを使用します。別のアーカイブツールを使用する場合は `config.ts` の `archiveTool` を設定してください。
+#### アーカイブツールについて
+
+デフォルトでは [rip](https://github.com/hidari/rip-zip) を使用します。初回実行時に自動的にダウンロード・セットアップされます。
+
+**手動でセットアップする場合:**
+
+```bash
+deno task ensure-rip
+```
+
+**カスタムツールを使用する場合:**
+
+`config.ts` の `archiveTool` にフルパスを指定してください：
+
+```typescript
+archiveTool: '/usr/local/bin/zip'
+```
 
 ### Google Driveへのアップロード
 

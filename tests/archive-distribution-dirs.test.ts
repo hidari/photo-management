@@ -2,10 +2,10 @@ import { assertEquals } from 'https://deno.land/std@0.208.0/assert/mod.ts';
 import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import {
   archiveAllDistributions,
-  checkArchiveTool,
   findLatestEventDir,
   findTomlInEventDir,
   listDistDirectories,
+  resolveArchiveTool,
 } from '../tools/archive-distribution-dirs.ts';
 import type { DirectoryConfig } from '../types/directory-config.ts';
 import { testConfig } from './helpers/test-config.ts';
@@ -27,20 +27,34 @@ async function cleanup() {
 }
 
 /**
- * アーカイブツールチェックのテスト
+ * アーカイブツール解決のテスト
  */
-Deno.test('checkArchiveTool: 存在するコマンドでtrueを返す', async () => {
-  // 'ls'は標準的なUnixコマンドなので存在するはず
-  const result = await checkArchiveTool('ls');
-  assertEquals(result, true);
+Deno.test('resolveArchiveTool: 有効なarchiveToolが設定されている場合そのパスを返す', async () => {
+  const testConfigWithTool = {
+    ...testConfig,
+    archiveTool: 'deno', // denoコマンドは確実に存在する
+  };
+
+  const result = await resolveArchiveTool(testConfigWithTool);
+  assertEquals(result, 'deno');
 });
 
 /**
- * アーカイブツールチェックのテスト: 存在しないコマンド
+ * アーカイブツール解決のテスト: 無効なarchiveTool
  */
-Deno.test('checkArchiveTool: 存在しないコマンドでfalseを返す', async () => {
-  const result = await checkArchiveTool('nonexistent_command_12345');
-  assertEquals(result, false);
+Deno.test('resolveArchiveTool: 無効なarchiveToolが設定されている場合エラーを投げる', async () => {
+  const testConfigWithInvalidTool = {
+    ...testConfig,
+    archiveTool: '/nonexistent/path/to/tool',
+  };
+
+  try {
+    await resolveArchiveTool(testConfigWithInvalidTool);
+    assertEquals(true, false, 'エラーが発生するはずだった');
+  } catch (error) {
+    assertEquals(error instanceof Error, true);
+    assertEquals((error as Error).message.includes('指定されたアーカイブツール'), true);
+  }
 });
 
 /**

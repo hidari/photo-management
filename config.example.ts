@@ -16,9 +16,10 @@ export const config: Config = {
   // 現像済み画像ディレクトリのパス
   developedDirectoryBase: 'Path/to/Your/Picture/Directory/',
 
-  // アーカイブ作成に使用するコマンド（省略時は 'rip'）
-  // コマンドはパスが通っている必要があります
-  // archiveTool: 'rip',
+  // アーカイブ作成ツールのフルパス（オプション）
+  // 未設定の場合は初回実行時に自動的にripバイナリをダウンロード・セットアップします
+  // カスタムツールを使用する場合は、フルパスを指定してください
+  // 例: archiveTool: '/Users/username/.config/photo-management/bin/rip',
 };
 
 export default config;

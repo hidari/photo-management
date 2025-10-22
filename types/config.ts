@@ -21,6 +21,6 @@ export interface Config {
   /** 現像済み画像の保存先ベースディレクトリ */
   developedDirectoryBase: string;
 
-  /** アーカイブ作成に使用するコマンド（デフォルト: 'rip'） */
+  /** アーカイブ作成ツールのフルパス（未設定時は初回実行時に自動セットアップ） */
   archiveTool?: string;
 }

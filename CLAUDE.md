@@ -25,11 +25,6 @@ pnpm run lint:fix format --write .
 ### ツールの実行
 denoスクリプトは `deno task` でリポジトリのルートから実行されることを前提としています
 
-```bash
-# テンプレートからREADMEを生成
-deno task readme
-```
-
 ## アーキテクチャ
 
 ### 設定システム

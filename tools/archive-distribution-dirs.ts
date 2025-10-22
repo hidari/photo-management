@@ -19,23 +19,51 @@ import type { DirectoryConfig } from '../types/directory-config.ts';
 import { buildDirectoryStructure, loadTomlConfig } from './generate-directories.ts';
 
 /**
- * アーカイブツールが実行可能かチェックする
+ * アーカイブツールのパスを解決する
  *
- * @param toolCommand - チェックするコマンド名
- * @returns 実行可能な場合true
+ * config.archiveToolが設定されている場合はそれを使用し、
+ * 未設定の場合は自動的にripバイナリをセットアップする
+ *
+ * @param appConfig - アプリケーション設定
+ * @returns アーカイブツールのフルパス
  */
-export async function checkArchiveTool(toolCommand: string): Promise<boolean> {
-  try {
-    const process = new Deno.Command('which', {
-      args: [toolCommand],
+export async function resolveArchiveTool(appConfig: Config): Promise<string> {
+  // config.archiveToolが設定されている場合
+  if (appConfig.archiveTool) {
+    // 実行テストを行う
+    const testProcess = new Deno.Command(appConfig.archiveTool, {
+      args: ['--version'],
       stdout: 'piped',
       stderr: 'piped',
     });
-    const { success } = await process.output();
-    return success;
-  } catch {
-    return false;
+
+    try {
+      const { success } = await testProcess.output();
+
+      if (success) {
+        return appConfig.archiveTool;
+      }
+
+      throw new Error(`指定されたアーカイブツールが正常に動作しません: ${appConfig.archiveTool}`);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('指定されたアーカイブツール')) {
+        throw error;
+      }
+      throw new Error(`指定されたアーカイブツールの実行に失敗しました: ${appConfig.archiveTool}`);
+    }
   }
+
+  // 未設定の場合は自動セットアップ
+  console.log('🔧 アーカイブツールが未設定です。自動セットアップを開始します...');
+  console.log();
+
+  // ensure-rip-binary.tsの関数を動的にインポート
+  const { ensureRipBinary } = await import('./ensure-rip-binary.ts');
+  const binaryPath = await ensureRipBinary();
+
+  console.log();
+
+  return binaryPath;
 }
 
 /**
@@ -186,24 +214,24 @@ async function main() {
     string: ['config', 'event-dir'],
   });
 
-  const archiveTool = config.archiveTool || 'rip';
-
   console.log('📦 配布用ディレクトリアーカイブツール');
   console.log();
 
-  // アーカイブツールのチェック
-  console.log(`🔍 アーカイブツール '${archiveTool}' の確認中...`);
-  const isAvailable = await checkArchiveTool(archiveTool);
+  // アーカイブツールのパスを解決
+  let archiveTool: string;
 
-  if (!isAvailable) {
-    console.error(`❌ エラー: アーカイブツール '${archiveTool}' が見つかりません`);
-    console.error(`   '${archiveTool}' がインストールされているか確認してください`);
-    console.error(`   または config.ts の archiveTool を変更してください`);
+  try {
+    archiveTool = await resolveArchiveTool(config);
+    console.log(`✅ アーカイブツール: ${archiveTool}`);
+    console.log();
+  } catch (error) {
+    console.error(`❌ エラー: ${error instanceof Error ? error.message : String(error)}`);
+    console.error();
+    console.error(`手動インストール手順:`);
+    console.error(`1. アーカイブツールをインストール`);
+    console.error(`2. config.ts の archiveTool にフルパスを設定`);
     Deno.exit(1);
   }
-
-  console.log(`   ✅ '${archiveTool}' が利用可能です`);
-  console.log();
 
   let tomlPath: string | null;
 
