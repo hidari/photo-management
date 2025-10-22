@@ -1,10 +1,12 @@
 # 撮影データ送付リスト
+
 <% it.messages.forEach(function(message) { %>
-## <%= message.modelName %>
+## <%= message.modelName %>さん
 
 送付先: <%= message.sns || 'SNS情報なし' %>
 
+
 ```txt
-<%= message.text %>
-```
+<%~ message.text %>```
+
 <% }) %>

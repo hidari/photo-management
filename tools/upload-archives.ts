@@ -70,7 +70,7 @@ export async function saveFolderId(folderId: string): Promise<void> {
 export async function getAccessTokenViaGcloud(): Promise<string> {
   try {
     const command = new Deno.Command('gcloud', {
-      args: ['auth', 'print-access-token'],
+      args: ['auth', 'application-default', 'print-access-token'],
       stdout: 'piped',
       stderr: 'piped',
     });
@@ -542,7 +542,9 @@ async function main() {
     console.error('❌ エラー: gcloud認証が必要です');
     console.error('   以下のコマンドで認証してください:');
     console.error('   $ gcloud auth application-default login \\');
-    console.error('       --scopes=https://www.googleapis.com/auth/drive.file');
+    console.error(
+      '       --scopes=https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/drive.file'
+    );
     console.error();
     console.error(`   詳細: ${error instanceof Error ? error.message : error}`);
     Deno.exit(1);

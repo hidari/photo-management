@@ -104,7 +104,7 @@ export async function buildDistributionMessagesForEvent(
       messages.push({
         modelName: model.name,
         sns: model.sns || '',
-        text: text.trim(),
+        text: text,
       });
     }
   }

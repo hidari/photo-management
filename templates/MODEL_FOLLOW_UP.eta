@@ -6,5 +6,5 @@
 また例によって僕の方でもSNSにお写真を上げたいので、加工後返送いただけると喜びます！
 よろしくお願いします！
 
-URL: <%= it.downloadUrl %>
+URL: <%~ it.downloadUrl %>
 

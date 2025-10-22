@@ -68,7 +68,7 @@ export default {
 
 ```bash
 gcloud auth application-default login \
-  --scopes=https://www.googleapis.com/auth/drive.file
+  --scopes=https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/drive.file
 ```
 
 ブラウザが開き、Googleアカウントでのログインを求められます。画面の指示に従って認証を完了してください。
@@ -143,7 +143,7 @@ deno task upload --delete-after-upload
 
 ```bash
 gcloud auth application-default login \
-  --scopes=https://www.googleapis.com/auth/drive.file
+  --scopes=https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/drive.file
 ```
 
 ### 認証済みなのにエラーが出る
@@ -152,7 +152,7 @@ gcloud auth application-default login \
 
 ```bash
 gcloud auth application-default login \
-  --scopes=https://www.googleapis.com/auth/drive.file
+  --scopes=https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/drive.file
 ```
 
 ### APIクォータエラーが発生する
