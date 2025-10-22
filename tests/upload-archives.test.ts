@@ -325,7 +325,7 @@ Deno.test('deleteLocalArchives: 存在しないファイルでもエラーにな
 
 Deno.test('findFolder: 無効なアクセストークンでエラーを投げる', async () => {
   try {
-    await findFolder('invalid_access_token', 'TestFolder');
+    await findFolder('invalid_access_token', 'test-project-id', 'TestFolder');
     assertEquals(true, false, 'エラーが発生するはずだった');
   } catch (error) {
     assertEquals(error instanceof Error, true);
@@ -334,7 +334,7 @@ Deno.test('findFolder: 無効なアクセストークンでエラーを投げる
 
 Deno.test('createFolder: 無効なアクセストークンでエラーを投げる', async () => {
   try {
-    await createFolder('invalid_access_token', 'TestFolder');
+    await createFolder('invalid_access_token', 'test-project-id', 'TestFolder');
     assertEquals(true, false, 'エラーが発生するはずだった');
   } catch (error) {
     assertEquals(error instanceof Error, true);
@@ -343,7 +343,7 @@ Deno.test('createFolder: 無効なアクセストークンでエラーを投げ�
 
 Deno.test('ensurePhotoDistributionFolder: 無効なアクセストークンでエラーを投げる', async () => {
   try {
-    await ensurePhotoDistributionFolder('invalid_access_token');
+    await ensurePhotoDistributionFolder('invalid_access_token', 'test-project-id');
     assertEquals(true, false, 'エラーが発生するはずだった');
   } catch (error) {
     assertEquals(error instanceof Error, true);
@@ -352,7 +352,13 @@ Deno.test('ensurePhotoDistributionFolder: 無効なアクセストークンで�
 
 Deno.test('createEventFolder: 無効なアクセストークンでエラーを投げる', async () => {
   try {
-    await createEventFolder('invalid_access_token', 'parent_id', '20251012', 'テストイベント');
+    await createEventFolder(
+      'invalid_access_token',
+      'test-project-id',
+      'parent_id',
+      '20251012',
+      'テストイベント'
+    );
     assertEquals(true, false, 'エラーが発生するはずだった');
   } catch (error) {
     assertEquals(error instanceof Error, true);
@@ -368,7 +374,7 @@ Deno.test('uploadFile: 無効なアクセストークンでエラーを投げる
   await Deno.writeTextFile(testFile, 'test content');
 
   try {
-    await uploadFile('invalid_access_token', testFile, 'folder_id');
+    await uploadFile('invalid_access_token', 'test-project-id', testFile, 'folder_id');
     assertEquals(true, false, 'エラーが発生するはずだった');
   } catch (error) {
     assertEquals(error instanceof Error, true);
@@ -379,7 +385,7 @@ Deno.test('uploadFile: 無効なアクセストークンでエラーを投げる
 
 Deno.test('makeFilePublic: 無効なアクセストークンでエラーを投げる', async () => {
   try {
-    await makeFilePublic('invalid_access_token', 'file_id');
+    await makeFilePublic('invalid_access_token', 'test-project-id', 'file_id');
     assertEquals(true, false, 'エラーが発生するはずだった');
   } catch (error) {
     assertEquals(error instanceof Error, true);

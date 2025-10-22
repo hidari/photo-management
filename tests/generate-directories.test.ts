@@ -350,3 +350,346 @@ Deno.test('moveTomlFile: 元のファイル名が保持される', async () => {
 
   await cleanup();
 });
+
+/**
+ * loadTomlConfigの拡張テスト: 日本語・絵文字を含むデータ
+ */
+Deno.test('loadTomlConfig: 日本語・絵文字を含むイベント名とモデル名を正しくパースする', async () => {
+  await cleanup();
+
+  const tomlPath = join(TEST_DIR, 'japanese-emoji.toml');
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+
+  const tomlContent = `
+[[events]]
+date = "20251012"
+event_name = "コミックマーケット105 🎉"
+
+[[events.models]]
+name = "田中 花子 🌸"
+sns = "https://twitter.com/hanako"
+
+[[events.models]]
+name = "山田太郎"
+sns = "https://twitter.com/taro"
+`;
+
+  await Deno.writeTextFile(tomlPath, tomlContent);
+
+  const config = await loadTomlConfig(tomlPath);
+
+  assertEquals(config.events.length, 1);
+  assertEquals(config.events[0].event_name, 'コミックマーケット105 🎉');
+  assertEquals(config.events[0].models[0].name, '田中 花子 🌸');
+  assertEquals(config.events[0].models[1].name, '山田太郎');
+
+  await cleanup();
+});
+
+/**
+ * loadTomlConfigの拡張テスト: 重複するモデル名
+ */
+Deno.test('loadTomlConfig: 重複するモデル名を含むTOMLを正しくパースする', async () => {
+  await cleanup();
+
+  const tomlPath = join(TEST_DIR, 'duplicate-models.toml');
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+
+  const tomlContent = `
+[[events]]
+date = "20251012"
+event_name = "テストイベント"
+
+[[events.models]]
+name = "Aさん"
+sns = "https://twitter.com/a1"
+
+[[events.models]]
+name = "Aさん"
+sns = "https://twitter.com/a2"
+`;
+
+  await Deno.writeTextFile(tomlPath, tomlContent);
+
+  const config = await loadTomlConfig(tomlPath);
+
+  // パースは成功するが、重複は許容される（ビジネスロジック側で処理）
+  assertEquals(config.events[0].models.length, 2);
+  assertEquals(config.events[0].models[0].name, 'Aさん');
+  assertEquals(config.events[0].models[1].name, 'Aさん');
+
+  await cleanup();
+});
+
+/**
+ * loadTomlConfigの拡張テスト: SNSフィールドがオプショナル
+ */
+Deno.test('loadTomlConfig: SNSフィールドがないモデルを正しくパースする', async () => {
+  await cleanup();
+
+  const tomlPath = join(TEST_DIR, 'no-sns.toml');
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+
+  const tomlContent = `
+[[events]]
+date = "20251012"
+event_name = "テストイベント"
+
+[[events.models]]
+name = "プライベートモデル"
+`;
+
+  await Deno.writeTextFile(tomlPath, tomlContent);
+
+  const config = await loadTomlConfig(tomlPath);
+
+  assertEquals(config.events[0].models[0].name, 'プライベートモデル');
+  assertEquals(config.events[0].models[0].sns, undefined);
+
+  await cleanup();
+});
+
+/**
+ * loadTomlConfigの拡張テスト: 空のmodels配列
+ */
+Deno.test('loadTomlConfig: models配列が空のイベントを含むTOMLをパースする', async () => {
+  await cleanup();
+
+  const tomlPath = join(TEST_DIR, 'empty-models.toml');
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+
+  const tomlContent = `
+[[events]]
+date = "20251012"
+event_name = "モデルなしイベント"
+models = []
+`;
+
+  await Deno.writeTextFile(tomlPath, tomlContent);
+
+  const config = await loadTomlConfig(tomlPath);
+
+  // パースは成功し、空の配列として扱われる
+  assertEquals(config.events[0].models.length, 0);
+
+  await cleanup();
+});
+
+/**
+ * buildDirectoryStructureの拡張テスト: 日本語・特殊文字を含むパス生成
+ */
+Deno.test('buildDirectoryStructure: 日本語・特殊文字を含むイベント名とモデル名で正しいパスを生成する', () => {
+  const event: Event = {
+    date: '20251012',
+    event_name: 'コミケ 105',
+    models: [
+      { name: '田中 花子', sns: 'https://twitter.com/hanako' },
+      { name: 'スペース　テスト', sns: 'https://twitter.com/space' },
+    ],
+  };
+
+  const structure = buildDirectoryStructure(event, testConfig);
+
+  // イベントディレクトリパスの確認
+  assertEquals(structure.eventDir, join(testConfig.developedDirectoryBase, '20251012_コミケ 105'));
+
+  // 1人目のモデル（日本語）
+  assertEquals(structure.models[0].modelName, '田中 花子');
+  assertEquals(
+    structure.models[0].distDir,
+    join(
+      testConfig.developedDirectoryBase,
+      '20251012_コミケ 105',
+      '田中 花子',
+      '20251012_コミケ 105_テスト太郎撮影_田中 花子'
+    )
+  );
+
+  // 2人目のモデル（全角スペース）
+  assertEquals(structure.models[1].modelName, 'スペース　テスト');
+});
+
+/**
+ * buildDirectoryStructureの拡張テスト: 絵文字を含むパス生成
+ */
+Deno.test('buildDirectoryStructure: 絵文字を含むイベント名とモデル名で正しいパスを生成する', () => {
+  const event: Event = {
+    date: '20251012',
+    event_name: 'アニメフェス 🎉',
+    models: [{ name: 'モデル 🌸', sns: 'https://twitter.com/model' }],
+  };
+
+  const structure = buildDirectoryStructure(event, testConfig);
+
+  assertEquals(
+    structure.eventDir,
+    join(testConfig.developedDirectoryBase, '20251012_アニメフェス 🎉')
+  );
+
+  assertEquals(structure.models[0].modelName, 'モデル 🌸');
+  assertEquals(
+    structure.models[0].readmePath,
+    join(
+      testConfig.developedDirectoryBase,
+      '20251012_アニメフェス 🎉',
+      'モデル 🌸',
+      '20251012_アニメフェス 🎉_テスト太郎撮影_モデル 🌸',
+      '_README.txt'
+    )
+  );
+});
+
+/**
+ * buildDirectoryStructureの拡張テスト: 長いモデル名
+ */
+Deno.test('buildDirectoryStructure: 64文字を超える長いモデル名で正しいパスを生成する', () => {
+  const longName = 'とても長いモデル名'.repeat(10); // 100文字以上
+
+  const event: Event = {
+    date: '20251012',
+    event_name: 'テストイベント',
+    models: [{ name: longName, sns: 'https://twitter.com/long' }],
+  };
+
+  const structure = buildDirectoryStructure(event, testConfig);
+
+  // パスが正しく生成されることを確認（OSの制限には依存しない）
+  assertEquals(structure.models[0].modelName, longName);
+  assertEquals(
+    structure.models[0].distDir,
+    join(
+      testConfig.developedDirectoryBase,
+      '20251012_テストイベント',
+      longName,
+      `20251012_テストイベント_テスト太郎撮影_${longName}`
+    )
+  );
+});
+
+/**
+ * buildDirectoryStructureの拡張テスト: administratorに日本語を含む場合
+ */
+Deno.test('buildDirectoryStructure: administrator名に日本語を含む場合に正しいパスを生成する', () => {
+  const japaneseAdminConfig = {
+    ...testConfig,
+    administrator: '山田 太郎',
+  };
+
+  const event: Event = {
+    date: '20251012',
+    event_name: 'テストイベント',
+    models: [{ name: 'モデルA', sns: 'https://twitter.com/a' }],
+  };
+
+  const structure = buildDirectoryStructure(event, japaneseAdminConfig);
+
+  assertEquals(
+    structure.models[0].distDir,
+    join(
+      japaneseAdminConfig.developedDirectoryBase,
+      '20251012_テストイベント',
+      'モデルA',
+      '20251012_テストイベント_山田 太郎撮影_モデルA'
+    )
+  );
+});
+
+/**
+ * buildDirectoryStructureの拡張テスト: distDirとreadmePathの相対関係
+ */
+Deno.test('buildDirectoryStructure: distDirとreadmePathの相対関係が常に正しい', () => {
+  const event: Event = {
+    date: '20251012',
+    event_name: 'テストイベント',
+    models: [
+      { name: 'モデルA', sns: 'https://twitter.com/a' },
+      { name: 'モデルB', sns: 'https://twitter.com/b' },
+    ],
+  };
+
+  const structure = buildDirectoryStructure(event, testConfig);
+
+  // 各モデルのreadmePathがdistDir内に存在することを確認
+  for (const model of structure.models) {
+    const expectedReadmePath = join(model.distDir, '_README.txt');
+    assertEquals(model.readmePath, expectedReadmePath);
+  }
+});
+
+/**
+ * loadTomlConfigのエッジケーステスト: 無効なTOML構文でエラーを投げる
+ */
+Deno.test('loadTomlConfig: 無効なTOML構文でエラーを投げる', async () => {
+  await cleanup();
+
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+
+  // 無効なTOMLファイルを作成（閉じクォートがない）
+  const tomlPath = join(TEST_DIR, 'invalid.toml');
+  await Deno.writeTextFile(
+    tomlPath,
+    `[[events]]
+date = "20251012
+event_name = "テストイベント"
+`
+  );
+
+  try {
+    await loadTomlConfig(tomlPath);
+    assertEquals(true, false, 'エラーが発生するはずだった');
+  } catch (error) {
+    assertEquals(error instanceof Error, true);
+  } finally {
+    await cleanup();
+  }
+});
+
+/**
+ * loadTomlConfigのエッジケーステスト: 必須フィールドが欠けている場合
+ */
+Deno.test('loadTomlConfig: dateフィールドが欠けている場合も正常にパースする', async () => {
+  await cleanup();
+
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+
+  // dateフィールドがないTOMLファイルを作成
+  const tomlPath = join(TEST_DIR, 'no-date.toml');
+  await Deno.writeTextFile(
+    tomlPath,
+    `[[events]]
+event_name = "テストイベント"
+
+[[events.models]]
+name = "モデルA"
+sns = "https://twitter.com/a"
+`
+  );
+
+  // loadTomlConfig自体はeventsの存在のみを検証する
+  // 個別フィールドのバリデーションは行わない
+  const config = await loadTomlConfig(tomlPath);
+  assertEquals(config.events.length, 1);
+  assertEquals(config.events[0].event_name, 'テストイベント');
+
+  await cleanup();
+});
+
+/**
+ * buildDirectoryStructureの境界値テスト: models配列が空の場合
+ */
+Deno.test('buildDirectoryStructure: models配列が空の場合空のmodelDirectoriesを返す', () => {
+  const event: Event = {
+    date: '20251012',
+    event_name: 'テストイベント',
+    models: [],
+  };
+
+  const structure = buildDirectoryStructure(event, testConfig);
+
+  assertEquals(structure.models.length, 0);
+  assertEquals(structure.baseDir, testConfig.developedDirectoryBase);
+  assertEquals(
+    structure.eventDir,
+    join(testConfig.developedDirectoryBase, '20251012_テストイベント')
+  );
+});

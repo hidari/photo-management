@@ -10,7 +10,7 @@ export interface EventModel {
   name: string;
 
   /** SNSアカウントのURL */
-  sns: string;
+  sns?: string;
 
   /** Google Driveのダウンロード用共有URL */
   download_url?: string;

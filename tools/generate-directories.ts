@@ -13,69 +13,15 @@
 
 import { parse } from 'https://deno.land/std@0.208.0/flags/mod.ts';
 import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
-import { parse as parseToml } from 'https://deno.land/std@0.208.0/toml/mod.ts';
 import type { Config } from 'types/config.ts';
 import config from '../config.ts';
-import type {
-  DirectoryConfig,
-  DirectoryStructure,
-  Event,
-  ModelDirectory,
-} from '../types/directory-config.ts';
+import type { DirectoryStructure } from '../types/directory-config.ts';
 import { renderTemplate } from './generate-readme.ts';
+import { loadTomlConfig } from './lib/config-loader.ts';
+import { buildDirectoryStructure } from './lib/directory-structure.ts';
 
-/**
- * TOMLファイルを読み込んでパースする
- *
- * @param tomlPath - TOMLファイルのパス
- * @returns パース済みの設定オブジェクト
- */
-export async function loadTomlConfig(tomlPath: string): Promise<DirectoryConfig> {
-  const content = await Deno.readTextFile(tomlPath);
-  const parsed = parseToml(content) as unknown as DirectoryConfig;
-
-  // 基本的なバリデーション
-  if (!parsed.events || !Array.isArray(parsed.events) || parsed.events.length === 0) {
-    throw new Error('TOMLファイルにeventsが定義されていないか、空です');
-  }
-
-  return parsed;
-}
-
-/**
- * イベント情報からディレクトリ構造オブジェクトを構築する
- *
- * @param event - イベント情報
- * @param appConfig - アプリケーション設定
- * @returns ディレクトリ構造オブジェクト
- */
-export function buildDirectoryStructure(event: Event, appConfig: Config): DirectoryStructure {
-  const { date, event_name, models } = event;
-  const baseDir = appConfig.developedDirectoryBase;
-  const eventDir = join(baseDir, `${date}_${event_name}`);
-
-  const modelDirectories: ModelDirectory[] = models.map((model) => {
-    const modelDir = join(eventDir, model.name);
-    const distDir = join(
-      modelDir,
-      `${date}_${event_name}_${appConfig.administrator}撮影_${model.name}`
-    );
-    const readmePath = join(distDir, '_README.txt');
-
-    return {
-      modelName: model.name,
-      modelDir,
-      distDir,
-      readmePath,
-    };
-  });
-
-  return {
-    baseDir,
-    eventDir,
-    models: modelDirectories,
-  };
-}
+// 互換性のため既存のエクスポートを維持
+export { loadTomlConfig, buildDirectoryStructure };
 
 /**
  * ディレクトリ構造を実際に作成する

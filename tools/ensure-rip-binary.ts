@@ -12,16 +12,7 @@
 import { ensureDir } from 'https://deno.land/std@0.208.0/fs/mod.ts';
 import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import { Project, SyntaxKind } from 'https://deno.land/x/ts_morph@21.0.1/mod.ts';
-
-/**
- * プラットフォーム情報
- */
-export interface PlatformInfo {
-  os: string;
-  arch: string;
-  zipName: string;
-  binaryName: string;
-}
+import type { PlatformInfo } from '../types/binary-setup.ts';
 
 /**
  * GitHub Release情報

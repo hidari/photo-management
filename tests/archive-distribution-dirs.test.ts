@@ -324,3 +324,52 @@ Deno.test('findTomlInEventDir: 複数のTOMLファイルがある場合最初の
 
   await cleanup();
 });
+
+/**
+ * findLatestEventDirのテスト: ファイルとディレクトリが混在する場合
+ */
+Deno.test('findLatestEventDir: ファイルとディレクトリが混在する場合ディレクトリのみを返す', async () => {
+  await cleanup();
+
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+
+  // ファイルを作成
+  const file1 = join(TEST_DIR, 'file1.txt');
+  await Deno.writeTextFile(file1, 'test content');
+
+  // ディレクトリを作成
+  const dir1 = join(TEST_DIR, 'event1');
+  await Deno.mkdir(dir1);
+
+  const latest = await findLatestEventDir(TEST_DIR);
+
+  // ディレクトリのみが返されるはず
+  assertEquals(latest, dir1);
+
+  await cleanup();
+});
+
+/**
+ * findTomlInEventDirのテスト: .tomlで終わるディレクトリが存在する場合
+ */
+Deno.test('findTomlInEventDir: .tomlで終わるディレクトリは無視してファイルのみを返す', async () => {
+  await cleanup();
+
+  const eventDir = join(TEST_DIR, 'event1');
+  await Deno.mkdir(eventDir, { recursive: true });
+
+  // .tomlで終わるディレクトリを作成
+  const tomlDir = join(eventDir, 'config.toml');
+  await Deno.mkdir(tomlDir);
+
+  // 実際のTOMLファイルを作成
+  const tomlFile = join(eventDir, 'actual.toml');
+  await Deno.writeTextFile(tomlFile, '# actual toml file');
+
+  const found = await findTomlInEventDir(eventDir);
+
+  // ファイルのみが返されるはず
+  assertEquals(found, tomlFile);
+
+  await cleanup();
+});

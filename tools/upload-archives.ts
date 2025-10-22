@@ -21,23 +21,11 @@ import {
 } from 'https://deno.land/std@0.208.0/toml/mod.ts';
 import type { Config } from 'types/config.ts';
 import config from '../config.ts';
+import type { ArchiveInfo } from '../types/archive.ts';
 import type { DirectoryConfig } from '../types/directory-config.ts';
-import { findLatestEventDir, findTomlInEventDir } from './archive-distribution-dirs.ts';
-import { buildDirectoryStructure, loadTomlConfig } from './generate-directories.ts';
-
-/**
- * アーカイブファイルの情報
- */
-export interface ArchiveInfo {
-  /** モデル名 */
-  modelName: string;
-  /** zipファイルのパス */
-  zipPath: string;
-  /** イベント日付 */
-  eventDate: string;
-  /** イベント名 */
-  eventName: string;
-}
+import { loadTomlConfig } from './lib/config-loader.ts';
+import { findLatestEventDir, findTomlInEventDir } from './lib/directory-finder.ts';
+import { buildDirectoryStructure } from './lib/directory-structure.ts';
 
 /**
  * 設定ディレクトリのパスを取得
@@ -165,6 +153,7 @@ export async function getValidToken(): Promise<string> {
  */
 export async function findFolder(
   accessToken: string,
+  projectId: string,
   folderName: string,
   parentId?: string
 ): Promise<string | null> {
@@ -177,7 +166,7 @@ export async function findFolder(
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'X-Goog-User-Project': config.googleCloud.projectId,
+        'X-Goog-User-Project': projectId,
       },
     }
   );
@@ -206,6 +195,7 @@ export async function findFolder(
  */
 export async function createFolder(
   accessToken: string,
+  projectId: string,
   folderName: string,
   parentId?: string
 ): Promise<string> {
@@ -223,7 +213,7 @@ export async function createFolder(
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
-      'X-Goog-User-Project': config.googleCloud.projectId,
+      'X-Goog-User-Project': projectId,
     },
     body: JSON.stringify(metadata),
   });
@@ -243,7 +233,10 @@ export async function createFolder(
  * @param accessToken - アクセストークン
  * @returns フォルダID
  */
-export async function ensurePhotoDistributionFolder(accessToken: string): Promise<string> {
+export async function ensurePhotoDistributionFolder(
+  accessToken: string,
+  projectId: string
+): Promise<string> {
   // 保存されているフォルダIDを確認
   let folderId = await loadFolderId();
 
@@ -253,7 +246,7 @@ export async function ensurePhotoDistributionFolder(accessToken: string): Promis
       const response = await fetch(`https://www.googleapis.com/drive/v3/files/${folderId}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          'X-Goog-User-Project': config.googleCloud.projectId,
+          'X-Goog-User-Project': projectId,
         },
       });
 
@@ -269,12 +262,12 @@ export async function ensurePhotoDistributionFolder(accessToken: string): Promis
   }
 
   // フォルダを検索
-  folderId = await findFolder(accessToken, 'PhotoDistribution');
+  folderId = await findFolder(accessToken, projectId, 'PhotoDistribution');
 
   if (!folderId) {
     // フォルダを作成
     console.log('📁 PhotoDistributionフォルダを作成中...');
-    folderId = await createFolder(accessToken, 'PhotoDistribution');
+    folderId = await createFolder(accessToken, projectId, 'PhotoDistribution');
     console.log(`   ✅ フォルダを作成しました (ID: ${folderId})`);
   }
 
@@ -295,6 +288,7 @@ export async function ensurePhotoDistributionFolder(accessToken: string): Promis
  */
 export async function createEventFolder(
   accessToken: string,
+  projectId: string,
   parentId: string,
   eventDate: string,
   eventName: string
@@ -302,12 +296,12 @@ export async function createEventFolder(
   const folderName = `${eventDate}_${eventName}`;
 
   // 既存のフォルダを検索
-  let folderId = await findFolder(accessToken, folderName, parentId);
+  let folderId = await findFolder(accessToken, projectId, folderName, parentId);
 
   if (!folderId) {
     // フォルダを作成
     console.log(`📁 イベントフォルダを作成中: ${folderName}`);
-    folderId = await createFolder(accessToken, folderName, parentId);
+    folderId = await createFolder(accessToken, projectId, folderName, parentId);
   }
 
   return folderId;
@@ -323,6 +317,7 @@ export async function createEventFolder(
  */
 export async function uploadFile(
   accessToken: string,
+  projectId: string,
   filePath: string,
   folderId: string
 ): Promise<string> {
@@ -373,7 +368,7 @@ export async function uploadFile(
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': `multipart/related; boundary=${boundary}`,
-        'X-Goog-User-Project': config.googleCloud.projectId,
+        'X-Goog-User-Project': projectId,
       },
       body: body,
     }
@@ -395,14 +390,18 @@ export async function uploadFile(
  * @param fileId - ファイルID
  * @returns 共有リンク
  */
-export async function makeFilePublic(accessToken: string, fileId: string): Promise<string> {
+export async function makeFilePublic(
+  accessToken: string,
+  projectId: string,
+  fileId: string
+): Promise<string> {
   // ファイルを公開設定にする
   const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
-      'X-Goog-User-Project': config.googleCloud.projectId,
+      'X-Goog-User-Project': projectId,
     },
     body: JSON.stringify({
       role: 'reader',
@@ -519,6 +518,20 @@ async function main() {
   console.log('📤 撮影データGoogle Driveアップロードツール');
   console.log();
 
+  // Google Cloud設定の存在確認
+  if (!config.googleCloud) {
+    console.error('❌ エラー: Google Cloud設定が見つかりません');
+    console.error('   config.tsにgoogleCloud設定を追加してください');
+    console.error('   例:');
+    console.error('   googleCloud: {');
+    console.error('     projectId: "your-project-id"');
+    console.error('   }');
+    Deno.exit(1);
+  }
+
+  // プロジェクトIDを変数に格納（型ガード後なので安全）
+  const projectId = config.googleCloud.projectId;
+
   // gcloudの認証状態を確認
   console.log('🔍 gcloud認証を確認中...');
 
@@ -540,7 +553,7 @@ async function main() {
   if (currentAccount) {
     console.log(`   👤 認証アカウント: ${currentAccount}`);
   }
-  console.log(`   📋 使用するプロジェクト: ${config.googleCloud.projectId}`);
+  console.log(`   📋 使用するプロジェクト: ${projectId}`);
   console.log();
 
   let tomlPath: string | null;
@@ -613,7 +626,7 @@ async function main() {
 
     // PhotoDistributionフォルダを確保
     console.log('📁 Google Driveフォルダを確認中...');
-    const rootFolderId = await ensurePhotoDistributionFolder(accessToken);
+    const rootFolderId = await ensurePhotoDistributionFolder(accessToken, projectId);
     console.log(`   ✅ PhotoDistributionフォルダ (ID: ${rootFolderId})`);
     console.log();
 
@@ -634,6 +647,7 @@ async function main() {
       const firstArchive = eventArchives[0];
       const eventFolderId = await createEventFolder(
         accessToken,
+        projectId,
         rootFolderId,
         firstArchive.eventDate,
         firstArchive.eventName
@@ -645,10 +659,10 @@ async function main() {
         console.log(`   • ${basename(archive.zipPath)}`);
 
         // ファイルをアップロード
-        const fileId = await uploadFile(accessToken, archive.zipPath, eventFolderId);
+        const fileId = await uploadFile(accessToken, projectId, archive.zipPath, eventFolderId);
 
         // 共有リンクを取得
-        const shareUrl = await makeFilePublic(accessToken, fileId);
+        const shareUrl = await makeFilePublic(accessToken, projectId, fileId);
 
         // URLマップに追加
         urlMap.set(archive.modelName, shareUrl);

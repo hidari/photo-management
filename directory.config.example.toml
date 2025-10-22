@@ -8,16 +8,14 @@ event_name = "アコスタATC"
 
 [[events.models]]
 name = "Aさん"
-sns = "https://twitter.com/example_a"
+sns = "https://twitter.com/example_a" # sns はオプション
 
 [[events.models]]
 name = "Bさん"
-sns = "https://twitter.com/example_b"
+sns = "https://twitter.com/example_b" # sns はオプション
 
 [[events.models]]
 name = "Cさん"
-sns = "https://instagram.com/example_c"
 
 [[events.models]]
 name = "Dさん"
-sns = "https://twitter.com/example_d"
