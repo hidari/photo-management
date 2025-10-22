@@ -114,8 +114,8 @@ Deno.test('buildDirectoryStructure: イベント情報から正しいディレ�
     date: '20251012',
     event_name: 'アコスタATC',
     models: [
-      { name: 'Aさん', sns: 'https://twitter.com/a' },
-      { name: 'Bさん', sns: 'https://twitter.com/b' },
+      { name: 'Aさん', outreach: false, sns: 'https://twitter.com/a' },
+      { name: 'Bさん', outreach: false, sns: 'https://twitter.com/b' },
     ],
   };
 
@@ -167,7 +167,7 @@ Deno.test('createDirectories: ディレクトリ構造を実際に作成する',
   const event: Event = {
     date: '20251012',
     event_name: 'テストイベント',
-    models: [{ name: 'テストモデル', sns: 'https://twitter.com/test' }],
+    models: [{ name: 'テストモデル', outreach: false, sns: 'https://twitter.com/test' }],
   };
 
   // テスト用のbaseDirectoryを使用
@@ -199,8 +199,8 @@ Deno.test('generateReadmeFiles: 各配布ディレクトリにREADMEファイル
     date: '20251012',
     event_name: 'テストイベント',
     models: [
-      { name: 'モデルA', sns: 'https://twitter.com/a' },
-      { name: 'モデルB', sns: 'https://twitter.com/b' },
+      { name: 'モデルA', outreach: false, sns: 'https://twitter.com/a' },
+      { name: 'モデルB', outreach: false, sns: 'https://twitter.com/b' },
     ],
   };
 
@@ -309,7 +309,7 @@ Deno.test('createDirectories: 既に存在するディレクトリでもエラ�
   const event: Event = {
     date: '20251012',
     event_name: 'テストイベント',
-    models: [{ name: 'テストモデル', sns: 'https://twitter.com/test' }],
+    models: [{ name: 'テストモデル', outreach: false, sns: 'https://twitter.com/test' }],
   };
 
   const testConfigLocal = { ...testConfig, developedDirectoryBase: TEST_DIR };
@@ -483,8 +483,8 @@ Deno.test('buildDirectoryStructure: 日本語・特殊文字を含むイベン�
     date: '20251012',
     event_name: 'コミケ 105',
     models: [
-      { name: '田中 花子', sns: 'https://twitter.com/hanako' },
-      { name: 'スペース　テスト', sns: 'https://twitter.com/space' },
+      { name: '田中 花子', outreach: false, sns: 'https://twitter.com/hanako' },
+      { name: 'スペース　テスト', outreach: false, sns: 'https://twitter.com/space' },
     ],
   };
 
@@ -516,7 +516,7 @@ Deno.test('buildDirectoryStructure: 絵文字を含むイベント名とモデ�
   const event: Event = {
     date: '20251012',
     event_name: 'アニメフェス 🎉',
-    models: [{ name: 'モデル 🌸', sns: 'https://twitter.com/model' }],
+    models: [{ name: 'モデル 🌸', outreach: false, sns: 'https://twitter.com/model' }],
   };
 
   const structure = buildDirectoryStructure(event, testConfig);
@@ -548,7 +548,7 @@ Deno.test('buildDirectoryStructure: 64文字を超える長いモデル名で正
   const event: Event = {
     date: '20251012',
     event_name: 'テストイベント',
-    models: [{ name: longName, sns: 'https://twitter.com/long' }],
+    models: [{ name: longName, outreach: false, sns: 'https://twitter.com/long' }],
   };
 
   const structure = buildDirectoryStructure(event, testConfig);
@@ -578,7 +578,7 @@ Deno.test('buildDirectoryStructure: administrator名に日本語を含む場合�
   const event: Event = {
     date: '20251012',
     event_name: 'テストイベント',
-    models: [{ name: 'モデルA', sns: 'https://twitter.com/a' }],
+    models: [{ name: 'モデルA', outreach: false, sns: 'https://twitter.com/a' }],
   };
 
   const structure = buildDirectoryStructure(event, japaneseAdminConfig);
@@ -602,8 +602,8 @@ Deno.test('buildDirectoryStructure: distDirとreadmePathの相対関係が常に
     date: '20251012',
     event_name: 'テストイベント',
     models: [
-      { name: 'モデルA', sns: 'https://twitter.com/a' },
-      { name: 'モデルB', sns: 'https://twitter.com/b' },
+      { name: 'モデルA', outreach: false, sns: 'https://twitter.com/a' },
+      { name: 'モデルB', outreach: false, sns: 'https://twitter.com/b' },
     ],
   };
 

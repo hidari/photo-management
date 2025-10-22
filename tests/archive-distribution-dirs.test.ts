@@ -168,8 +168,8 @@ Deno.test('listDistDirectories: 正しくDIST_DIRのパス一覧を返す', () =
         date: '20251012',
         event_name: 'テストイベント',
         models: [
-          { name: 'モデルA', sns: 'https://twitter.com/a' },
-          { name: 'モデルB', sns: 'https://twitter.com/b' },
+          { name: 'モデルA', outreach: false, sns: 'https://twitter.com/a' },
+          { name: 'モデルB', outreach: false, sns: 'https://twitter.com/b' },
         ],
       },
     ],
@@ -207,14 +207,14 @@ Deno.test('listDistDirectories: 複数イベントの場合すべてのDIST_DIR�
       {
         date: '20251012',
         event_name: 'イベント1',
-        models: [{ name: 'モデルA', sns: 'https://twitter.com/a' }],
+        models: [{ name: 'モデルA', outreach: false, sns: 'https://twitter.com/a' }],
       },
       {
         date: '20251013',
         event_name: 'イベント2',
         models: [
-          { name: 'モデルB', sns: 'https://twitter.com/b' },
-          { name: 'モデルC', sns: 'https://twitter.com/c' },
+          { name: 'モデルB', outreach: false, sns: 'https://twitter.com/b' },
+          { name: 'モデルC', outreach: false, sns: 'https://twitter.com/c' },
         ],
       },
     ],

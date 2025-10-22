@@ -8,14 +8,18 @@ event_name = "アコスタATC"
 
 [[events.models]]
 name = "Aさん"
+outreach = true
 sns = "https://twitter.com/example_a" # sns はオプション
 
 [[events.models]]
 name = "Bさん"
+outreach = false
 sns = "https://twitter.com/example_b" # sns はオプション
 
 [[events.models]]
 name = "Cさん"
+outreach = false
 
 [[events.models]]
 name = "Dさん"
+outreach = true

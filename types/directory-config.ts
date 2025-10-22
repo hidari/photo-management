@@ -9,6 +9,9 @@ export interface EventModel {
   /** モデル名 */
   name: string;
 
+  /** 初めての撮影かどうか (true: 初回, false: 2回目以降) */
+  outreach: boolean;
+
   /** SNSアカウントのURL */
   sns?: string;
 

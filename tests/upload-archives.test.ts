@@ -125,7 +125,7 @@ Deno.test('findArchiveFiles: 正しくzipファイルを探索する', async () 
       {
         date: '20251012',
         event_name: 'テストイベント',
-        models: [{ name: 'モデルA', sns: 'https://twitter.com/a' }],
+        models: [{ name: 'モデルA', outreach: false, sns: 'https://twitter.com/a' }],
       },
     ],
   };
@@ -151,7 +151,7 @@ Deno.test('findArchiveFiles: zipファイルが存在しない場合空配列を
       {
         date: '20251012',
         event_name: 'テストイベント',
-        models: [{ name: 'モデルA', sns: 'https://twitter.com/a' }],
+        models: [{ name: 'モデルA', outreach: false, sns: 'https://twitter.com/a' }],
       },
     ],
   };
@@ -195,8 +195,8 @@ Deno.test('findArchiveFiles: 複数のモデルのzipファイルを探索する
         date: '20251012',
         event_name: 'テストイベント',
         models: [
-          { name: 'モデルA', sns: 'https://twitter.com/a' },
-          { name: 'モデルB', sns: 'https://twitter.com/b' },
+          { name: 'モデルA', outreach: false, sns: 'https://twitter.com/a' },
+          { name: 'モデルB', outreach: false, sns: 'https://twitter.com/b' },
         ],
       },
     ],
