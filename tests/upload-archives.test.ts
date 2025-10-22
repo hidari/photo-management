@@ -5,14 +5,13 @@ import {
   createFolder,
   deleteLocalArchives,
   ensurePhotoDistributionFolder,
-  exchangeCodeForToken,
   findArchiveFiles,
   findFolder,
-  generateAuthUrl,
+  getAccessTokenViaGcloud,
   getConfigDir,
-  loadCredentials,
+  getCurrentAccount,
+  getValidToken,
   makeFilePublic,
-  refreshAccessToken,
   updateTomlWithUrls,
   uploadFile,
 } from '../tools/upload-archives.ts';
@@ -49,26 +48,6 @@ Deno.test('getConfigDir: 設定ディレクトリのパスを返す', () => {
   const configDir = getConfigDir();
   assertExists(configDir);
   assertEquals(configDir.includes('.config/photo-management'), true);
-});
-
-/**
- * generateAuthUrlのテスト
- */
-Deno.test('generateAuthUrl: 認証URLを生成する', () => {
-  const credentials = {
-    client_id: 'test_client_id',
-    client_secret: 'test_client_secret',
-    redirect_uris: ['urn:ietf:wg:oauth:2.0:oob'],
-  };
-
-  const authUrl = generateAuthUrl(credentials);
-
-  assertEquals(authUrl.includes('https://accounts.google.com/o/oauth2/v2/auth'), true);
-  assertEquals(authUrl.includes('client_id=test_client_id'), true);
-  assertEquals(
-    authUrl.includes('scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.file'),
-    true
-  );
 });
 
 /**
@@ -116,22 +95,6 @@ Deno.test('saveFolderId/loadFolderId: フォルダIDを保存・読み込みで�
 
   await cleanupTestConfig();
   await cleanup();
-});
-
-/**
- * loadCredentialsのテスト: 認証情報が存在しない場合
- */
-Deno.test('loadCredentials: 認証情報が存在しない場合nullを返す', async () => {
-  // 存在しないパスから読み込もうとする
-  const credentials = await loadCredentials();
-
-  // 実際の認証情報ファイルがある場合とない場合があるため、
-  // このテストはnullまたは有効な値を返すことを確認
-  if (credentials === null) {
-    assertEquals(credentials, null);
-  } else {
-    assertExists(credentials.client_id);
-  }
 });
 
 /**
@@ -360,38 +323,6 @@ Deno.test('deleteLocalArchives: 存在しないファイルでもエラーにな
  * 実際のAPIを呼び出さないため、エラーハンドリングのみテスト
  */
 
-Deno.test('exchangeCodeForToken: 無効な認証コードでエラーを投げる', async () => {
-  const credentials = {
-    client_id: 'invalid_client_id',
-    client_secret: 'invalid_client_secret',
-    redirect_uris: ['urn:ietf:wg:oauth:2.0:oob'],
-  };
-
-  try {
-    await exchangeCodeForToken(credentials, 'invalid_code');
-    // エラーが発生するはずなので、ここに到達したらテスト失敗
-    assertEquals(true, false, 'エラーが発生するはずだった');
-  } catch (error) {
-    // エラーが発生することが期待される動作
-    assertEquals(error instanceof Error, true);
-  }
-});
-
-Deno.test('refreshAccessToken: 無効なリフレッシュトークンでエラーを投げる', async () => {
-  const credentials = {
-    client_id: 'invalid_client_id',
-    client_secret: 'invalid_client_secret',
-    redirect_uris: ['urn:ietf:wg:oauth:2.0:oob'],
-  };
-
-  try {
-    await refreshAccessToken(credentials, 'invalid_refresh_token');
-    assertEquals(true, false, 'エラーが発生するはずだった');
-  } catch (error) {
-    assertEquals(error instanceof Error, true);
-  }
-});
-
 Deno.test('findFolder: 無効なアクセストークンでエラーを投げる', async () => {
   try {
     await findFolder('invalid_access_token', 'TestFolder');
@@ -451,6 +382,64 @@ Deno.test('makeFilePublic: 無効なアクセストークンでエラーを投�
     await makeFilePublic('invalid_access_token', 'file_id');
     assertEquals(true, false, 'エラーが発生するはずだった');
   } catch (error) {
+    assertEquals(error instanceof Error, true);
+  }
+});
+
+/**
+ * gcloud CLI統合関数のテスト
+ */
+
+Deno.test('getAccessTokenViaGcloud: gcloud CLIが見つからない場合エラーを投げる', async () => {
+  // 実際のgcloudコマンドが存在する環境では、このテストは異なる動作をする可能性がある
+  // 環境に依存するため、エラーハンドリングの確認のみ行う
+  try {
+    // このテストは実際のgcloudコマンドを実行しようとする
+    // gcloudが存在しない環境では NotFound エラーになる
+    // gcloudが存在する環境では認証エラーまたは成功する
+    await getAccessTokenViaGcloud();
+
+    // gcloudが存在して認証されている場合、トークンが返される
+    // この場合はテスト成功
+    assertEquals(true, true);
+  } catch (error) {
+    // エラーの場合、適切なエラーメッセージを持つErrorであることを確認
+    assertEquals(error instanceof Error, true);
+    const errorMessage = (error as Error).message;
+
+    // gcloud CLIが見つからないか、または認証エラーのいずれか
+    const isValidError =
+      errorMessage.includes('gcloud CLIが見つかりません') ||
+      errorMessage.includes('gcloudコマンドの実行に失敗') ||
+      errorMessage.includes('gcloudから有効なトークンを取得できませんでした');
+
+    assertEquals(isValidError, true, `予期しないエラーメッセージ: ${errorMessage}`);
+  }
+});
+
+Deno.test('getCurrentAccount: エラーが発生してもnullを返す', async () => {
+  // getCurrentAccount は例外を投げずに常にnullまたはアカウント名を返す
+  const account = await getCurrentAccount();
+
+  // nullまたは文字列であることを確認
+  if (account !== null) {
+    assertEquals(typeof account, 'string');
+    // アカウント名が空でないことを確認
+    assertEquals(account.length > 0, true);
+  } else {
+    assertEquals(account, null);
+  }
+});
+
+Deno.test('getValidToken: getAccessTokenViaGcloud を呼び出す', async () => {
+  // getValidToken は単純に getAccessTokenViaGcloud のラッパー
+  try {
+    const token = await getValidToken();
+    // 成功した場合、トークンが文字列であることを確認
+    assertEquals(typeof token, 'string');
+    assertEquals(token.length > 0, true);
+  } catch (error) {
+    // エラーの場合も適切に処理されていることを確認
     assertEquals(error instanceof Error, true);
   }
 });

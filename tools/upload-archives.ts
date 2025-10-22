@@ -26,21 +26,6 @@ import { findLatestEventDir, findTomlInEventDir } from './archive-distribution-d
 import { buildDirectoryStructure, loadTomlConfig } from './generate-directories.ts';
 
 /**
- * Google Drive OAuth2認証用の型（簡易版）
- */
-interface GoogleAuthCredentials {
-  client_id: string;
-  client_secret: string;
-  redirect_uris: string[];
-}
-
-interface GoogleAuthToken {
-  access_token: string;
-  refresh_token?: string;
-  expiry_date?: number;
-}
-
-/**
  * アーカイブファイルの情報
  */
 export interface ArchiveInfo {
@@ -60,60 +45,6 @@ export interface ArchiveInfo {
 export function getConfigDir(): string {
   const home = Deno.env.get('HOME') || Deno.env.get('USERPROFILE') || '';
   return join(home, '.config', 'photo-management');
-}
-
-/**
- * Google Drive認証情報を読み込む
- *
- * @returns 認証情報（見つからない場合はnull）
- */
-export async function loadCredentials(): Promise<GoogleAuthCredentials | null> {
-  try {
-    const configDir = getConfigDir();
-    const credentialsPath = join(configDir, 'credentials.json');
-    const content = await Deno.readTextFile(credentialsPath);
-    const data = JSON.parse(content);
-
-    // OAuth2クライアント情報の形式を処理
-    if (data.installed) {
-      return data.installed as GoogleAuthCredentials;
-    }
-    if (data.web) {
-      return data.web as GoogleAuthCredentials;
-    }
-
-    return data as GoogleAuthCredentials;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * トークンを読み込む
- *
- * @returns トークン（見つからない場合はnull）
- */
-export async function loadToken(): Promise<GoogleAuthToken | null> {
-  try {
-    const configDir = getConfigDir();
-    const tokenPath = join(configDir, 'token.json');
-    const content = await Deno.readTextFile(tokenPath);
-    return JSON.parse(content);
-  } catch {
-    return null;
-  }
-}
-
-/**
- * トークンを保存する
- *
- * @param token - 保存するトークン
- */
-export async function saveToken(token: GoogleAuthToken): Promise<void> {
-  const configDir = getConfigDir();
-  await Deno.mkdir(configDir, { recursive: true });
-  const tokenPath = join(configDir, 'token.json');
-  await Deno.writeTextFile(tokenPath, JSON.stringify(token, null, 2));
 }
 
 /**
@@ -144,201 +75,84 @@ export async function saveFolderId(folderId: string): Promise<void> {
 }
 
 /**
- * OAuth2認証URLを生成する
+ * gcloud CLIからアクセストークンを取得する
  *
- * @param credentials - OAuth2クライアント認証情報
- * @returns 認証URL
- */
-export function generateAuthUrl(credentials: GoogleAuthCredentials): string {
-  const redirectUri = credentials.redirect_uris[0] || 'urn:ietf:wg:oauth:2.0:oob';
-  const scope = 'https://www.googleapis.com/auth/drive.file';
-
-  const params = new URLSearchParams({
-    client_id: credentials.client_id,
-    redirect_uri: redirectUri,
-    response_type: 'code',
-    scope: scope,
-    access_type: 'offline',
-    prompt: 'consent',
-  });
-
-  return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-}
-
-/**
- * 認証コードからトークンを取得する
- *
- * @param credentials - OAuth2クライアント認証情報
- * @param code - 認証コード
  * @returns アクセストークン
  */
-export async function exchangeCodeForToken(
-  credentials: GoogleAuthCredentials,
-  code: string
-): Promise<GoogleAuthToken> {
-  const redirectUri = credentials.redirect_uris[0] || 'urn:ietf:wg:oauth:2.0:oob';
-
-  const response = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
-      code: code,
-      client_id: credentials.client_id,
-      client_secret: credentials.client_secret,
-      redirect_uri: redirectUri,
-      grant_type: 'authorization_code',
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`トークン取得に失敗しました: ${error}`);
-  }
-
-  return await response.json();
-}
-
-/**
- * リフレッシュトークンを使って新しいアクセストークンを取得する
- *
- * @param credentials - OAuth2クライアント認証情報
- * @param refreshToken - リフレッシュトークン
- * @returns 新しいアクセストークン
- */
-export async function refreshAccessToken(
-  credentials: GoogleAuthCredentials,
-  refreshToken: string
-): Promise<GoogleAuthToken> {
-  const response = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
-      client_id: credentials.client_id,
-      client_secret: credentials.client_secret,
-      refresh_token: refreshToken,
-      grant_type: 'refresh_token',
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`トークンのリフレッシュに失敗しました: ${error}`);
-  }
-
-  const newToken = await response.json();
-
-  // リフレッシュトークンが返されない場合は元のものを保持
-  if (!newToken.refresh_token) {
-    newToken.refresh_token = refreshToken;
-  }
-
-  return newToken;
-}
-
-/**
- * トークンが有効かどうかを検証する
- *
- * @param accessToken - 検証するアクセストークン
- * @returns トークンが有効な場合true
- */
-export async function validateToken(accessToken: string): Promise<boolean> {
+export async function getAccessTokenViaGcloud(): Promise<string> {
   try {
-    // Google Drive APIの軽量エンドポイントでトークンを検証
-    const response = await fetch('https://www.googleapis.com/drive/v3/about?fields=user', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+    const command = new Deno.Command('gcloud', {
+      args: ['auth', 'print-access-token'],
+      stdout: 'piped',
+      stderr: 'piped',
     });
 
-    return response.ok;
+    const { success, stdout, stderr } = await command.output();
+
+    if (!success) {
+      const errorMsg = new TextDecoder().decode(stderr);
+      // トークンのような長いランダム文字列をマスク
+      const maskedError = errorMsg.replace(/[a-zA-Z0-9_-]{20,}/g, '***');
+      throw new Error(`gcloudコマンドの実行に失敗: ${maskedError}`);
+    }
+
+    const token = new TextDecoder().decode(stdout).trim();
+
+    if (!token || token.length < 20) {
+      throw new Error('gcloudから有効なトークンを取得できませんでした');
+    }
+
+    return token;
+  } catch (error) {
+    if (error instanceof Deno.errors.NotFound) {
+      throw new Error(
+        'gcloud CLIが見つかりません。\n' +
+          'Google Cloud SDKをインストールしてください: https://cloud.google.com/sdk/docs/install'
+      );
+    }
+    throw error;
+  }
+}
+
+/**
+ * 現在認証されているGoogleアカウントを取得する
+ *
+ * @returns アカウント名（取得できない場合はnull）
+ */
+export async function getCurrentAccount(): Promise<string | null> {
+  try {
+    const command = new Deno.Command('gcloud', {
+      args: ['config', 'get-value', 'account'],
+      stdout: 'piped',
+      stderr: 'piped',
+    });
+
+    const { success, stdout } = await command.output();
+
+    if (!success) {
+      return null;
+    }
+
+    const account = new TextDecoder().decode(stdout).trim();
+
+    // gcloudがアカウント未設定の場合は空文字か"(unset)"が返る
+    if (!account || account === '(unset)') {
+      return null;
+    }
+
+    return account;
   } catch {
-    return false;
+    return null;
   }
 }
 
 /**
  * 有効なアクセストークンを取得する
  *
- * @param credentials - OAuth2クライアント認証情報
  * @returns アクセストークン
  */
-export async function getValidToken(credentials: GoogleAuthCredentials): Promise<string> {
-  let token = await loadToken();
-
-  // トークンが存在する場合は検証
-  if (token) {
-    const isValid = await validateToken(token.access_token);
-
-    if (!isValid) {
-      console.log('⚠️  保存されているトークンが無効です');
-
-      // トークンが期限切れでリフレッシュトークンがある場合はリフレッシュを試行
-      if (token.refresh_token) {
-        console.log('🔄 トークンをリフレッシュしています...');
-        try {
-          token = await refreshAccessToken(credentials, token.refresh_token);
-          await saveToken(token);
-          console.log('✅ トークンのリフレッシュが完了しました');
-          console.log();
-          return token.access_token;
-        } catch (error) {
-          console.log(`❌ トークンのリフレッシュに失敗しました: ${error}`);
-        }
-      }
-
-      // リフレッシュできない場合は再認証が必要
-      console.log('🔐 再認証が必要です。既存のトークンを削除します...');
-      const configDir = getConfigDir();
-      const tokenPath = join(configDir, 'token.json');
-      try {
-        await Deno.remove(tokenPath);
-      } catch {
-        // ファイルが存在しない場合は無視
-      }
-      token = null; // 再認証フローに進む
-    }
-  }
-
-  // トークンが存在しない場合は新規認証
-  if (!token) {
-    console.log('🔐 Google Drive認証が必要です');
-    console.log();
-    console.log('以下のURLをブラウザで開いてください:');
-    console.log(generateAuthUrl(credentials));
-    console.log();
-    console.log('認証後に表示される認証コードを入力してください:');
-
-    const buf = new Uint8Array(1024);
-    const n = await Deno.stdin.read(buf);
-
-    if (n === null) {
-      throw new Error('認証コードの入力が中断されました');
-    }
-
-    const code = new TextDecoder().decode(buf.subarray(0, n)).trim();
-
-    token = await exchangeCodeForToken(credentials, code);
-    await saveToken(token);
-
-    console.log('✅ 認証が完了しました');
-    console.log();
-  }
-
-  // トークンが期限切れの場合はリフレッシュ
-  if (token.expiry_date && Date.now() >= token.expiry_date) {
-    if (!token.refresh_token) {
-      throw new Error('リフレッシュトークンがありません。再認証が必要です。');
-    }
-
-    token = await refreshAccessToken(credentials, token.refresh_token);
-    await saveToken(token);
-  }
-
-  return token.access_token;
+export async function getValidToken(): Promise<string> {
+  return await getAccessTokenViaGcloud();
 }
 
 /**
@@ -363,6 +177,7 @@ export async function findFolder(
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        'X-Goog-User-Project': config.googleCloud.projectId,
       },
     }
   );
@@ -408,6 +223,7 @@ export async function createFolder(
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
+      'X-Goog-User-Project': config.googleCloud.projectId,
     },
     body: JSON.stringify(metadata),
   });
@@ -437,6 +253,7 @@ export async function ensurePhotoDistributionFolder(accessToken: string): Promis
       const response = await fetch(`https://www.googleapis.com/drive/v3/files/${folderId}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          'X-Goog-User-Project': config.googleCloud.projectId,
         },
       });
 
@@ -556,6 +373,7 @@ export async function uploadFile(
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': `multipart/related; boundary=${boundary}`,
+        'X-Goog-User-Project': config.googleCloud.projectId,
       },
       body: body,
     }
@@ -584,6 +402,7 @@ export async function makeFilePublic(accessToken: string, fileId: string): Promi
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
+      'X-Goog-User-Project': config.googleCloud.projectId,
     },
     body: JSON.stringify({
       role: 'reader',
@@ -700,18 +519,28 @@ async function main() {
   console.log('📤 撮影データGoogle Driveアップロードツール');
   console.log();
 
-  // 認証情報を読み込む
-  console.log('🔍 認証情報を確認中...');
-  const credentials = await loadCredentials();
+  // gcloudの認証状態を確認
+  console.log('🔍 gcloud認証を確認中...');
 
-  if (!credentials) {
-    console.error('❌ エラー: 認証情報が見つかりません');
-    console.error(`   ${getConfigDir()}/credentials.json を配置してください`);
-    console.error('   詳細はREADME.mdを参照してください');
+  try {
+    await getAccessTokenViaGcloud();
+    console.log('   ✅ gcloud認証済み');
+  } catch (error) {
+    console.error('❌ エラー: gcloud認証が必要です');
+    console.error('   以下のコマンドで認証してください:');
+    console.error('   $ gcloud auth application-default login \\');
+    console.error('       --scopes=https://www.googleapis.com/auth/drive.file');
+    console.error();
+    console.error(`   詳細: ${error instanceof Error ? error.message : error}`);
     Deno.exit(1);
   }
 
-  console.log('   ✅ 認証情報を読み込みました');
+  // 現在のアカウントと使用するプロジェクトを表示
+  const currentAccount = await getCurrentAccount();
+  if (currentAccount) {
+    console.log(`   👤 認証アカウント: ${currentAccount}`);
+  }
+  console.log(`   📋 使用するプロジェクト: ${config.googleCloud.projectId}`);
   console.log();
 
   let tomlPath: string | null;
@@ -780,7 +609,7 @@ async function main() {
     console.log();
 
     // アクセストークンを取得
-    const accessToken = await getValidToken(credentials);
+    const accessToken = await getValidToken();
 
     // PhotoDistributionフォルダを確保
     console.log('📁 Google Driveフォルダを確認中...');

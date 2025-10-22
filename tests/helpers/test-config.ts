@@ -8,6 +8,9 @@ export const testConfig: Config = {
   administrator: 'テスト太郎',
   contacts: [{ X: '@test_user' }, { Bluesky: '@test.bsky.social' }],
   developedDirectoryBase: '/tmp/test-photos/',
+  googleCloud: {
+    projectId: 'test-project-id',
+  },
 };
 
 /**
@@ -18,4 +21,7 @@ export const minimalConfig: Config = {
   administrator: 'Minimal User',
   contacts: [{ Email: 'test@example.com' }],
   developedDirectoryBase: '/tmp/minimal/',
+  googleCloud: {
+    projectId: 'minimal-project-id',
+  },
 };

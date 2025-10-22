@@ -23,4 +23,10 @@ export interface Config {
 
   /** アーカイブ作成ツールのフルパス（未設定時は初回実行時に自動セットアップ） */
   archiveTool?: string;
+
+  /** Google Cloud 設定 */
+  googleCloud: {
+    /** Google Cloud プロジェクトID（APIクォータ管理に使用） */
+    projectId: string;
+  };
 }

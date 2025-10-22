@@ -20,6 +20,14 @@ export const config: Config = {
   // 未設定の場合は初回実行時に自動的にripバイナリをダウンロード・セットアップします
   // カスタムツールを使用する場合は、フルパスを指定してください
   // 例: archiveTool: '/Users/username/.config/photo-management/bin/rip',
+
+  // Google Cloud 設定
+  googleCloud: {
+    // Google Cloud プロジェクトID
+    // Google Cloud Consoleで作成したプロジェクトのIDを指定
+    // このプロジェクトのAPIクォータが使用されます
+    projectId: 'your-project-id',
+  },
 };
 
 export default config;
