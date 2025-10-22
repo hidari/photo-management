@@ -7,19 +7,19 @@ date = "20251012"
 event_name = "アコスタATC"
 
 [[events.models]]
-name = "Aさん"
+name = "A"
 outreach = true
-sns = "https://twitter.com/example_a" # sns はオプション
+sns = "https://twitter.com/example_a"
 
 [[events.models]]
-name = "Bさん"
+name = "B"
 outreach = false
-sns = "https://twitter.com/example_b" # sns はオプション
+sns = "https://twitter.com/example_b"
 
 [[events.models]]
-name = "Cさん"
+name = "C"
 outreach = false
 
 [[events.models]]
-name = "Dさん"
+name = "D"
 outreach = true
