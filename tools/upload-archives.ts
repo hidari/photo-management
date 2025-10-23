@@ -22,7 +22,7 @@ import {
 import type { Config } from 'types/config.ts';
 import config from '../config.ts';
 import type { ArchiveInfo } from '../types/archive.ts';
-import type { DirectoryConfig } from '../types/directory-config.ts';
+import type { DistributionConfig } from '../types/distribution-config.ts';
 import { loadTomlConfig } from './lib/config-loader.ts';
 import { findLatestEventDir, findTomlInEventDir } from './lib/directory-finder.ts';
 import { buildDirectoryStructure } from './lib/directory-structure.ts';
@@ -428,7 +428,7 @@ export async function makeFilePublic(
  * @returns アーカイブファイル情報の配列
  */
 export async function findArchiveFiles(
-  directoryConfig: DirectoryConfig,
+  directoryConfig: DistributionConfig,
   appConfig: Config
 ): Promise<ArchiveInfo[]> {
   const archives: ArchiveInfo[] = [];
@@ -473,7 +473,7 @@ export async function updateTomlWithUrls(
 ): Promise<void> {
   // TOMLファイルを読み込む
   const content = await Deno.readTextFile(tomlPath);
-  const data = parseToml(content) as unknown as DirectoryConfig;
+  const data = parseToml(content) as unknown as DistributionConfig;
 
   // URLを更新
   for (const event of data.events) {

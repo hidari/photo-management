@@ -6,7 +6,7 @@ import { assertEquals } from 'https://deno.land/std@0.208.0/assert/mod.ts';
 import { exists } from 'https://deno.land/std@0.208.0/fs/exists.ts';
 import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import { stringify as stringifyToml } from 'https://deno.land/std@0.208.0/toml/mod.ts';
-import type { DirectoryConfig } from '../types/directory-config.ts';
+import type { DistributionConfig } from '../types/distribution-config.ts';
 
 /**
  * テスト用の一時ディレクトリ
@@ -110,7 +110,7 @@ Deno.test('TOML生成: 正常なDirectoryConfigをTOML形式で出力できる',
   await cleanup();
   await Deno.mkdir(TEST_DIR, { recursive: true });
 
-  const config: DirectoryConfig = {
+  const config: DistributionConfig = {
     events: [
       {
         date: '20251012',
@@ -150,7 +150,7 @@ Deno.test('TOML生成: SNSが未設定のモデルを含む設定を出力でき
   await cleanup();
   await Deno.mkdir(TEST_DIR, { recursive: true });
 
-  const config: DirectoryConfig = {
+  const config: DistributionConfig = {
     events: [
       {
         date: '20251012',
@@ -186,7 +186,7 @@ Deno.test('TOML生成: 日本語・絵文字を含むデータを正しく出力
   await cleanup();
   await Deno.mkdir(TEST_DIR, { recursive: true });
 
-  const config: DirectoryConfig = {
+  const config: DistributionConfig = {
     events: [
       {
         date: '20251012',
@@ -214,7 +214,7 @@ Deno.test('TOML生成: モデルが空のイベント設定を出力できる', 
   await cleanup();
   await Deno.mkdir(TEST_DIR, { recursive: true });
 
-  const config: DirectoryConfig = {
+  const config: DistributionConfig = {
     events: [
       {
         date: '20251012',

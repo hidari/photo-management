@@ -15,7 +15,7 @@ import {
   updateTomlWithUrls,
   uploadFile,
 } from '../tools/upload-archives.ts';
-import type { DirectoryConfig } from '../types/directory-config.ts';
+import type { DistributionConfig } from '../types/distribution-config.ts';
 import {
   cleanupTestConfig,
   loadTestFolderId,
@@ -120,7 +120,7 @@ Deno.test('findArchiveFiles: 正しくzipファイルを探索する', async () 
   const zipPath = join(modelDir, '20251012_テストイベント_テスト太郎撮影_モデルA.zip');
   await Deno.writeTextFile(zipPath, 'test zip content');
 
-  const directoryConfig: DirectoryConfig = {
+  const directoryConfig: DistributionConfig = {
     events: [
       {
         date: '20251012',
@@ -146,7 +146,7 @@ Deno.test('findArchiveFiles: 正しくzipファイルを探索する', async () 
 Deno.test('findArchiveFiles: zipファイルが存在しない場合空配列を返す', async () => {
   await cleanup();
 
-  const directoryConfig: DirectoryConfig = {
+  const directoryConfig: DistributionConfig = {
     events: [
       {
         date: '20251012',
@@ -189,7 +189,7 @@ Deno.test('findArchiveFiles: 複数のモデルのzipファイルを探索する
     await Deno.writeTextFile(zipPath, 'test zip content');
   }
 
-  const directoryConfig: DirectoryConfig = {
+  const directoryConfig: DistributionConfig = {
     events: [
       {
         date: '20251012',

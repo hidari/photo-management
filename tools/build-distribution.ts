@@ -13,7 +13,7 @@
 import { parse as parseFlags } from 'https://deno.land/std@0.208.0/flags/mod.ts';
 import { Eta } from 'https://deno.land/x/eta@v3.4.0/src/index.ts';
 import config from '../config.ts';
-import type { DirectoryConfig } from '../types/directory-config.ts';
+import type { DistributionConfig } from '../types/distribution-config.ts';
 import { loadTomlConfig } from './lib/config-loader.ts';
 import { findLatestEventDir, findTomlInEventDir } from './lib/directory-finder.ts';
 
@@ -59,7 +59,7 @@ function formatMultilineToml(text: string): string {
  * @param config - ディレクトリ設定
  * @returns TOML形式の文字列
  */
-function configToToml(config: DirectoryConfig): string {
+function configToToml(config: DistributionConfig): string {
   let toml = '# イベント用ディレクトリ構造作成の設定ファイル\n\n';
 
   for (const event of config.events) {
@@ -99,7 +99,7 @@ function configToToml(config: DirectoryConfig): string {
  */
 export async function updateTomlWithMessages(
   tomlPath: string,
-  directoryConfig: DirectoryConfig
+  directoryConfig: DistributionConfig
 ): Promise<void> {
   // 各モデルのメッセージを生成
   let skippedCount = 0;

@@ -7,7 +7,7 @@ import {
   listDistDirectories,
   resolveArchiveTool,
 } from '../tools/archive-distribution-dirs.ts';
-import type { DirectoryConfig } from '../types/directory-config.ts';
+import type { DistributionConfig } from '../types/distribution-config.ts';
 import { testConfig } from './helpers/test-config.ts';
 
 /**
@@ -162,7 +162,7 @@ Deno.test('findTomlInEventDir: ディレクトリが存在しない場合nullを
  * DIST_DIR一覧取得のテスト
  */
 Deno.test('listDistDirectories: 正しくDIST_DIRのパス一覧を返す', () => {
-  const directoryConfig: DirectoryConfig = {
+  const directoryConfig: DistributionConfig = {
     events: [
       {
         date: '20251012',
@@ -202,7 +202,7 @@ Deno.test('listDistDirectories: 正しくDIST_DIRのパス一覧を返す', () =
  * DIST_DIR一覧取得のテスト: 複数イベント
  */
 Deno.test('listDistDirectories: 複数イベントの場合すべてのDIST_DIRを返す', () => {
-  const directoryConfig: DirectoryConfig = {
+  const directoryConfig: DistributionConfig = {
     events: [
       {
         date: '20251012',
@@ -230,7 +230,7 @@ Deno.test('listDistDirectories: 複数イベントの場合すべてのDIST_DIR�
  * DIST_DIR一覧取得のテスト: モデルが存在しない
  */
 Deno.test('listDistDirectories: モデルが存在しない場合空配列を返す', () => {
-  const directoryConfig: DirectoryConfig = {
+  const directoryConfig: DistributionConfig = {
     events: [
       {
         date: '20251012',
@@ -292,7 +292,7 @@ Deno.test('archiveAllDistributions: 空の配列を渡しても正常に完了�
  * listDistDirectoriesのテスト: 空のイベント配列
  */
 Deno.test('listDistDirectories: 空のイベント配列の場合空配列を返す', () => {
-  const directoryConfig: DirectoryConfig = {
+  const directoryConfig: DistributionConfig = {
     events: [],
   };
 

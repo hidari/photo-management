@@ -39,7 +39,7 @@ export interface Event {
 /**
  * TOMLファイル全体の構造
  */
-export interface DirectoryConfig {
+export interface DistributionConfig {
   /** イベントのリスト */
   events: Event[];
 }

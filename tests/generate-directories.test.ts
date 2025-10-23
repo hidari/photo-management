@@ -8,7 +8,7 @@ import {
   loadTomlConfig,
   moveTomlFile,
 } from '../tools/generate-directories.ts';
-import type { Event } from '../types/directory-config.ts';
+import type { Event } from '../types/distribution-config.ts';
 import { testConfig } from './helpers/test-config.ts';
 
 /**

@@ -6,7 +6,7 @@
 
 import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import type { Config } from '../../types/config.ts';
-import type { DirectoryStructure, Event, ModelDirectory } from '../../types/directory-config.ts';
+import type { DirectoryStructure, Event, ModelDirectory } from '../../types/distribution-config.ts';
 
 /**
  * イベント情報からディレクトリ構造オブジェクトを構築する

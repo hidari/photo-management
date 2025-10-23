@@ -5,7 +5,7 @@
  */
 
 import { stringify as stringifyToml } from 'https://deno.land/std@0.208.0/toml/mod.ts';
-import type { DirectoryConfig, EventModel } from '../types/directory-config.ts';
+import type { DistributionConfig, EventModel } from '../types/distribution-config.ts';
 
 /**
  * 画面をクリアする
@@ -290,7 +290,7 @@ function manageModels(date: string, eventName: string): EventModel[] | null {
 /**
  * ファイルを保存する
  */
-async function saveConfig(config: DirectoryConfig): Promise<void> {
+async function saveConfig(config: DistributionConfig): Promise<void> {
   const configPath = 'distribution.config.toml';
 
   // 既存ファイルのチェック
@@ -354,7 +354,7 @@ async function main(): Promise<void> {
   }
 
   // 設定オブジェクトの作成
-  const config: DirectoryConfig = {
+  const config: DistributionConfig = {
     events: [
       {
         date,

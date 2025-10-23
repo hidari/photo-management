@@ -15,7 +15,7 @@ import { parse } from 'https://deno.land/std@0.208.0/flags/mod.ts';
 import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import type { Config } from 'types/config.ts';
 import config from '../config.ts';
-import type { DirectoryStructure } from '../types/directory-config.ts';
+import type { DirectoryStructure } from '../types/distribution-config.ts';
 import { renderTemplate } from './generate-readme.ts';
 import { loadTomlConfig } from './lib/config-loader.ts';
 import { buildDirectoryStructure } from './lib/directory-structure.ts';

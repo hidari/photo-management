@@ -2,7 +2,7 @@ import { assertEquals, assertExists } from 'https://deno.land/std@0.208.0/assert
 import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import { parse as parseToml } from 'https://deno.land/std@0.208.0/toml/mod.ts';
 import { renderModelTemplate, updateTomlWithMessages } from '../tools/build-distribution.ts';
-import type { DirectoryConfig } from '../types/directory-config.ts';
+import type { DistributionConfig } from '../types/distribution-config.ts';
 
 /**
  * テスト用の一時ディレクトリ
@@ -32,7 +32,7 @@ Deno.test('renderModelTemplate: MODEL_OUTREACH.etaを正しくレンダリング
   );
 
   assertExists(result);
-  assertEquals(result.includes('テストモデルさん、こんばんは！'), true);
+  assertEquals(result.includes('テストモデルさん、こんにちは！'), true);
   assertEquals(result.includes('テストイベント'), true);
   assertEquals(result.includes('https://example.com/download'), true);
 });
@@ -61,7 +61,7 @@ Deno.test('updateTomlWithMessages: TOMLファイルにメッセージを追記�
   await cleanup();
   await Deno.mkdir(TEST_DIR, { recursive: true });
 
-  const directoryConfig: DirectoryConfig = {
+  const directoryConfig: DistributionConfig = {
     events: [
       {
         date: '20251012',
@@ -91,15 +91,15 @@ Deno.test('updateTomlWithMessages: TOMLファイルにメッセージを追記�
   assertExists(content);
 
   // TOMLファイルの内容をパースして検証
-  const parsed = parseToml(content) as unknown as DirectoryConfig;
+  const parsed = parseToml(content) as unknown as DistributionConfig;
   assertEquals(parsed.events.length, 1);
   assertEquals(parsed.events[0].models.length, 2);
 
   // モデルAのメッセージが追加されていることを確認
   const modelA = parsed.events[0].models[0];
   assertExists(modelA.message);
-  assertEquals(modelA.message.includes('モデルAさん、こんばんは！'), true);
-  assertEquals(modelA.message.includes('Hidariと申します'), true);
+  assertEquals(modelA.message.includes('モデルAさん、こんにちは！'), true);
+  assertEquals(modelA.message.includes('Hidariと申します！'), true);
   assertEquals(modelA.message.includes('https://example.com/download_a'), true);
 
   // モデルBのメッセージが追加されていることを確認
@@ -119,7 +119,7 @@ Deno.test('updateTomlWithMessages: download_urlがない場合はスキップす
   await cleanup();
   await Deno.mkdir(TEST_DIR, { recursive: true });
 
-  const directoryConfig: DirectoryConfig = {
+  const directoryConfig: DistributionConfig = {
     events: [
       {
         date: '20251012',
@@ -148,7 +148,7 @@ Deno.test('updateTomlWithMessages: download_urlがない場合はスキップす
 
   // TOMLファイルの内容をパースして検証
   const content = await Deno.readTextFile(tomlPath);
-  const parsed = parseToml(content) as unknown as DirectoryConfig;
+  const parsed = parseToml(content) as unknown as DistributionConfig;
 
   // モデルDのmessageは未設定（スキップされた）
   const modelD = parsed.events[0].models[0];
@@ -169,7 +169,7 @@ Deno.test('updateTomlWithMessages: 複数モデルを正しく処理する', asy
   await cleanup();
   await Deno.mkdir(TEST_DIR, { recursive: true });
 
-  const directoryConfig: DirectoryConfig = {
+  const directoryConfig: DistributionConfig = {
     events: [
       {
         date: '20251012',
@@ -202,7 +202,7 @@ Deno.test('updateTomlWithMessages: 複数モデルを正しく処理する', asy
 
   // TOMLファイルの内容をパースして検証
   const content = await Deno.readTextFile(tomlPath);
-  const parsed = parseToml(content) as unknown as DirectoryConfig;
+  const parsed = parseToml(content) as unknown as DistributionConfig;
 
   assertEquals(parsed.events[0].models.length, 3);
   assertExists(parsed.events[0].models[0].message);

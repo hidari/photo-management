@@ -15,7 +15,7 @@ import { parse } from 'https://deno.land/std@0.208.0/flags/mod.ts';
 import { basename, join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import type { Config } from 'types/config.ts';
 import config from '../config.ts';
-import type { DirectoryConfig } from '../types/directory-config.ts';
+import type { DistributionConfig } from '../types/distribution-config.ts';
 import { loadTomlConfig } from './lib/config-loader.ts';
 import { findLatestEventDir, findTomlInEventDir } from './lib/directory-finder.ts';
 import { buildDirectoryStructure } from './lib/directory-structure.ts';
@@ -78,7 +78,10 @@ export { findLatestEventDir, findTomlInEventDir };
  * @param appConfig - アプリケーション設定
  * @returns DIST_DIRのパス配列
  */
-export function listDistDirectories(directoryConfig: DirectoryConfig, appConfig: Config): string[] {
+export function listDistDirectories(
+  directoryConfig: DistributionConfig,
+  appConfig: Config
+): string[] {
   const distDirs: string[] = [];
 
   for (const event of directoryConfig.events) {
