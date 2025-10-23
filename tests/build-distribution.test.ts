@@ -1,10 +1,7 @@
 import { assertEquals, assertExists } from 'https://deno.land/std@0.208.0/assert/mod.ts';
 import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
-import {
-  buildDistributionMessagesForEvent,
-  generateDistributionMessages,
-  renderModelTemplate,
-} from '../tools/build-distribution.ts';
+import { parse as parseToml } from 'https://deno.land/std@0.208.0/toml/mod.ts';
+import { renderModelTemplate, updateTomlWithMessages } from '../tools/build-distribution.ts';
 import type { DirectoryConfig } from '../types/directory-config.ts';
 
 /**
@@ -58,46 +55,12 @@ Deno.test('renderModelTemplate: MODEL_FOLLOW_UP.etaを正しくレンダリン�
 });
 
 /**
- * generateDistributionMessagesのテスト
+ * updateTomlWithMessagesのテスト
  */
-Deno.test('generateDistributionMessages: 配布メッセージ一覧を生成する', async () => {
+Deno.test('updateTomlWithMessages: TOMLファイルにメッセージを追記する', async () => {
   await cleanup();
   await Deno.mkdir(TEST_DIR, { recursive: true });
 
-  const messages = [
-    {
-      modelName: 'モデルA',
-      sns: 'https://twitter.com/model_a',
-      text: 'これはモデルAへのメッセージです。',
-    },
-    {
-      modelName: 'モデルB',
-      sns: '',
-      text: 'これはモデルBへのメッセージです。',
-    },
-  ];
-
-  const outputPath = join(TEST_DIR, 'distribution_messages.md');
-  await generateDistributionMessages(messages, outputPath);
-
-  // ファイルが生成されたことを確認
-  const content = await Deno.readTextFile(outputPath);
-
-  assertExists(content);
-  assertEquals(content.includes('## モデルA'), true);
-  assertEquals(content.includes('送付先: https://twitter.com/model_a'), true);
-  assertEquals(content.includes('これはモデルAへのメッセージです。'), true);
-  assertEquals(content.includes('## モデルB'), true);
-  assertEquals(content.includes('送付先: SNS情報なし'), true);
-  assertEquals(content.includes('これはモデルBへのメッセージです。'), true);
-
-  await cleanup();
-});
-
-/**
- * buildDistributionMessagesForEventのテスト: outreach = true
- */
-Deno.test('buildDistributionMessagesForEvent: outreach=trueの場合にMODEL_OUTREACHテンプレートを使用', async () => {
   const directoryConfig: DirectoryConfig = {
     events: [
       {
@@ -110,33 +73,9 @@ Deno.test('buildDistributionMessagesForEvent: outreach=trueの場合にMODEL_OUT
             sns: 'https://twitter.com/model_a',
             download_url: 'https://example.com/download_a',
           },
-        ],
-      },
-    ],
-  };
-
-  const messages = await buildDistributionMessagesForEvent(directoryConfig);
-
-  assertEquals(messages.length, 1);
-  assertEquals(messages[0].modelName, 'モデルA');
-  assertEquals(messages[0].sns, 'https://twitter.com/model_a');
-  assertEquals(messages[0].text.includes('Hidariと申します！'), true);
-});
-
-/**
- * buildDistributionMessagesForEventのテスト: outreach = false
- */
-Deno.test('buildDistributionMessagesForEvent: outreach=falseの場合にMODEL_FOLLOW_UPテンプレートを使用', async () => {
-  const directoryConfig: DirectoryConfig = {
-    events: [
-      {
-        date: '20251012',
-        event_name: 'テストイベント',
-        models: [
           {
             name: 'モデルB',
             outreach: false,
-            sns: 'https://twitter.com/model_b',
             download_url: 'https://example.com/download_b',
           },
         ],
@@ -144,46 +83,42 @@ Deno.test('buildDistributionMessagesForEvent: outreach=falseの場合にMODEL_FO
     ],
   };
 
-  const messages = await buildDistributionMessagesForEvent(directoryConfig);
+  const tomlPath = join(TEST_DIR, 'test.toml');
+  await updateTomlWithMessages(tomlPath, directoryConfig);
 
-  assertEquals(messages.length, 1);
-  assertEquals(messages[0].modelName, 'モデルB');
-  assertEquals(messages[0].sns, 'https://twitter.com/model_b');
-  assertEquals(messages[0].text.includes('先日の'), true);
-  assertEquals(messages[0].text.includes('例によって'), true);
+  // ファイルが生成されたことを確認
+  const content = await Deno.readTextFile(tomlPath);
+  assertExists(content);
+
+  // TOMLファイルの内容をパースして検証
+  const parsed = parseToml(content) as unknown as DirectoryConfig;
+  assertEquals(parsed.events.length, 1);
+  assertEquals(parsed.events[0].models.length, 2);
+
+  // モデルAのメッセージが追加されていることを確認
+  const modelA = parsed.events[0].models[0];
+  assertExists(modelA.message);
+  assertEquals(modelA.message.includes('モデルAさん、こんばんは！'), true);
+  assertEquals(modelA.message.includes('Hidariと申します'), true);
+  assertEquals(modelA.message.includes('https://example.com/download_a'), true);
+
+  // モデルBのメッセージが追加されていることを確認
+  const modelB = parsed.events[0].models[1];
+  assertExists(modelB.message);
+  assertEquals(modelB.message.includes('モデルBさん、こんばんは！'), true);
+  assertEquals(modelB.message.includes('先日の'), true);
+  assertEquals(modelB.message.includes('https://example.com/download_b'), true);
+
+  await cleanup();
 });
 
 /**
- * buildDistributionMessagesForEventのテスト: SNSなし
+ * updateTomlWithMessagesのテスト: download_urlがない場合はスキップする
  */
-Deno.test('buildDistributionMessagesForEvent: SNSがない場合は空文字になる', async () => {
-  const directoryConfig: DirectoryConfig = {
-    events: [
-      {
-        date: '20251012',
-        event_name: 'テストイベント',
-        models: [
-          {
-            name: 'モデルC',
-            outreach: false,
-            download_url: 'https://example.com/download_c',
-          },
-        ],
-      },
-    ],
-  };
+Deno.test('updateTomlWithMessages: download_urlがない場合はスキップする', async () => {
+  await cleanup();
+  await Deno.mkdir(TEST_DIR, { recursive: true });
 
-  const messages = await buildDistributionMessagesForEvent(directoryConfig);
-
-  assertEquals(messages.length, 1);
-  assertEquals(messages[0].modelName, 'モデルC');
-  assertEquals(messages[0].sns, '');
-});
-
-/**
- * buildDistributionMessagesForEventのテスト: download_urlがない場合はエラー
- */
-Deno.test('buildDistributionMessagesForEvent: download_urlがない場合はエラーを投げる', async () => {
   const directoryConfig: DirectoryConfig = {
     events: [
       {
@@ -194,25 +129,46 @@ Deno.test('buildDistributionMessagesForEvent: download_urlがない場合はエ�
             name: 'モデルD',
             outreach: true,
             sns: 'https://twitter.com/model_d',
+            download_url: '',
+          },
+          {
+            name: 'モデルE',
+            outreach: false,
+            download_url: 'https://example.com/download_e',
           },
         ],
       },
     ],
   };
 
-  try {
-    await buildDistributionMessagesForEvent(directoryConfig);
-    assertEquals(true, false, 'エラーが発生するはずだった');
-  } catch (error) {
-    assertEquals(error instanceof Error, true);
-    assertEquals((error as Error).message.includes('download_urlが設定されていません'), true);
-  }
+  const tomlPath = join(TEST_DIR, 'test_skip.toml');
+
+  // エラーが発生しないことを確認
+  await updateTomlWithMessages(tomlPath, directoryConfig);
+
+  // TOMLファイルの内容をパースして検証
+  const content = await Deno.readTextFile(tomlPath);
+  const parsed = parseToml(content) as unknown as DirectoryConfig;
+
+  // モデルDのmessageは未設定（スキップされた）
+  const modelD = parsed.events[0].models[0];
+  assertEquals(modelD.message, undefined);
+
+  // モデルEのmessageは設定されている
+  const modelE = parsed.events[0].models[1];
+  assertExists(modelE.message);
+  assertEquals(modelE.message.includes('モデルEさん、こんばんは！'), true);
+
+  await cleanup();
 });
 
 /**
- * buildDistributionMessagesForEventのテスト: 複数モデル
+ * updateTomlWithMessagesのテスト: 複数モデル
  */
-Deno.test('buildDistributionMessagesForEvent: 複数モデルを正しく処理する', async () => {
+Deno.test('updateTomlWithMessages: 複数モデルを正しく処理する', async () => {
+  await cleanup();
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+
   const directoryConfig: DirectoryConfig = {
     events: [
       {
@@ -241,11 +197,22 @@ Deno.test('buildDistributionMessagesForEvent: 複数モデルを正しく処理�
     ],
   };
 
-  const messages = await buildDistributionMessagesForEvent(directoryConfig);
+  const tomlPath = join(TEST_DIR, 'test_multi.toml');
+  await updateTomlWithMessages(tomlPath, directoryConfig);
 
-  assertEquals(messages.length, 3);
-  assertEquals(messages[0].modelName, 'モデルA');
-  assertEquals(messages[1].modelName, 'モデルB');
-  assertEquals(messages[2].modelName, 'モデルC');
-  assertEquals(messages[2].sns, '');
+  // TOMLファイルの内容をパースして検証
+  const content = await Deno.readTextFile(tomlPath);
+  const parsed = parseToml(content) as unknown as DirectoryConfig;
+
+  assertEquals(parsed.events[0].models.length, 3);
+  assertExists(parsed.events[0].models[0].message);
+  assertExists(parsed.events[0].models[1].message);
+  assertExists(parsed.events[0].models[2].message);
+
+  // 各モデルのメッセージが正しく生成されていることを確認
+  assertEquals(parsed.events[0].models[0].message.includes('Hidariと申します'), true);
+  assertEquals(parsed.events[0].models[1].message.includes('先日の'), true);
+  assertEquals(parsed.events[0].models[2].message.includes('先日の'), true);
+
+  await cleanup();
 });

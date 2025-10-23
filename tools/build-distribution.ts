@@ -4,28 +4,18 @@
  * 撮影データ配布用テキスト生成ツール
  *
  * このスクリプトは、イベントディレクトリのdirectory.config.tomlを参照して
- * 各モデルへのダウンロードURLを含む連絡文を生成する
+ * 各モデルへのダウンロードURLを含む連絡文を生成し、TOMLファイルに追記する
  *
  * 使い方:
  *   deno task distribution
  */
 
 import { parse as parseFlags } from 'https://deno.land/std@0.208.0/flags/mod.ts';
-import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import { Eta } from 'https://deno.land/x/eta@v3.4.0/src/index.ts';
 import config from '../config.ts';
 import type { DirectoryConfig } from '../types/directory-config.ts';
 import { loadTomlConfig } from './lib/config-loader.ts';
 import { findLatestEventDir, findTomlInEventDir } from './lib/directory-finder.ts';
-
-/**
- * モデルへの配布メッセージ情報
- */
-interface DistributionMessage {
-  modelName: string;
-  sns: string;
-  text: string;
-}
 
 /**
  * モデル用のテンプレートをレンダリングする
@@ -52,40 +42,74 @@ export async function renderModelTemplate(
 }
 
 /**
- * 配布メッセージ一覧を生成する
+ * TOMLファイルの複数行リテラル文字列をフォーマットする
  *
- * @param messages - 配布メッセージ情報の配列
- * @param outputPath - 出力先ファイルパス
+ * @param text - フォーマットする文字列
+ * @returns 複数行リテラル文字列形式の文字列
  */
-export async function generateDistributionMessages(
-  messages: DistributionMessage[],
-  outputPath: string
-): Promise<void> {
-  const templatePath = './templates/DISTRIBUTION_MESSAGES.eta';
-  const template = await Deno.readTextFile(templatePath);
-  const eta = new Eta();
-  const result = eta.renderString(template, { messages }) as string;
-  await Deno.writeTextFile(outputPath, result);
+function formatMultilineToml(text: string): string {
+  // 文字列の前後の空白を削除し、改行を正規化
+  const normalized = text.trim().replace(/\r\n/g, '\n');
+  return `'''\n${normalized}\n'''`;
 }
 
 /**
- * イベントの配布メッセージを構築する
+ * DirectoryConfigをTOML形式の文字列に変換する（messageフィールド対応）
  *
- * @param directoryConfig - ディレクトリ設定
- * @returns 配布メッセージ情報の配列
+ * @param config - ディレクトリ設定
+ * @returns TOML形式の文字列
  */
-export async function buildDistributionMessagesForEvent(
-  directoryConfig: DirectoryConfig
-): Promise<DistributionMessage[]> {
-  const messages: DistributionMessage[] = [];
+function configToToml(config: DirectoryConfig): string {
+  let toml = '# イベント用ディレクトリ構造作成の設定ファイル\n\n';
 
+  for (const event of config.events) {
+    toml += '[[events]]\n';
+    toml += `date = "${event.date}"\n`;
+    toml += `event_name = "${event.event_name}"\n\n`;
+
+    for (const model of event.models) {
+      toml += '[[events.models]]\n';
+      toml += `name = "${model.name}"\n`;
+      toml += `outreach = ${model.outreach}\n`;
+
+      if (model.sns) {
+        toml += `sns = "${model.sns}"\n`;
+      }
+
+      if (model.download_url) {
+        toml += `download_url = "${model.download_url}"\n`;
+      }
+
+      if (model.message) {
+        toml += `message = ${formatMultilineToml(model.message)}\n`;
+      }
+
+      toml += '\n';
+    }
+  }
+
+  return toml;
+}
+
+/**
+ * TOMLファイルに配布メッセージを追記する
+ *
+ * @param tomlPath - TOMLファイルのパス
+ * @param directoryConfig - ディレクトリ設定
+ */
+export async function updateTomlWithMessages(
+  tomlPath: string,
+  directoryConfig: DirectoryConfig
+): Promise<void> {
+  // 各モデルのメッセージを生成
+  let skippedCount = 0;
   for (const event of directoryConfig.events) {
     for (const model of event.models) {
-      // download_urlが存在しない場合はエラー
+      // download_urlが存在しない場合はスキップ
       if (!model.download_url) {
-        throw new Error(
-          `モデル「${model.name}」のdownload_urlが設定されていません。先にdeno task uploadを実行してください。`
-        );
+        console.warn(`   ⚠️  スキップ: モデル「${model.name}」のdownload_urlが未設定です`);
+        skippedCount++;
+        continue;
       }
 
       // outreachフィールドに応じてテンプレートを選択
@@ -101,15 +125,20 @@ export async function buildDistributionMessagesForEvent(
         model.download_url
       );
 
-      messages.push({
-        modelName: model.name,
-        sns: model.sns || '',
-        text: text,
-      });
+      // messageフィールドに設定
+      model.message = text;
     }
   }
 
-  return messages;
+  // スキップした場合は情報メッセージを追加
+  if (skippedCount > 0) {
+    console.log(`\n   💡 download_urlが未設定のモデル${skippedCount}件をスキップしました`);
+    console.log(`   先に「deno task upload」を実行してからもう一度お試しください\n`);
+  }
+
+  // TOMLファイルに書き込み
+  const tomlContent = configToToml(directoryConfig);
+  await Deno.writeTextFile(tomlPath, tomlContent);
 }
 
 /**
@@ -120,7 +149,7 @@ async function main() {
     string: ['event-dir', 'config'],
   });
 
-  console.log('📝 撮影データ配布用テキストを生成しています...');
+  console.log('📝 撮影データ配布用メッセージをTOMLファイルに追記しています...');
   console.log();
 
   try {
@@ -156,18 +185,14 @@ async function main() {
     // TOMLファイルを読み込み
     const directoryConfig = await loadTomlConfig(tomlPath);
 
-    // 配布メッセージを構築
-    const messages = await buildDistributionMessagesForEvent(directoryConfig);
-
-    // 出力先パスを生成
-    const outputPath = join(eventDir, 'distribution_messages.md');
-
-    // 配布メッセージ一覧を生成
-    await generateDistributionMessages(messages, outputPath);
+    // 配布メッセージを生成してTOMLファイルに追記
+    await updateTomlWithMessages(tomlPath, directoryConfig);
 
     console.log();
-    console.log(`✅ 配布メッセージ生成完了: ${outputPath}`);
-    console.log(`   生成されたメッセージ数: ${messages.length}`);
+    console.log(`✅ 配布メッセージをTOMLファイルに追記しました: ${tomlPath}`);
+    console.log(
+      `   更新されたモデル数: ${directoryConfig.events.reduce((acc, event) => acc + event.models.length, 0)}`
+    );
   } catch (error) {
     console.error('❌ エラー:', error instanceof Error ? error.message : error);
     Deno.exit(1);

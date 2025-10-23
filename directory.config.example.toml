@@ -10,16 +10,26 @@ event_name = "アコスタATC"
 name = "モデルA"
 outreach = true
 sns = "https://twitter.com/example_a"
+download_url = "" # Google Driveアップロード後に自動入力
+message = "" # 配布メッセージ生成ツール実行後に自動入力
 
 [[events.models]]
 name = "モデルB"
 outreach = false
 sns = "https://twitter.com/example_b"
+download_url = ""
+message = ""
 
 [[events.models]]
 name = "モデルC"
 outreach = false
+sns = ""
+download_url = ""
+message = ""
 
 [[events.models]]
 name = "モデルD"
 outreach = true
+sns = ""
+download_url = ""
+message = ""

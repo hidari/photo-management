@@ -17,6 +17,9 @@ export interface EventModel {
 
   /** Google Driveのダウンロード用共有URL */
   download_url?: string;
+
+  /** モデルへの配布メッセージ */
+  message?: string;
 }
 
 /**

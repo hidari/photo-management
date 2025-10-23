@@ -126,7 +126,7 @@ deno task upload
 
 ### 6. 配布メッセージ生成ツール
 
-モデルごとの配布用メッセージを自動生成します。Google Driveのダウンロードリンクを含む連絡文を一括作成できます。
+モデルごとの配布用メッセージを自動生成し、`directory.config.toml`に追記します。Google Driveのダウンロードリンクを含む連絡文がTOMLファイルの各モデルセクションに`message`フィールドとして追加されます。
 
 ```bash
 deno task distribution
