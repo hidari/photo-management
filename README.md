@@ -77,7 +77,7 @@ deno task readme
 
 ### 2. イベント情報初期化ツール
 
-対話的にイベント情報（日付、イベント名、モデル情報）を入力し、`directory.config.toml` を作成するツールです。
+対話的にイベント情報（日付、イベント名、モデル情報）を入力し、`distribution.config.toml` を作成するツールです。
 
 ```bash
 deno task init
@@ -94,7 +94,7 @@ deno task init
 
 イベント情報からモデルごとの配布用ディレクトリ構造を自動生成します。
 
-`deno task init` で作成された `directory.config.toml` を使用して、以下のコマンドでディレクトリ構造を生成：
+`deno task init` で作成された `distribution.config.toml` を使用して、以下のコマンドでディレクトリ構造を生成：
 
 ```bash
 deno task dirs
@@ -126,7 +126,7 @@ deno task upload
 
 ### 6. 配布メッセージ生成ツール
 
-モデルごとの配布用メッセージを自動生成し、`directory.config.toml`に追記します。Google Driveのダウンロードリンクを含む連絡文がTOMLファイルの各モデルセクションに`message`フィールドとして追加されます。
+モデルごとの配布用メッセージを自動生成し、`distribution.config.toml`に追記します。Google Driveのダウンロードリンクを含む連絡文がTOMLファイルの各モデルセクションに`message`フィールドとして追加されます。
 
 ```bash
 deno task distribution

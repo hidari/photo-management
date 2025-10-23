@@ -87,7 +87,7 @@ deno task upload
 deno task upload --event-dir ./path/to/20251012_アコスタATC
 
 # TOMLファイルを直接指定
-deno task upload --config ./path/to/directory.config.toml
+deno task upload --config ./path/to/distribution.config.toml
 
 # アップロード後にローカルのzipファイルを削除
 deno task upload --delete-after-upload

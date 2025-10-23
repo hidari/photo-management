@@ -284,10 +284,10 @@ Deno.test('URL検証: 無効なURLを拒否する', () => {
  */
 Deno.test('ユニーク名生成: タイムスタンプベースのファイル名が生成できる', () => {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('.')[0];
-  const uniqueName = `directory.config.${timestamp}.toml`;
+  const uniqueName = `distribution.config.${timestamp}.toml`;
 
   // 形式チェック
-  assertEquals(uniqueName.startsWith('directory.config.'), true);
+  assertEquals(uniqueName.startsWith('distribution.config.'), true);
   assertEquals(uniqueName.endsWith('.toml'), true);
   assertEquals(uniqueName.includes('T'), true); // ISO形式のT区切り文字
 });
@@ -299,7 +299,7 @@ Deno.test('既存ファイルチェック: ファイルが存在する場合にs
   await cleanup();
   await Deno.mkdir(TEST_DIR, { recursive: true });
 
-  const testFilePath = join(TEST_DIR, 'directory.config.toml');
+  const testFilePath = join(TEST_DIR, 'distribution.config.toml');
   await Deno.writeTextFile(testFilePath, '# test');
 
   try {

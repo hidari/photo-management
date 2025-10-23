@@ -62,7 +62,7 @@ export async function generateReadmeFiles(
  * @param destDir - 移動先ディレクトリ
  */
 export async function moveTomlFile(tomlPath: string, destDir: string): Promise<void> {
-  const fileName = tomlPath.split('/').pop() || 'directory.config.toml';
+  const fileName = tomlPath.split('/').pop() || 'distribution.config.toml';
   const destPath = join(destDir, fileName);
 
   // ファイルをコピー
@@ -79,7 +79,7 @@ async function main() {
   const args = parse(Deno.args, {
     string: ['config', 'template'],
     default: {
-      config: './directory.config.toml',
+      config: './distribution.config.toml',
       template: './templates/README.eta',
     },
   });

@@ -6,7 +6,7 @@
 
 # Tools
 /config.ts
-/directory.config.toml
+/distribution.config.toml
 /Output/
 
 # Test coverage

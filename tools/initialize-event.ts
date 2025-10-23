@@ -1,7 +1,7 @@
 /**
  * イベント情報初期化ツール
  *
- * directory.config.example.toml を元に対話的に directory.config.toml を作成する
+ * distribution.config.example.toml を元に対話的に distribution.config.toml を作成する
  */
 
 import { stringify as stringifyToml } from 'https://deno.land/std@0.208.0/toml/mod.ts';
@@ -291,7 +291,7 @@ function manageModels(date: string, eventName: string): EventModel[] | null {
  * ファイルを保存する
  */
 async function saveConfig(config: DirectoryConfig): Promise<void> {
-  const configPath = 'directory.config.toml';
+  const configPath = 'distribution.config.toml';
 
   // 既存ファイルのチェック
   try {
@@ -309,7 +309,7 @@ async function saveConfig(config: DirectoryConfig): Promise<void> {
 
     if (action === '2') {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('.')[0];
-      const uniquePath = `directory.config.${timestamp}.toml`;
+      const uniquePath = `distribution.config.${timestamp}.toml`;
       await Deno.writeTextFile(
         uniquePath,
         stringifyToml(config as unknown as Record<string, unknown>)

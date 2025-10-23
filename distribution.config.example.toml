@@ -1,5 +1,5 @@
 # イベント用ディレクトリ構造作成の設定ファイル
-# `deno tasl init` を使うか、このファイルをコピーして directory.config.toml として使用してください
+# `deno task init` を使うか、このファイルをコピーして distribution.config.toml として使用してください
 # このコメントは削除しても問題ありません、
 
 [[events]]
