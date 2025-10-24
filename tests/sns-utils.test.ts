@@ -8,14 +8,14 @@ Deno.test('cleanUsername: Twitter URLからユーザー名を抽出する', () =
   assertEquals(cleanUsername('https://twitter.com/example'), 'example');
   assertEquals(cleanUsername('https://twitter.com/example_user'), 'example_user');
   assertEquals(cleanUsername('https://twitter.com/user123'), 'user123');
-  assertEquals(cleanUsername('http://twitter.com/example'), 'example');
+  assertEquals(cleanUsername('http://twitter.com/example'), 'example'); // httpでも抽出可能
 });
 
 Deno.test('cleanUsername: X.com URLからユーザー名を抽出する', () => {
   assertEquals(cleanUsername('https://x.com/example'), 'example');
   assertEquals(cleanUsername('https://x.com/example_user'), 'example_user');
   assertEquals(cleanUsername('https://x.com/user123'), 'user123');
-  assertEquals(cleanUsername('http://x.com/example'), 'example');
+  assertEquals(cleanUsername('http://x.com/example'), 'example'); // httpでも抽出可能
 });
 
 Deno.test('cleanUsername: クエリパラメータやハッシュを除外する', () => {
@@ -95,6 +95,14 @@ Deno.test('normalizeSnsUrl: 先頭と末尾の空白を削除する', () => {
 Deno.test('normalizeSnsUrl: Twitter URLもX URLに変換せずそのまま返す', () => {
   // Twitter URLはそのまま保持（正規化しない）
   assertEquals(normalizeSnsUrl('https://twitter.com/example'), 'https://twitter.com/example');
+});
+
+Deno.test('normalizeSnsUrl: http://をhttps://に変換する', () => {
+  // httpで入力されたURLは必ずhttpsに変換される
+  assertEquals(normalizeSnsUrl('http://twitter.com/example'), 'https://twitter.com/example');
+  assertEquals(normalizeSnsUrl('http://x.com/example'), 'https://x.com/example');
+  assertEquals(normalizeSnsUrl('http://instagram.com/example'), 'https://instagram.com/example');
+  assertEquals(normalizeSnsUrl('http://github.com/example'), 'https://github.com/example');
 });
 
 /**

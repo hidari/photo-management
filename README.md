@@ -38,11 +38,15 @@ deno --version
 1. `deno task init` でイベント情報を対話的に入力
 2. `deno task dirs` でディレクトリ構造を作成
 3. 各ディレクトリに写真を配置
+4. `deno task ship` で配布準備を一括実行（archive → upload → distribution → intent）
+5. `distribution.config.toml` 内の `intent_url` のURLを開き、必要に応じてDMの内容を確認・修正して送信
+
+**個別実行する場合:**
+
 4. `deno task archive` でzipファイルを作成
 5. `deno task upload` でGoogle Driveにアップロード
 6. `deno task distribution` で配布用メッセージ作成
 7. `deno task intent` でXのDM送信URLを作成
-8. `distribution.config.toml` 内の `intent_url` のURLを開き、必要に応じてDMの内容を確認・修正して送信
 
 ## セットアップ
 
@@ -148,3 +152,20 @@ deno task intent
 ```
 
 📄 [詳細なドキュメント](docs/X%E3%81%AEDM%E3%82%A4%E3%83%B3%E3%83%86%E3%83%B3%E3%83%88%E4%BD%9C%E6%88%90%E3%83%84%E3%83%BC%E3%83%AB.md)
+
+### 8. 一括配布準備コマンド
+
+アーカイブ作成からDMインテントURL生成までの配布準備工程（archive → upload → distribution → intent）を一括で実行します。各ステップを個別に実行する必要がなく、一度のコマンドで配布準備が完了します。
+
+```bash
+deno task ship
+```
+
+このコマンドは以下のタスクを順次実行します：
+
+1. `deno task archive` - zipファイルを作成
+2. `deno task upload` - Google Driveにアップロード
+3. `deno task distribution` - 配布用メッセージ作成
+4. `deno task intent` - XのDM送信URLを作成
+
+各ステップが成功した場合のみ次のステップに進むため、エラーが発生した場合はその時点で処理が停止します。

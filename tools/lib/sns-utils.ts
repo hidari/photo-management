@@ -32,11 +32,13 @@ export function normalizeSnsUrl(input: string): string | undefined {
     return undefined;
   }
 
-  // 既にURL形式の場合はバリデーション
+  // 既にURL形式の場合はバリデーション（必ずhttpsに変換）
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
     try {
-      new URL(trimmed);
-      return trimmed;
+      const url = new URL(trimmed);
+      // プロトコルを必ずhttpsに変換
+      url.protocol = 'https:';
+      return url.toString();
     } catch {
       return undefined;
     }
