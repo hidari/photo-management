@@ -182,7 +182,6 @@ async function createZip(sourceDir: string, zipName: string): Promise<boolean> {
     args: ['-r', `dist/${zipName}`, sourceDir],
     stdout: 'piped',
     stderr: 'piped',
-    cwd: 'dist',
   });
 
   const { success, stderr } = await command.output();
