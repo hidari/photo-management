@@ -11,8 +11,16 @@ env:
 
 jobs:
   test:
-    name: Test and Coverage
-    runs-on: ubuntu-latest
+    name: Test and Coverage (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.os != 'ubuntu-latest' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest  # 必須: Linuxでのテスト
+          - windows-latest # 参考: Windowsでの互換性確認
 
     steps:
       - name: Checkout code

@@ -14,12 +14,15 @@ export const config: Config = {
   contacts: [{ X: '@<YOUR_ACCOUNT_ID>' }, { Bluesky: '@<YOUR_ACCOUNT_ID>' }],
 
   // 現像済み画像ディレクトリのパス
+  // macOS/Linux: 'Path/to/Your/Picture/Directory/' または '/Users/username/Pictures/'
+  // Windows: 'C:\\Users\\username\\Pictures\\' または 'C:/Users/username/Pictures/'
   developedDirectoryBase: 'Path/to/Your/Picture/Directory/',
 
   // アーカイブ作成ツールのフルパス（オプション）
   // 未設定の場合は初回実行時に自動的にripバイナリをダウンロード・セットアップします
   // カスタムツールを使用する場合は、フルパスを指定してください
-  // 例: archiveTool: '/Users/username/.config/photo-management/bin/rip',
+  // macOS/Linux例: archiveTool: '/Users/username/.config/photo-management/bin/rip',
+  // Windows例: archiveTool: 'C:\\Users\\username\\.config\\photo-management\\bin\\rip.exe',
 
   // Google Cloud 設定
   googleCloud: {

@@ -12,6 +12,7 @@
 import { ensureDir } from 'https://deno.land/std@0.208.0/fs/mod.ts';
 import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import { Project, SyntaxKind } from 'https://deno.land/x/ts_morph@21.0.1/mod.ts';
+import { decompress } from 'https://deno.land/x/zip@v1.2.5/mod.ts';
 import type { PlatformInfo } from '../types/binary-setup.ts';
 
 /**
@@ -139,17 +140,13 @@ export async function downloadAndExtract(url: string, destPath: string): Promise
 
   console.log(`📦 解凍中...`);
 
-  // unzipコマンドで解凍
-  const unzipProcess = new Deno.Command('unzip', {
-    args: ['-q', tempZipPath, '-d', tempDir],
-    stdout: 'piped',
-    stderr: 'piped',
-  });
-
-  const { success: unzipSuccess } = await unzipProcess.output();
-
-  if (!unzipSuccess) {
-    throw new Error('zipファイルの解凍に失敗しました');
+  // decompressを使用してクロスプラットフォーム対応の解凍を実行
+  try {
+    await decompress(tempZipPath, tempDir);
+  } catch (error) {
+    throw new Error(
+      `zipファイルの解凍に失敗しました: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 
   // バイナリファイルを探す

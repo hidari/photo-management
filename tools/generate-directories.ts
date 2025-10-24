@@ -12,7 +12,7 @@
  */
 
 import { parse } from 'https://deno.land/std@0.208.0/flags/mod.ts';
-import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
+import { basename, join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import type { Config } from 'types/config.ts';
 import config from '../config.ts';
 import type { DirectoryStructure } from '../types/distribution-config.ts';
@@ -62,7 +62,7 @@ export async function generateReadmeFiles(
  * @param destDir - 移動先ディレクトリ
  */
 export async function moveTomlFile(tomlPath: string, destDir: string): Promise<void> {
-  const fileName = tomlPath.split('/').pop() || 'distribution.config.toml';
+  const fileName = basename(tomlPath) || 'distribution.config.toml';
   const destPath = join(destDir, fileName);
 
   // ファイルをコピー
