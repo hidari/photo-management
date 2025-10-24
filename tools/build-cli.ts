@@ -177,11 +177,16 @@ async function copyReadme(destDir: string): Promise<void> {
 async function createZip(sourceDir: string, zipName: string): Promise<boolean> {
   console.log(`📦 ${zipName} を作成中...`);
 
+  // sourceDirから'dist/'プレフィックスを削除してディレクトリ名だけを取得
+  const dirName = sourceDir.replace(/^dist\//, '');
+
   // zipコマンドを使用（実行権限を保持）
+  // distディレクトリ内で実行することでZIP内に'dist/'が含まれないようにする
   const command = new Deno.Command('zip', {
-    args: ['-r', `dist/${zipName}`, sourceDir],
+    args: ['-r', zipName, dirName],
     stdout: 'piped',
     stderr: 'piped',
+    cwd: 'dist',
   });
 
   const { success, stderr } = await command.output();
