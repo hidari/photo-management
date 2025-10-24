@@ -20,6 +20,9 @@ export interface EventModel {
 
   /** モデルへの配布メッセージ */
   message?: string;
+
+  /** XのDMインテントURL */
+  intent_url?: string;
 }
 
 /**

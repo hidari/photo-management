@@ -40,6 +40,9 @@ deno --version
 3. 各ディレクトリに写真を配置
 4. `deno task archive` でzipファイルを作成
 5. `deno task upload` でGoogle Driveにアップロード
+6. `deno task distribution` で配布用メッセージ作成
+7. `deno task intent` でXのDM送信URLを作成
+8. `distribution.config.toml` 内の `intent_url` のURLを開き必要に応じて内容を確認・修正して送信
 
 ## セットアップ
 
@@ -60,6 +63,8 @@ cp config.example.ts config.ts
 - `developedDirectoryBase`: 現像済み画像を保存するディレクトリのパス
 - `archiveTool`: 配布用zipファイルを作成するツールを指定（オプション）
 - `googleCloud`: Google Driveアップロード機能を使用する場合は設定
+
+**注意**: このファイルは公開しないでください。
 
 ## 利用可能なツール
 
@@ -133,3 +138,13 @@ deno task distribution
 ```
 
 📄 [詳細なドキュメント](docs/%E9%85%8D%E5%B8%83%E3%83%A1%E3%83%83%E3%82%BB%E3%83%BC%E3%82%B8%E7%94%9F%E6%88%90%E3%83%84%E3%83%BC%E3%83%AB.md)
+
+### 7. XのDMインテント作成ツール
+
+各モデルのXアカウントのDM画面を直接開くURLを生成し`distribution.config.toml`に追記します。リンクにアクセスするだけで配布メッセージが入力された状態でDM画面が開くため、写真配布の手間を大幅に削減できます。
+
+```bash
+deno task intent
+```
+
+📄 [詳細なドキュメント](docs/X%E3%81%AEDM%E3%82%A4%E3%83%B3%E3%83%86%E3%83%B3%E3%83%88%E4%BD%9C%E6%88%90%E3%83%84%E3%83%BC%E3%83%AB.md)

@@ -16,6 +16,7 @@ import config from '../config.ts';
 import type { DistributionConfig } from '../types/distribution-config.ts';
 import { loadTomlConfig } from './lib/config-loader.ts';
 import { findLatestEventDir, findTomlInEventDir } from './lib/directory-finder.ts';
+import { configToToml } from './lib/toml-writer.ts';
 
 /**
  * モデル用のテンプレートをレンダリングする
@@ -39,56 +40,6 @@ export async function renderModelTemplate(
     eventName,
     downloadUrl,
   }) as string;
-}
-
-/**
- * TOMLファイルの複数行リテラル文字列をフォーマットする
- *
- * @param text - フォーマットする文字列
- * @returns 複数行リテラル文字列形式の文字列
- */
-function formatMultilineToml(text: string): string {
-  // 文字列の前後の空白を削除し、改行を正規化
-  const normalized = text.trim().replace(/\r\n/g, '\n');
-  return `'''\n${normalized}\n'''`;
-}
-
-/**
- * DirectoryConfigをTOML形式の文字列に変換する（messageフィールド対応）
- *
- * @param config - ディレクトリ設定
- * @returns TOML形式の文字列
- */
-function configToToml(config: DistributionConfig): string {
-  let toml = '# イベント用ディレクトリ構造作成の設定ファイル\n\n';
-
-  for (const event of config.events) {
-    toml += '[[events]]\n';
-    toml += `date = "${event.date}"\n`;
-    toml += `event_name = "${event.event_name}"\n\n`;
-
-    for (const model of event.models) {
-      toml += '[[events.models]]\n';
-      toml += `name = "${model.name}"\n`;
-      toml += `outreach = ${model.outreach}\n`;
-
-      if (model.sns) {
-        toml += `sns = "${model.sns}"\n`;
-      }
-
-      if (model.download_url) {
-        toml += `download_url = "${model.download_url}"\n`;
-      }
-
-      if (model.message) {
-        toml += `message = ${formatMultilineToml(model.message)}\n`;
-      }
-
-      toml += '\n';
-    }
-  }
-
-  return toml;
 }
 
 /**
@@ -118,15 +69,13 @@ export async function updateTomlWithMessages(
         : './templates/MODEL_FOLLOW_UP.eta';
 
       // テンプレートをレンダリング
-      const text = await renderModelTemplate(
+      // messageフィールドに設定
+      model.message = await renderModelTemplate(
         templatePath,
         model.name,
         event.event_name,
         model.download_url
       );
-
-      // messageフィールドに設定
-      model.message = text;
     }
   }
 
