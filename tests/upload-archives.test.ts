@@ -115,13 +115,13 @@ Deno.test('findArchiveFiles: 正しくzipファイルを探索する', async () 
 
   // テスト用のディレクトリ構造を作成
   const eventDir = join(TEST_DIR, '20251012_テストイベント');
-  const modelDir = join(eventDir, 'モデルA');
-  const distDir = join(modelDir, '20251012_テストイベント_テスト太郎撮影_モデルA');
+  const modelDir = join(eventDir, 'モデルAさん');
+  const distDir = join(modelDir, '20251012_テストイベント_テスト太郎撮影_モデルAさん');
 
   await Deno.mkdir(distDir, { recursive: true });
 
   // zipファイルを作成
-  const zipPath = join(modelDir, '20251012_テストイベント_テスト太郎撮影_モデルA.zip');
+  const zipPath = join(modelDir, '20251012_テストイベント_テスト太郎撮影_モデルAさん.zip');
   await Deno.writeTextFile(zipPath, 'test zip content');
 
   const directoryConfig: DistributionConfig = {
@@ -183,13 +183,13 @@ Deno.test('findArchiveFiles: 複数のモデルのzipファイルを探索する
   const eventDir = join(TEST_DIR, '20251012_テストイベント');
 
   for (const modelName of ['モデルA', 'モデルB']) {
-    const modelDir = join(eventDir, modelName);
-    const distDir = join(modelDir, `20251012_テストイベント_テスト太郎撮影_${modelName}`);
+    const modelDir = join(eventDir, `${modelName}さん`);
+    const distDir = join(modelDir, `20251012_テストイベント_テスト太郎撮影_${modelName}さん`);
 
     await Deno.mkdir(distDir, { recursive: true });
 
     // zipファイルを作成
-    const zipPath = join(modelDir, `20251012_テストイベント_テスト太郎撮影_${modelName}.zip`);
+    const zipPath = join(modelDir, `20251012_テストイベント_テスト太郎撮影_${modelName}さん.zip`);
     await Deno.writeTextFile(zipPath, 'test zip content');
   }
 

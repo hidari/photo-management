@@ -132,15 +132,15 @@ Deno.test('buildDirectoryStructure: イベント情報から正しいディレ�
   assertEquals(structure.models[0].modelName, 'Aさん');
   assertEquals(
     structure.models[0].modelDir,
-    join(testConfig.developedDirectoryBase, '20251012_アコスタATC', 'Aさん')
+    join(testConfig.developedDirectoryBase, '20251012_アコスタATC', 'Aさんさん')
   );
   assertEquals(
     structure.models[0].distDir,
     join(
       testConfig.developedDirectoryBase,
       '20251012_アコスタATC',
-      'Aさん',
-      '20251012_アコスタATC_テスト太郎撮影_Aさん'
+      'Aさんさん',
+      '20251012_アコスタATC_テスト太郎撮影_Aさんさん'
     )
   );
   assertEquals(
@@ -148,8 +148,8 @@ Deno.test('buildDirectoryStructure: イベント情報から正しいディレ�
     join(
       testConfig.developedDirectoryBase,
       '20251012_アコスタATC',
-      'Aさん',
-      '20251012_アコスタATC_テスト太郎撮影_Aさん',
+      'Aさんさん',
+      '20251012_アコスタATC_テスト太郎撮影_Aさんさん',
       '_README.txt'
     )
   );
@@ -500,8 +500,8 @@ Deno.test('buildDirectoryStructure: 日本語・特殊文字を含むイベン�
     join(
       testConfig.developedDirectoryBase,
       '20251012_コミケ 105',
-      '田中 花子',
-      '20251012_コミケ 105_テスト太郎撮影_田中 花子'
+      '田中 花子さん',
+      '20251012_コミケ 105_テスト太郎撮影_田中 花子さん'
     )
   );
 
@@ -532,8 +532,8 @@ Deno.test('buildDirectoryStructure: 絵文字を含むイベント名とモデ�
     join(
       testConfig.developedDirectoryBase,
       '20251012_アニメフェス 🎉',
-      'モデル 🌸',
-      '20251012_アニメフェス 🎉_テスト太郎撮影_モデル 🌸',
+      'モデル 🌸さん',
+      '20251012_アニメフェス 🎉_テスト太郎撮影_モデル 🌸さん',
       '_README.txt'
     )
   );
@@ -560,8 +560,8 @@ Deno.test('buildDirectoryStructure: 64文字を超える長いモデル名で正
     join(
       testConfig.developedDirectoryBase,
       '20251012_テストイベント',
-      longName,
-      `20251012_テストイベント_テスト太郎撮影_${longName}`
+      `${longName}さん`,
+      `20251012_テストイベント_テスト太郎撮影_${longName}さん`
     )
   );
 });
@@ -588,8 +588,8 @@ Deno.test('buildDirectoryStructure: administrator名に日本語を含む場合�
     join(
       japaneseAdminConfig.developedDirectoryBase,
       '20251012_テストイベント',
-      'モデルA',
-      '20251012_テストイベント_山田 太郎撮影_モデルA'
+      'モデルAさん',
+      '20251012_テストイベント_山田 太郎撮影_モデルAさん'
     )
   );
 });

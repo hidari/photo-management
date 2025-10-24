@@ -16,8 +16,7 @@
 
 ### Lint/Format
 ```bash
-pnpm run lint
-pnpm run lint:fix format --write .
+pnpm run lint:fix
 ```
 
 設定は `./biome.jsonc` を参照。

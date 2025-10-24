@@ -117,18 +117,13 @@ export async function promptConfirm(message: string): Promise<boolean> {
  * 単一のDIST_DIRをアーカイブする
  *
  * @param distDir - アーカイブするディレクトリのパス
- * @param outputPath - 出力するzipファイルのパス
  * @param archiveTool - 使用するアーカイブコマンド
  */
-export async function createArchive(
-  distDir: string,
-  outputPath: string,
-  archiveTool: string
-): Promise<void> {
+export async function createArchive(distDir: string, archiveTool: string): Promise<void> {
   const distDirName = basename(distDir);
 
   const process = new Deno.Command(archiveTool, {
-    args: [outputPath, distDirName],
+    args: [distDirName],
     cwd: join(distDir, '..'), // 親ディレクトリで実行
     stdout: 'inherit',
     stderr: 'inherit',
@@ -156,7 +151,7 @@ export async function archiveAllDistributions(
     const outputPath = join(distDir, '..', `${distDirName}.zip`);
 
     console.log(`📦 アーカイブ作成中: ${distDirName}`);
-    await createArchive(distDir, outputPath, archiveTool);
+    await createArchive(distDir, archiveTool);
     console.log(`   ✅ 完了: ${outputPath}`);
   }
 }

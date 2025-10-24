@@ -42,7 +42,7 @@ deno --version
 5. `deno task upload` でGoogle Driveにアップロード
 6. `deno task distribution` で配布用メッセージ作成
 7. `deno task intent` でXのDM送信URLを作成
-8. `distribution.config.toml` 内の `intent_url` のURLを開き必要に応じて内容を確認・修正して送信
+8. `distribution.config.toml` 内の `intent_url` のURLを開き、必要に応じてDMの内容を確認・修正して送信
 
 ## セットアップ
 

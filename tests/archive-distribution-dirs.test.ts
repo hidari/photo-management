@@ -183,8 +183,8 @@ Deno.test('listDistDirectories: 正しくDIST_DIRのパス一覧を返す', () =
     join(
       testConfig.developedDirectoryBase,
       '20251012_テストイベント',
-      'モデルA',
-      '20251012_テストイベント_テスト太郎撮影_モデルA'
+      'モデルAさん',
+      '20251012_テストイベント_テスト太郎撮影_モデルAさん'
     )
   );
   assertEquals(
@@ -192,8 +192,8 @@ Deno.test('listDistDirectories: 正しくDIST_DIRのパス一覧を返す', () =
     join(
       testConfig.developedDirectoryBase,
       '20251012_テストイベント',
-      'モデルB',
-      '20251012_テストイベント_テスト太郎撮影_モデルB'
+      'モデルBさん',
+      '20251012_テストイベント_テスト太郎撮影_モデルBさん'
     )
   );
 });

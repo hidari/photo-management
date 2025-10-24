@@ -21,10 +21,10 @@ export function buildDirectoryStructure(event: Event, appConfig: Config): Direct
   const eventDir = join(baseDir, `${date}_${event_name}`);
 
   const modelDirectories: ModelDirectory[] = models.map((model) => {
-    const modelDir = join(eventDir, model.name);
+    const modelDir = join(eventDir, `${model.name}さん`);
     const distDir = join(
       modelDir,
-      `${date}_${event_name}_${appConfig.administrator}撮影_${model.name}`
+      `${date}_${event_name}_${appConfig.administrator}撮影_${model.name}さん`
     );
     const readmePath = join(distDir, '_README.txt');
 

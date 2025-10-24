@@ -17,6 +17,7 @@ import config from '../config.ts';
 import type { DistributionConfig } from '../types/distribution-config.ts';
 import { loadTomlConfig } from './lib/config-loader.ts';
 import { findLatestEventDir, findTomlInEventDir } from './lib/directory-finder.ts';
+import { cleanUsername } from './lib/sns-utils.ts';
 import { configToToml } from './lib/toml-writer.ts';
 
 // 制限値
@@ -29,7 +30,7 @@ const MIN_DELAY_MS = 2000; // 最小2秒
 const MAX_DELAY_MS = 5000; // 最大5秒
 
 /**
- * ランダムな時間待機する（Bot判定回避のため）
+ * ランダムな時間待機する
  *
  * @param minMs - 最小待機時間（ミリ秒）
  * @param maxMs - 最大待機時間（ミリ秒）
@@ -79,23 +80,6 @@ async function ensureChrome(): Promise<void> {
   } else {
     console.log('   ✓ 既にインストールされています');
   }
-}
-
-/**
- * SNSフィールドからXのユーザー名を抽出・正規化する
- *
- * @param snsField - SNSフィールドの値（URL, @username, username）
- * @returns 正規化されたユーザー名（@なし）
- */
-function cleanUsername(snsField: string): string {
-  // URLの場合
-  if (snsField.includes('twitter.com/') || snsField.includes('x.com/')) {
-    const match = snsField.match(/(?:twitter\.com|x\.com)\/([^/?#]+)/);
-    return match ? match[1] : snsField;
-  }
-
-  // @usernameの場合
-  return snsField.replace('@', '');
 }
 
 /**

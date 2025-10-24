@@ -6,6 +6,7 @@
 
 import { stringify as stringifyToml } from 'https://deno.land/std@0.208.0/toml/mod.ts';
 import type { DistributionConfig, EventModel } from '../types/distribution-config.ts';
+import { normalizeSnsUrl } from './lib/sns-utils.ts';
 
 /**
  * 画面をクリアする
@@ -117,13 +118,11 @@ function addModel(): EventModel | null {
   const outreach = outreachInput === 'y' || outreachInput === 'yes';
 
   let sns: string | undefined;
-  const snsInput = readLine('SNS URL（任意、空欄可）:');
+  const snsInput = readLine('SNS URL/ユーザー名（任意、空欄可）:');
   if (snsInput) {
-    try {
-      new URL(snsInput);
-      sns = snsInput;
-    } catch {
-      console.log('⚠ 無効なURLです。SNSの登録をスキップします\n');
+    sns = normalizeSnsUrl(snsInput);
+    if (!sns) {
+      console.log('⚠ 無効な入力です。SNSの登録をスキップします\n');
     }
   }
 
@@ -169,13 +168,11 @@ function editModel(models: EventModel[]): EventModel[] | null {
   const outreach = outreachInput === 'y' || outreachInput === 'yes';
 
   let sns: string | undefined;
-  const snsInput = readLine('SNS URL（任意、空欄可）:', model.sns);
+  const snsInput = readLine('SNS URL/ユーザー名（任意、空欄可）:', model.sns);
   if (snsInput) {
-    try {
-      new URL(snsInput);
-      sns = snsInput;
-    } catch {
-      console.log('⚠ 無効なURLです。前の値を保持します\n');
+    sns = normalizeSnsUrl(snsInput);
+    if (!sns) {
+      console.log('⚠ 無効な入力です。前の値を保持します\n');
       sns = model.sns;
     }
   }
