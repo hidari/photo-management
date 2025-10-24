@@ -32,7 +32,11 @@ Deno.test('getBinaryPath: バイナリパスを返す', () => {
   const binaryPath = getBinaryPath();
 
   assertExists(binaryPath);
-  assertEquals(binaryPath.includes('.config/photo-management/bin'), true);
+  // クロスプラットフォーム対応: Unix形式(/)とWindows形式(\)の両方をチェック
+  const hasConfigPath =
+    binaryPath.includes('.config/photo-management/bin') ||
+    binaryPath.includes('.config\\photo-management\\bin');
+  assertEquals(hasConfigPath, true);
   assertEquals(binaryPath.includes('rip'), true);
 });
 

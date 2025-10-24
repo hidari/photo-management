@@ -47,7 +47,11 @@ async function cleanup() {
 Deno.test('getConfigDir: 設定ディレクトリのパスを返す', () => {
   const configDir = getConfigDir();
   assertExists(configDir);
-  assertEquals(configDir.includes('.config/photo-management'), true);
+  // クロスプラットフォーム対応: Unix形式(/)とWindows形式(\)の両方をチェック
+  const hasConfigPath =
+    configDir.includes('.config/photo-management') ||
+    configDir.includes('.config\\photo-management');
+  assertEquals(hasConfigPath, true);
 });
 
 /**
