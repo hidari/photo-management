@@ -219,7 +219,7 @@ async function createPackage(target: BuildTarget, version: string): Promise<bool
     await copyReadme(tempDir);
 
     // ZIP作成
-    const zipSuccess = await createZip(dirName, zipName);
+    const zipSuccess = await createZip(tempDir, zipName);
     if (!zipSuccess) {
       await cleanupTempDir(tempDir);
       return false;
