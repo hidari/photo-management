@@ -6,30 +6,15 @@
 
 ## 必要な環境
 
-このツールを使用するには **Deno** が必要です。
+このツールを使用するには Deno が必要です。
 
 ### Denoのインストール
 
-**macOS / Linux:**
-```bash
-curl -fsSL https://deno.land/install.sh | sh
-```
+- macOS/Linux: curl -fsSL https://deno.land/install.sh | sh
+- Windows(PowerShell): irm https://deno.land/install.ps1 | iex
+- Homebrew(macOS): brew install deno
 
-**Windows (PowerShell):**
-```powershell
-irm https://deno.land/install.ps1 | iex
-```
-
-**Homebrew (macOS):**
-```bash
-brew install deno
-```
-
-インストール後、以下のコマンドでバージョンを確認できます：
-
-```bash
-deno --version
-```
+インストール後、以下のコマンドでバージョンを確認できます: deno --version
 
 詳細なインストール手順は https://deno.land/ を参照してください。
 
@@ -37,27 +22,25 @@ deno --version
 
 ### 1. 設定ファイルの作成
 
-`config.example.ts` を `config.ts` にコピーして、設定を記入してください：
+config.example.ts を config.ts にコピーして、設定を記入してください:
 
-```bash
-cp config.example.ts config.ts
-```
+   cp config.example.ts config.ts
 
 ### 2. 設定項目の編集
 
-`config.ts` を開き、以下の項目を設定してください：
+config.ts を開き、以下の項目を設定してください:
 
-- `administrator`: あなたの名前
-- `contacts`: 連絡先となるSNSアカウント（X、Blueskyなど）
-- `developedDirectoryBase`: 現像済み画像を保存するディレクトリのパス
-- `archiveTool`: 配布用zipファイルを作成するツールを指定（オプション）
-- `googleCloud`: Google Driveアップロード機能を使用する場合は設定
+- administrator: あなたの名前
+- contacts: 連絡先となるSNSアカウント（X、Blueskyなど）
+- developedDirectoryBase: 現像済み画像を保存するディレクトリのパス
+- archiveTool: 配布用zipファイルを作成するツールを指定（オプション）
+- googleCloud: Google Driveアップロード機能を使用する場合は設定
 
 **注意**: このファイルは公開しないでください。
 
 ### 3. Google Driveのセットアップ（オプション）
 
-Google Driveへのアップロード機能を使用する場合は、以下のドキュメントを参照してセットアップしてください：
+Google Driveへのアップロード機能を使用する場合は、以下のドキュメントを参照してセットアップしてください:
 
 docs/Google Driveアップロードツール.md
 
@@ -66,45 +49,37 @@ docs/Google Driveアップロードツール.md
 ### ワークフロー
 
 1. イベント情報を初期化:
-   ```bash
    deno task init
-   ```
 
 2. ディレクトリ構造を作成:
-   ```bash
    deno task dirs
-   ```
 
 3. 生成されたディレクトリに写真を配置
 
 4. 配布準備を一括実行:
-   ```bash
    deno task ship
-   ```
 
-5. `distribution.config.toml` 内の `intent_url` のURLを開き、DMを送信
+5. distribution.config.toml 内の intent_url のURLを開き、DMを送信
 
 ### 個別実行する場合
 
-4の一括実行の代わりに、以下を順に実行できます：
+4の一括実行の代わりに、以下を順に実行できます:
 
-```bash
 deno task archive      # zipファイルを作成
 deno task upload       # Google Driveにアップロード
 deno task distribution # 配布用メッセージ作成
 deno task intent       # XのDM送信URLを作成
-```
 
 ## 利用可能なコマンド
 
-- `deno task init` - イベント初期化
-- `deno task readme` - README生成
-- `deno task dirs` - ディレクトリ作成
-- `deno task archive` - アーカイブ作成
-- `deno task upload` - Google Driveアップロード
-- `deno task distribution` - 配布ドキュメント作成
-- `deno task intent` - X用DMのURL生成
-- `deno task ship` - 配布一括実行
+- イベント初期化: deno task init
+- README生成: deno task readme
+- ディレクトリ作成: deno task dirs
+- アーカイブ作成: deno task archive
+- Google Driveアップロード: deno task upload
+- 配布ドキュメント作成: deno task distribution
+- X用DMのURL生成: deno task intent
+- 配布一括実行: deno task ship
 
 ## トラブルシューティング
 
@@ -114,11 +89,12 @@ Denoが正しくインストールされているか、PATHが通っているか
 
 ### 設定ファイルのエラー
 
-`config.ts` が正しく作成されているか確認してください。
+config.ts が正しく作成されているか確認してください。
 
 ## 詳細なドキュメント
 
 詳しい使い方は以下のドキュメントを参照してください:
+
 https://github.com/hidari/photo-management/blob/main/DISTRIBUTION.md
 
 ## ライセンス

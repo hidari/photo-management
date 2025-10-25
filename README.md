@@ -6,9 +6,9 @@
 
 ## 配布版について
 
-**プログラミングに多少慣れたカメラマン向けに、配布用パッケージを用意しています。**
+コマンドライン操作に慣れていたり、自動化に興味があるカメラマン向けに、配布用パッケージを用意しています。
 
-開発環境を含むZIPファイルをダウンロードして、Denoをインストールするだけで使用できます。詳しくは [配布版ドキュメント](DISTRIBUTION.md) をご覧ください。
+必要なファイルだけまとめたZIPファイルをダウンロードして展開、Denoをインストールするだけで使用できます。詳しくは [配布版ドキュメント](DISTRIBUTION.md) をご覧ください。
 
 - [最新版のダウンロード（GitHub Releases）](https://github.com/hidari/photo-management/releases/latest)
 
@@ -181,63 +181,3 @@ deno task ship
 4. `deno task intent` - XのDM送信URLを作成
 
 各ステップが成功した場合のみ次のステップに進むため、エラーが発生した場合はその時点で処理が停止します。
-
-## 開発者向け
-
-### 配布パッケージのビルド
-
-開発環境を含む配布用ZIPパッケージを生成できます：
-
-```bash
-deno task build-package
-```
-
-`dist/photo-management-v{VERSION}.zip` が生成されます。このZIPには以下が含まれます：
-
-- 必要なツール（`tools/`）
-- 設定ファイルのテンプレート（`config.example.ts`、`distribution.config.example.toml`）
-- テンプレートファイル（`templates/`）
-- 型定義（`types/`）
-- ドキュメント（`docs/`）
-- タスク定義（`deno.json`）
-- 配布版README（`README.txt`）
-
-### バージョン管理
-
-バージョン番号は **Gitタグ** で管理されています。
-
-- リリース版: `v1.0.0` → ビルド時に `1.0.0`
-- 開発版: `v1.0.0-3-g1234abc` → ビルド時に `1.0.0-dev.3+g1234abc`
-- タグなし: フォールバックとして `0.0.0-dev`
-
-ローカルでビルドする場合、`git describe` コマンドで自動的にバージョンを取得します。
-
-### リリース手順
-
-1. リリース準備が完了したら、バージョンタグを作成してプッシュ:
-
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-2. GitHub Actionsが自動的にビルドを実行し、ReleasesページにZIPパッケージを公開
-
-**重要**: タグとバージョンは自動的に同期されるため、`deno.json` の編集は不要です。
-
-### 開発・テスト
-
-**Lint実行:**
-```bash
-pnpm run lint:fix
-```
-
-**テスト実行:**
-```bash
-deno task test
-```
-
-**型チェック:**
-```bash
-deno check tools/**/*.ts tests/**/*.ts
-```
