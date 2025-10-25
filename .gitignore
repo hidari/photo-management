@@ -1,3 +1,6 @@
+# Mac
+.DS_Store
+
 # IDE Configs
 /.idea/
 
@@ -8,6 +11,7 @@
 /config.ts
 /distribution.config.toml
 /Output/
+/dist/
 
 # Test coverage
 /coverage/

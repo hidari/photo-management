@@ -23,14 +23,14 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Build executables
-        run: deno task build-cli
+      - name: Build distribution package
+        run: deno task build-package
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            dist/*.zip
+            dist/photo-management-*.zip
             dist/build-info.json
           draft: false
           prerelease: false

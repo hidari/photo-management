@@ -1,159 +1,147 @@
 # 写真管理ツール 配布版
 
-写真家がモデルに写真を配布する際に使用するツールです。このドキュメントは、配布版（スタンドアロン実行ファイル）の使い方を説明します。
+写真家がモデルに写真を配布する際に使用するツールです。このドキュメントは、開発環境を含む配布版の使い方を説明します。
+
+## 対象者
+
+このツールは **プログラミングに多少慣れたカメラマン** を対象としています。以下のような作業に抵抗がない方向けです：
+
+- ターミナル/コマンドプロンプトでのコマンド実行
+- テキストエディタでの設定ファイル編集
+- Denoなどのランタイムのインストール
 
 ## ダウンロード
 
 最新版は [GitHub Releases](https://github.com/hidari/photo-management/releases/latest) からダウンロードできます。
 
-### 対応プラットフォーム
+`photo-management-v{VERSION}.zip` をダウンロードして展開してください。
 
-- **Windows (x64)**: `photo-manager-{VERSION}-windows-x64.exe`
-- **macOS (Intel)**: `photo-manager-{VERSION}-macos-x64`
-- **macOS (Apple Silicon)**: `photo-manager-{VERSION}-macos-arm64`
-- **Linux (x64)**: `photo-manager-{VERSION}-linux-x64`
+## 必要な環境
 
-お使いのOSに合ったファイルをダウンロードしてください。
+このツールを使用するには **Deno** が必要です。
 
-## インストール
+### Denoのインストール
 
-### Windows
-
-1. `photo-manager-{VERSION}-windows-x64.exe` をダウンロード
-2. ダウンロードしたファイルをダブルクリックで実行
-3. Windows Defenderの警告が出た場合は「詳細情報」→「実行」をクリック
-
-### macOS
-
-1. お使いのMacに合ったファイルをダウンロード
-   - Intel Mac: `photo-manager-{VERSION}-macos-x64`
-   - Apple Silicon Mac: `photo-manager-{VERSION}-macos-arm64`
-2. ターミナルを開いて、ダウンロードフォルダに移動
-3. 実行権限を付与:
-   ```bash
-   chmod +x photo-manager-{VERSION}-macos-*
-   ```
-4. 実行:
-   ```bash
-   ./photo-manager-{VERSION}-macos-*
-   ```
-5. 初回実行時に「開発元を確認できません」と表示された場合:
-   - システム設定 → プライバシーとセキュリティ → セキュリティ
-   - 「このまま開く」をクリック
-
-### Linux
-
-1. `photo-manager-{VERSION}-linux-x64` をダウンロード
-2. ターミナルで実行権限を付与:
-   ```bash
-   chmod +x photo-manager-{VERSION}-linux-x64
-   ```
-3. 実行:
-   ```bash
-   ./photo-manager-{VERSION}-linux-x64
-   ```
-
-## 使い方
-
-ツールを起動すると、対話的なメニューが表示されます。
-
-```
-========================================
-     写真管理ツール
-========================================
-
-操作を選択してください:
-
-[1] イベント初期化
-    新しいイベントの設定ファイルを作成します
-
-[2] README生成
-    配布用READMEファイルを生成します
-
-[3] ディレクトリ作成
-    モデルごとの配布ディレクトリを作成します
-
-[4] アーカイブ作成
-    配布ディレクトリをZIPファイルにアーカイブします
-
-[5] アップロード
-    アーカイブをGoogle Cloud Storageにアップロードします
-
-[6] 配布ドキュメント作成
-    配布用の最終ドキュメントを生成します
-
-[7] Intent URL生成
-    LINE配信用のIntent URLを生成します
-
-[8] 配布一括実行
-    アーカイブ→アップロード→配布→Intent URLを一括実行します
-
-[q] 終了
-
-選択 (1-8, q):
+**macOS / Linux:**
+```bash
+curl -fsSL https://deno.land/install.sh | sh
 ```
 
-### 基本的なワークフロー
+**Windows (PowerShell):**
+```powershell
+irm https://deno.land/install.ps1 | iex
+```
 
-1. **[1] イベント初期化**: 新しい撮影イベントの情報を入力
-   - イベント日付（YYYYMMDD形式）
-   - イベント名
-   - モデル情報（名前、初回撮影かどうか、SNS情報）
+**Homebrew (macOS):**
+```bash
+brew install deno
+```
 
-2. **[3] ディレクトリ作成**: モデルごとの配布ディレクトリを自動生成
+インストール後、以下のコマンドでバージョンを確認できます：
 
-3. 生成されたディレクトリに写真を配置
+```bash
+deno --version
+```
 
-4. **[8] 配布一括実行**: 残りの処理を一括で実行
+詳細なインストール手順は https://deno.land/ を参照してください。
+
+## セットアップ
+
+### 1. 設定ファイルの作成
+
+ダウンロードして展開したディレクトリで、以下のコマンドを実行してください：
+
+```bash
+cp config.example.ts config.ts
+```
+
+### 2. 設定項目の編集
+
+`config.ts` をテキストエディタで開き、以下の項目を設定してください：
+
+- `administrator`: あなたの名前
+- `contacts`: 連絡先となるSNSアカウント（X、Blueskyなど）
+- `developedDirectoryBase`: 現像済み画像を保存するディレクトリのパス
+- `archiveTool`: 配布用zipファイルを作成するツールを指定（オプション）
+- `googleCloud`: Google Driveアップロード機能を使用する場合は設定
+
+**注意**: このファイルは個人情報を含むため、公開しないでください。
+
+### 3. Google Driveのセットアップ（オプション）
+
+Google Driveへのアップロード機能を使用する場合は、以下のドキュメントを参照してセットアップしてください：
+
+[docs/Google Driveアップロードツール.md](docs/Google%20Drive%E3%82%A2%E3%83%83%E3%83%97%E3%83%AD%E3%83%BC%E3%83%89%E3%83%84%E3%83%BC%E3%83%AB.md)
+
+## 基本的な使い方
+
+### ワークフロー
+
+1. **イベント情報を初期化:**
+   ```bash
+   deno task init
+   ```
+   画面の指示に従って、イベント日付、イベント名、モデル情報を入力します。
+
+2. **ディレクトリ構造を作成:**
+   ```bash
+   deno task dirs
+   ```
+   モデルごとの配布用ディレクトリが自動生成されます。
+
+3. **生成されたディレクトリに写真を配置**
+
+4. **配布準備を一括実行:**
+   ```bash
+   deno task ship
+   ```
+   以下の処理が順次実行されます：
    - ZIPアーカイブ作成
-   - クラウドストレージへのアップロード
-   - 配布ドキュメント生成
-   - LINE配信用URL生成
+   - Google Driveへのアップロード
+   - 配布用メッセージ生成
+   - XのDM送信URL生成
 
-## 必要な設定ファイル
+5. **DMを送信:**
+   `distribution.config.toml` 内の `intent_url` のURLを開き、内容を確認・修正してDMを送信
 
-ツールを使用する前に、以下の設定ファイルを用意してください:
+### 個別実行する場合
 
-### 1. `distribution.config.toml`
+4の一括実行の代わりに、以下を順に実行できます：
 
-イベント初期化（メニュー[1]）で自動生成されます。
-
-### 2. `gcs.config.toml`
-
-Google Cloud Storage設定（アップロード機能を使う場合のみ必要）:
-
-```toml
-bucket_name = "your-bucket-name"
-project_id = "your-project-id"
+```bash
+deno task archive      # zipファイルを作成
+deno task upload       # Google Driveにアップロード
+deno task distribution # 配布用メッセージ作成
+deno task intent       # XのDM送信URLを作成
 ```
 
-### 3. `line.config.toml`
+## 利用可能なコマンド
 
-LINE配信設定（Intent URL生成機能を使う場合のみ必要）:
+- `deno task init` - イベント初期化
+- `deno task readme` - README生成
+- `deno task dirs` - ディレクトリ作成
+- `deno task archive` - アーカイブ作成
+- `deno task upload` - Google Driveアップロード
+- `deno task distribution` - 配布ドキュメント作成
+- `deno task intent` - X用DMのURL生成
+- `deno task ship` - 配布一括実行
 
-```toml
-base_url = "https://your-domain.com"
-```
+詳細な使い方は各ツールのドキュメント（`docs/` ディレクトリ内）を参照してください。
 
 ## トラブルシューティング
 
-### Windows: 「WindowsによってPCが保護されました」と表示される
+### コマンドが見つからない
 
-1. 「詳細情報」をクリック
-2. 「実行」ボタンをクリック
+Denoが正しくインストールされているか、PATHが通っているか確認してください。
 
-### macOS: 「開発元を確認できません」と表示される
+### 設定ファイルのエラー
 
-1. システム設定を開く
-2. プライバシーとセキュリティ → セキュリティ
-3. 「このまま開く」をクリック
+`config.ts` が正しく作成されているか、必須項目が入力されているか確認してください。
 
-### Linux: 実行できない
+### Google Drive関連のエラー
 
-実行権限が付与されているか確認してください:
-```bash
-chmod +x photo-manager-{VERSION}-linux-x64
-```
+Google Cloud Projectの設定が正しく行われているか、認証情報が有効か確認してください。
+詳細は [docs/Google Driveアップロードツール.md](docs/Google%20Drive%E3%82%A2%E3%83%83%E3%83%97%E3%83%AD%E3%83%BC%E3%83%89%E3%83%84%E3%83%BC%E3%83%AB.md) を参照してください。
 
 ### その他の問題
 
@@ -161,7 +149,7 @@ chmod +x photo-manager-{VERSION}-linux-x64
 
 ## 開発者向け情報
 
-開発環境でツールを実行したい場合は、[README.md](./README.md) を参照してください。
+リポジトリをクローンして開発環境で作業したい場合は、[README.md](./README.md) を参照してください。
 
 ## ライセンス
 

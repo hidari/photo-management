@@ -6,15 +6,15 @@
 
 ## 配布版について
 
-**非技術者向けに、開発環境不要で使える配布版を用意しています。**
+**プログラミングに多少慣れたカメラマン向けに、配布用パッケージを用意しています。**
 
-Denoをインストールせずに、ダブルクリックで起動できる実行ファイルをダウンロードできます。詳しくは [配布版ドキュメント](DISTRIBUTION.md) をご覧ください。
+開発環境を含むZIPファイルをダウンロードして、Denoをインストールするだけで使用できます。詳しくは [配布版ドキュメント](DISTRIBUTION.md) をご覧ください。
 
-- [最新版のダウンロード（GitHub Releases）](https://github.com/YOUR_USERNAME/photo-management/releases/latest)
+- [最新版のダウンロード（GitHub Releases）](https://github.com/hidari/photo-management/releases/latest)
 
 ---
 
-以下は開発環境での使用方法です。配布版を使う場合は読み飛ばしてください。
+以下はリポジトリをクローンして開発環境で使用する方法です。配布版を使う場合は読み飛ばしてください。
 
 ## 必要な環境
 
@@ -184,55 +184,23 @@ deno task ship
 
 ## 開発者向け
 
-### CLIメニューシステム
+### 配布パッケージのビルド
 
-対話的なメニュー形式で全ツールを実行できるCLIを提供しています：
-
-```bash
-deno task cli
-```
-
-起動すると以下のようなメニューが表示されます：
-
-```
-========================================
-     写真管理ツール
-========================================
-
-操作を選択してください:
-
-[1] イベント初期化
-[2] README生成
-[3] ディレクトリ作成
-[4] アーカイブ作成
-[5] アップロード
-[6] 配布ドキュメント作成
-[7] Intent URL生成
-[8] 配布一括実行
-
-[q] 終了
-```
-
-### ビルド手順
-
-クロスプラットフォーム対応の配布パッケージ（ZIP）を生成できます：
+開発環境を含む配布用ZIPパッケージを生成できます：
 
 ```bash
-deno task build-cli
+deno task build-package
 ```
 
-以下のプラットフォーム向けZIPパッケージが `dist/` ディレクトリに生成されます：
+`dist/photo-management-v{VERSION}.zip` が生成されます。このZIPには以下が含まれます：
 
-- Windows (x64): `photo-manager-v1.0.0-windows-x64.zip`
-- macOS (Intel): `photo-manager-v1.0.0-macos-x64.zip`
-- macOS (Apple Silicon): `photo-manager-v1.0.0-macos-arm64.zip`
-- Linux (x64): `photo-manager-v1.0.0-linux-x64.zip`
-
-各ZIPファイルには以下が含まれます：
-- 実行ファイル `photo-manager` (または `photo-manager.exe`)
-- 配布用README.txt
-
-Unix系（macOS/Linux）の実行ファイルには実行権限（755）が設定済みです。
+- 必要なツール（`tools/`）
+- 設定ファイルのテンプレート（`config.example.ts`、`distribution.config.example.toml`）
+- テンプレートファイル（`templates/`）
+- 型定義（`types/`）
+- ドキュメント（`docs/`）
+- タスク定義（`deno.json`）
+- 配布版README（`README.txt`）
 
 ### バージョン管理
 
