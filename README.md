@@ -78,7 +78,7 @@ cp config.example.ts config.ts
 - `contacts`: 連絡先となるSNSアカウント（X、Blueskyなど）
 - `developedDirectoryBase`: 現像済み画像を保存するディレクトリのパス
 - `archiveTool`: 配布用zipファイルを作成するツールを指定（オプション）
-- `googleCloud`: Google Driveアップロード機能を使用する場合は設定
+- `googleDrive`: Google Driveアップロード機能を使用する場合は設定（OAuth 2.0認証）
 
 **注意**: このファイルは公開しないでください。
 
@@ -137,7 +137,7 @@ deno task archive
 
 zipファイルをGoogle Driveにアップロードし、共有URLを自動取得します。
 
-なお、このツールを利用するにはGoogle Cloudのプロジェクトを事前に作成する必要があります。プロジェクトのセットアップについては下記詳細ドキュメントを参照してください。
+このツールを利用するには初回のみ OAuth 2.0 認証のセットアップが必要です。ブラウザでGoogleアカウントにログインするだけで、他のツール（gcloud CLIなど）のインストールは不要です。詳細は下記ドキュメントを参照してください。
 
 ```bash
 deno task upload

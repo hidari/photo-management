@@ -34,7 +34,7 @@ export function getTestConfigDir(): string {
 export async function saveTestToken(token: GoogleAuthToken): Promise<void> {
   const configDir = getTestConfigDir();
   await Deno.mkdir(configDir, { recursive: true });
-  const tokenPath = join(configDir, 'token.json');
+  const tokenPath = join(configDir, 'google-drive-token.json');
   await Deno.writeTextFile(tokenPath, JSON.stringify(token, null, 2));
 }
 
@@ -46,7 +46,7 @@ export async function saveTestToken(token: GoogleAuthToken): Promise<void> {
 export async function loadTestToken(): Promise<GoogleAuthToken | null> {
   try {
     const configDir = getTestConfigDir();
-    const tokenPath = join(configDir, 'token.json');
+    const tokenPath = join(configDir, 'google-drive-token.json');
     const content = await Deno.readTextFile(tokenPath);
     return JSON.parse(content);
   } catch {

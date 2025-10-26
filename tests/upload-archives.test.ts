@@ -7,10 +7,7 @@ import {
   ensurePhotoDistributionFolder,
   findArchiveFiles,
   findFolder,
-  getAccessTokenViaGcloud,
   getConfigDir,
-  getCurrentAccount,
-  getValidToken,
   makeFilePublic,
   updateTomlWithUrls,
   uploadFile,
@@ -347,7 +344,7 @@ Deno.test('createFolder: 無効なアクセストークンでエラーを投げ�
 
 Deno.test('ensurePhotoDistributionFolder: 無効なアクセストークンでエラーを投げる', async () => {
   try {
-    await ensurePhotoDistributionFolder('invalid_access_token', 'test-project-id');
+    await ensurePhotoDistributionFolder('invalid_access_token');
     assertEquals(true, false, 'エラーが発生するはずだった');
   } catch (error) {
     assertEquals(error instanceof Error, true);
@@ -356,13 +353,7 @@ Deno.test('ensurePhotoDistributionFolder: 無効なアクセストークンで�
 
 Deno.test('createEventFolder: 無効なアクセストークンでエラーを投げる', async () => {
   try {
-    await createEventFolder(
-      'invalid_access_token',
-      'test-project-id',
-      'parent_id',
-      '20251012',
-      'テストイベント'
-    );
+    await createEventFolder('invalid_access_token', 'parent_id', '20251012', 'テストイベント');
     assertEquals(true, false, 'エラーが発生するはずだった');
   } catch (error) {
     assertEquals(error instanceof Error, true);
@@ -378,7 +369,7 @@ Deno.test('uploadFile: 無効なアクセストークンでエラーを投げる
   await Deno.writeTextFile(testFile, 'test content');
 
   try {
-    await uploadFile('invalid_access_token', 'test-project-id', testFile, 'folder_id');
+    await uploadFile('invalid_access_token', testFile, 'folder_id');
     assertEquals(true, false, 'エラーが発生するはずだった');
   } catch (error) {
     assertEquals(error instanceof Error, true);
@@ -389,7 +380,7 @@ Deno.test('uploadFile: 無効なアクセストークンでエラーを投げる
 
 Deno.test('makeFilePublic: 無効なアクセストークンでエラーを投げる', async () => {
   try {
-    await makeFilePublic('invalid_access_token', 'test-project-id', 'file_id');
+    await makeFilePublic('invalid_access_token', 'file_id');
     assertEquals(true, false, 'エラーが発生するはずだった');
   } catch (error) {
     assertEquals(error instanceof Error, true);
@@ -397,59 +388,6 @@ Deno.test('makeFilePublic: 無効なアクセストークンでエラーを投�
 });
 
 /**
- * gcloud CLI統合関数のテスト
+ * OAuth 2.0 認証関連のテストは tools/lib/google-auth.ts で実装
+ * ここでは統合テストのみ実施
  */
-
-Deno.test('getAccessTokenViaGcloud: gcloud CLIが見つからない場合エラーを投げる', async () => {
-  // 実際のgcloudコマンドが存在する環境では、このテストは異なる動作をする可能性がある
-  // 環境に依存するため、エラーハンドリングの確認のみ行う
-  try {
-    // このテストは実際のgcloudコマンドを実行しようとする
-    // gcloudが存在しない環境では NotFound エラーになる
-    // gcloudが存在する環境では認証エラーまたは成功する
-    await getAccessTokenViaGcloud();
-
-    // gcloudが存在して認証されている場合、トークンが返される
-    // この場合はテスト成功
-    assertEquals(true, true);
-  } catch (error) {
-    // エラーの場合、適切なエラーメッセージを持つErrorであることを確認
-    assertEquals(error instanceof Error, true);
-    const errorMessage = (error as Error).message;
-
-    // gcloud CLIが見つからないか、または認証エラーのいずれか
-    const isValidError =
-      errorMessage.includes('gcloud CLIが見つかりません') ||
-      errorMessage.includes('gcloudコマンドの実行に失敗') ||
-      errorMessage.includes('gcloudから有効なトークンを取得できませんでした');
-
-    assertEquals(isValidError, true, `予期しないエラーメッセージ: ${errorMessage}`);
-  }
-});
-
-Deno.test('getCurrentAccount: エラーが発生してもnullを返す', async () => {
-  // getCurrentAccount は例外を投げずに常にnullまたはアカウント名を返す
-  const account = await getCurrentAccount();
-
-  // nullまたは文字列であることを確認
-  if (account !== null) {
-    assertEquals(typeof account, 'string');
-    // アカウント名が空でないことを確認
-    assertEquals(account.length > 0, true);
-  } else {
-    assertEquals(account, null);
-  }
-});
-
-Deno.test('getValidToken: getAccessTokenViaGcloud を呼び出す', async () => {
-  // getValidToken は単純に getAccessTokenViaGcloud のラッパー
-  try {
-    const token = await getValidToken();
-    // 成功した場合、トークンが文字列であることを確認
-    assertEquals(typeof token, 'string');
-    assertEquals(token.length > 0, true);
-  } catch (error) {
-    // エラーの場合も適切に処理されていることを確認
-    assertEquals(error instanceof Error, true);
-  }
-});

@@ -24,9 +24,19 @@ export interface Config {
   /** アーカイブ作成ツールのフルパス（未設定時は初回実行時に自動セットアップ） */
   archiveTool?: string;
 
-  /** Google Cloud 設定（アップロード機能を使用しない場合は省略可能） */
-  googleCloud?: {
-    /** Google Cloud プロジェクトID（APIクォータ管理に使用） */
-    projectId: string;
+  /** Google Drive OAuth 2.0 設定（アップロード機能を使用しない場合は省略可能） */
+  googleDrive?: {
+    /**
+     * OAuth 2.0 クライアントID
+     * デスクトップアプリケーション型のクライアントIDを指定
+     * Google Cloud Console で作成したクライアントIDを使用
+     */
+    clientId: string;
+
+    /**
+     * OAuth 2.0 クライアントシークレット
+     * デスクトップアプリケーション型の場合、公開されても安全な設計
+     */
+    clientSecret: string;
   };
 }

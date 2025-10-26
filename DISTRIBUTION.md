@@ -63,7 +63,7 @@ cp config.example.ts config.ts
 - `contacts`: 連絡先となるSNSアカウント（X、Blueskyなど）
 - `developedDirectoryBase`: 現像済み画像を保存するディレクトリのパス
 - `archiveTool`: 配布用zipファイルを作成するツールを指定（オプション）
-- `googleCloud`: Google Driveアップロード機能を使用する場合は設定
+- `googleDrive`: Google Driveアップロード機能を使用する場合は設定（OAuth 2.0認証）
 
 **注意**: このファイルは機密情報を含むため、公開しないでください。
 

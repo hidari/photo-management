@@ -6,7 +6,7 @@
     "dirs": "deno run --allow-read --allow-write tools/generate-directories.ts",
     "ensure-rip": "deno run --allow-read --allow-write --allow-net --allow-env --allow-run tools/ensure-rip-binary.ts",
     "archive": "deno run --allow-read --allow-write --allow-run tools/archive-distribution-dirs.ts",
-    "upload": "deno run --allow-read --allow-write --allow-net --allow-env --allow-run=gcloud tools/upload-archives.ts",
+    "upload": "deno run --allow-read --allow-write --allow-net --allow-env tools/upload-archives.ts",
     "distribution": "deno run --allow-read --allow-write tools/build-distribution.ts",
     "intent": "deno run --allow-read --allow-write --allow-net --allow-env --allow-run --allow-sys tools/build-intent-urls.ts",
     "ship": "deno task archive && deno task upload && deno task distribution && deno task intent",

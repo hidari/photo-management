@@ -24,12 +24,22 @@ export const config: Config = {
   // macOS/Linux例: archiveTool: '/Users/username/.config/photo-management/bin/rip',
   // Windows例: archiveTool: 'C:\\Users\\username\\.config\\photo-management\\bin\\rip.exe',
 
-  // Google Cloud 設定
-  googleCloud: {
-    // Google Cloud プロジェクトID
-    // Google Cloud Consoleで作成したプロジェクトのIDを指定
-    // このプロジェクトのAPIクォータが使用されます
-    projectId: 'your-project-id',
+  // Google Drive OAuth 2.0 設定（アップロード機能を使用する場合）
+  // Google Cloud Console で OAuth 2.0 クライアントIDを作成してください
+  // 1. https://console.cloud.google.com/ にアクセス
+  // 2. プロジェクトを作成（または既存のプロジェクトを選択）
+  // 3. 「APIとサービス」→「認証情報」
+  // 4. 「認証情報を作成」→「OAuth クライアントID」
+  // 5. アプリケーションの種類: デスクトップアプリ
+  // 6. 作成後、クライアントIDとクライアントシークレットをコピー
+  googleDrive: {
+    // OAuth 2.0 クライアントID
+    // デスクトップアプリケーション型のクライアントIDを指定
+    clientId: 'your-client-id.apps.googleusercontent.com',
+
+    // OAuth 2.0 クライアントシークレット
+    // デスクトップアプリケーション型の場合、公開されても安全な設計です
+    clientSecret: 'your-client-secret',
   },
 };
 
