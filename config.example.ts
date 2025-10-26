@@ -41,6 +41,16 @@ export const config: Config = {
     // デスクトップアプリケーション型の場合、公開されても安全な設計です
     clientSecret: 'your-client-secret',
   },
+
+  // 配布フォルダの保持期間(日数)（オプション）
+  // 指定した日数より古いイベントフォルダは自動削除の対象になります
+  // デフォルト: 30日
+  // distributionRetentionDays: 30,
+
+  // 削除通知先メールアドレス（オプション）
+  // Google Apps Scriptによる自動削除時に通知を送信する先
+  // 未設定の場合は通知を送信しません
+  // cleanupNotificationEmail: 'your-email@example.com',
 };
 
 export default config;
