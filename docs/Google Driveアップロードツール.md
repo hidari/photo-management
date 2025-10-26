@@ -1,4 +1,6 @@
-# Google Driveアップロードツール
+# Google Driveアップロードツール (zip配布方式)
+
+> **Note**: このツールはzip配布方式です。フォルダ共有方式を使用する場合は [Google Driveフォルダ共有アップロードツール](./Google%20Driveフォルダ共有アップロードツール.md) を参照してください。
 
 作成したzipファイルをGoogle Driveにアップロードし、共有URLをTOMLファイルに記録するツールです。
 

@@ -39,4 +39,18 @@ export interface Config {
      */
     clientSecret: string;
   };
+
+  /**
+   * 配布フォルダの保持期間(日数)
+   * 指定した日数より古いイベントフォルダは自動削除の対象になる
+   * デフォルト: 30日
+   */
+  distributionRetentionDays?: number;
+
+  /**
+   * 削除通知先メールアドレス
+   * Google Apps Scriptによる自動削除時に通知を送信する先
+   * 未設定の場合は通知を送信しない
+   */
+  cleanupNotificationEmail?: string;
 }

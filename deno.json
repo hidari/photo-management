@@ -7,9 +7,12 @@
     "ensure-rip": "deno run --allow-read --allow-write --allow-net --allow-env --allow-run tools/ensure-rip-binary.ts",
     "archive": "deno run --allow-read --allow-write --allow-run tools/archive-distribution-dirs.ts",
     "upload": "deno run --allow-read --allow-write --allow-net --allow-env tools/upload-archives.ts",
+    "upload-folders": "deno run --allow-read --allow-write --allow-net --allow-env tools/upload-folders.ts",
+    "cleanup": "deno run --allow-read --allow-write --allow-net --allow-env tools/cleanup-old-events.ts",
     "distribution": "deno run --allow-read --allow-write tools/build-distribution.ts",
     "intent": "deno run --allow-read --allow-write --allow-net --allow-env --allow-run --allow-sys tools/build-intent-urls.ts",
     "ship": "deno task archive && deno task upload && deno task distribution && deno task intent",
+    "ship-folders": "deno task upload-folders && deno task distribution && deno task intent",
     "build-package": "deno run --allow-read --allow-write --allow-run tools/build-package.ts"
   },
   "nodeModulesDir": "auto",
