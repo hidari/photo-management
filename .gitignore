@@ -17,5 +17,10 @@
 /coverage/
 coverage.lcov
 
+# Google App Scripts
+apps-script/dist/
+apps-script/node_modules/
+.clasprc.json
+
 # Claude Code
 /.claude/

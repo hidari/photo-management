@@ -51,18 +51,18 @@ deno --version
 2. `deno task dirs` でディレクトリ構造を作成
 3. 各ディレクトリに写真を配置
 4. 配布準備を一括実行:
-   - **フォルダ共有方式(推奨)**: `deno task ship-folders`
-   - **zip配布方式(従来)**: `deno task ship`
+   - **フォルダ共有方式**: `deno task ship-folders`
+   - **zip配布方式**: `deno task ship`
 5. `distribution.config.toml` 内の `intent_url` のURLを開き、必要に応じてDMの内容を確認・修正して送信
 
 **個別実行する場合:**
 
-#### フォルダ共有方式(推奨)
+#### フォルダ共有方式
 4. `deno task upload-folders` で写真をフォルダとしてアップロード
 5. `deno task distribution` で配布用メッセージ作成
 6. `deno task intent` でXのDM送信URLを作成
 
-#### zip配布方式(従来)
+#### zip配布方式
 4. `deno task archive` でzipファイルを作成
 5. `deno task upload` でGoogle Driveにアップロード
 6. `deno task distribution` で配布用メッセージ作成
@@ -185,7 +185,7 @@ deno task upload-folders
 
 **従来のzip配布との違い:**
 - モデルは個別の写真を選んでダウンロード可能
-- フォルダごと一括でzipダウンロードも可能（上位互換）
+- フォルダごと一括でzipダウンロードも可能
 - Google Driveアプリでより快適に閲覧可能
 - 検索結果に表示されない安全な共有設定
 
@@ -215,7 +215,7 @@ deno task cleanup --execute --days 60
 
 アーカイブ作成からDMインテントURL生成までの配布準備工程を一括で実行します。
 
-#### zip配布方式（従来）
+#### zip配布方式
 
 ```bash
 deno task ship
@@ -226,7 +226,7 @@ deno task ship
 3. `deno task distribution` - 配布用メッセージ作成
 4. `deno task intent` - XのDM送信URLを作成
 
-#### フォルダ共有方式（新方式）
+#### フォルダ共有方式
 
 ```bash
 deno task ship-folders

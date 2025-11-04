@@ -1,0 +1,10 @@
+# 全てのファイルを一旦無視
+**/**
+
+# 以下のファイルのみアップロード対象とする
+!dist/**/*.js
+!dist/appsscript.json
+
+# ただし、テストファイルは除外
+dist/**/*.test.js
+dist/**/*.spec.js

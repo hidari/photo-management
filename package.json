@@ -2,11 +2,18 @@
   "name": "photo-management",
   "scripts": {
     "lint": "biome check .",
-    "lint:fix": "biome check --fix ."
+    "lint:fix": "biome check --fix .",
+    "gas:build": "cd apps-script && tsc && cp appsscript.json dist/",
+    "gas:push": "cd apps-script && pnpm exec clasp push",
+    "gas:open": "cd apps-script && pnpm exec clasp open",
+    "gas:deploy": "pnpm run lint && pnpm run gas:build && pnpm run gas:push"
   },
   "license": "MIT",
   "packageManager": "pnpm@10.14.0",
   "devDependencies": {
-    "@biomejs/biome": "2.2.6"
+    "@biomejs/biome": "2.2.6",
+    "@google/clasp": "3.1.0",
+    "@types/google-apps-script": "2.0.7",
+    "typescript": "5.9.3"
   }
 }

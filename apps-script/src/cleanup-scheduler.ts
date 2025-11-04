@@ -24,27 +24,27 @@
  * Google DriveでPhotoDistributionフォルダを開き、URLから取得
  * 例: https://drive.google.com/drive/folders/FOLDER_ID_HERE
  */
-const PHOTO_DISTRIBUTION_FOLDER_ID = 'YOUR_FOLDER_ID_HERE';
+const PHOTO_DISTRIBUTION_FOLDER_ID: string = 'YOUR_FOLDER_ID_HERE';
 
 /**
  * 保持期間(日数)
  * この日数より古いイベントフォルダは削除されます
  */
-const RETENTION_DAYS = 30;
+const RETENTION_DAYS: number = 30;
 
 /**
  * 通知先メールアドレス
  * 削除実行後に結果を通知します
  * 空文字列の場合は通知を送信しません
  */
-const NOTIFICATION_EMAIL = 'your-email@example.com';
+const NOTIFICATION_EMAIL: string = 'your-email@example.com';
 
 /**
  * 実行ログを記録するスプレッドシートのID（オプション）
  * 空文字列の場合はログを記録しません
  * 新規スプレッドシートを作成し、URLからIDを取得してください
  */
-const LOG_SPREADSHEET_ID = '';
+const LOG_SPREADSHEET_ID: string = '';
 
 // ==================== メイン処理 ====================
 
@@ -52,7 +52,12 @@ const LOG_SPREADSHEET_ID = '';
  * イベントフォルダの情報
  */
 class EventFolderInfo {
-  constructor(id, name, createdTime, daysOld) {
+  id: string;
+  name: string;
+  createdTime: Date;
+  daysOld: number;
+
+  constructor(id: string, name: string, createdTime: Date, daysOld: number) {
     this.id = id;
     this.name = name;
     this.createdTime = createdTime;
@@ -61,36 +66,54 @@ class EventFolderInfo {
 }
 
 /**
- * PhotoDistribution内のイベントフォルダを一覧取得する
+ * 2つの日付から経過日数を計算する
  *
- * @returns {EventFolderInfo[]} イベントフォルダの情報配列
+ * @param now - 現在日時
+ * @param createdTime - 作成日時
+ * @returns 経過日数（整数）
  */
-function listEventFolders() {
-  const parentFolder = DriveApp.getFolderById(PHOTO_DISTRIBUTION_FOLDER_ID);
-  const folders = parentFolder.getFolders();
-  const now = new Date();
-  const result = [];
-
-  while (folders.hasNext()) {
-    const folder = folders.next();
-    const createdTime = folder.getDateCreated();
-    const daysOld = Math.floor((now - createdTime) / (1000 * 60 * 60 * 24));
-
-    result.push(new EventFolderInfo(folder.getId(), folder.getName(), createdTime, daysOld));
-  }
-
-  return result;
+function calculateDaysOld(now: Date, createdTime: Date): number {
+  return Math.floor((now.getTime() - createdTime.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 /**
  * 指定した日数より古いフォルダを抽出する
  *
- * @param {EventFolderInfo[]} folders - フォルダ情報配列
- * @param {number} retentionDays - 保持期間(日数)
- * @returns {EventFolderInfo[]} 削除対象のフォルダ配列
+ * @param folders - フォルダ情報配列
+ * @param retentionDays - 保持期間(日数)
+ * @returns 削除対象のフォルダ配列
  */
-function filterOldFolders(folders, retentionDays) {
+function filterOldFolders(folders: EventFolderInfo[], retentionDays: number): EventFolderInfo[] {
   return folders.filter((folder) => folder.daysOld > retentionDays);
+}
+
+/**
+ * PhotoDistribution内のイベントフォルダを一覧取得する
+ *
+ * @returns {EventFolderInfo[]} イベントフォルダの情報配列
+ */
+function listEventFolders(): EventFolderInfo[] {
+  const parentFolder = DriveApp.getFolderById(PHOTO_DISTRIBUTION_FOLDER_ID);
+  const folders = parentFolder.getFolders();
+  const now = new Date();
+  const result: EventFolderInfo[] = [];
+
+  while (folders.hasNext()) {
+    const folder = folders.next();
+    const createdTime = folder.getDateCreated();
+    const daysOld = calculateDaysOld(now, new Date(createdTime.getTime()));
+
+    result.push(
+      new EventFolderInfo(
+        folder.getId(),
+        folder.getName(),
+        new Date(createdTime.getTime()),
+        daysOld
+      )
+    );
+  }
+
+  return result;
 }
 
 /**
@@ -99,13 +122,14 @@ function filterOldFolders(folders, retentionDays) {
  * @param {EventFolderInfo} folderInfo - フォルダ情報
  * @returns {boolean} 成功した場合true
  */
-function deleteFolder(folderInfo) {
+function deleteFolder(folderInfo: EventFolderInfo): boolean {
   try {
     const folder = DriveApp.getFolderById(folderInfo.id);
     folder.setTrashed(true);
     return true;
   } catch (error) {
-    Logger.log(`フォルダの削除に失敗: ${folderInfo.name} - ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    Logger.log(`フォルダの削除に失敗: ${folderInfo.name} - ${errorMessage}`);
     return false;
   }
 }
@@ -118,7 +142,12 @@ function deleteFolder(folderInfo) {
  * @param {EventFolderInfo[]} deletedFolders - 削除されたフォルダ
  * @param {number} errorCount - エラー数
  */
-function logToSpreadsheet(executionTime, deletedCount, deletedFolders, errorCount) {
+function logToSpreadsheet(
+  executionTime: Date,
+  deletedCount: number,
+  deletedFolders: EventFolderInfo[],
+  errorCount: number
+): void {
   if (!LOG_SPREADSHEET_ID) {
     return;
   }
@@ -133,7 +162,7 @@ function logToSpreadsheet(executionTime, deletedCount, deletedFolders, errorCoun
       sheet.appendRow(['実行日時', '削除数', '削除フォルダ', 'エラー数']);
     }
 
-    const folderNames = deletedFolders.map((f) => f.name).join(', ');
+    const folderNames = deletedFolders.map((f: EventFolderInfo) => f.name).join(', ');
     sheet.appendRow([
       Utilities.formatDate(executionTime, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss'),
       deletedCount,
@@ -141,7 +170,8 @@ function logToSpreadsheet(executionTime, deletedCount, deletedFolders, errorCoun
       errorCount,
     ]);
   } catch (error) {
-    Logger.log(`ログ記録に失敗: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    Logger.log(`ログ記録に失敗: ${errorMessage}`);
   }
 }
 
@@ -153,7 +183,12 @@ function logToSpreadsheet(executionTime, deletedCount, deletedFolders, errorCoun
  * @param {EventFolderInfo[]} deletedFolders - 削除されたフォルダ
  * @param {number} errorCount - エラー数
  */
-function sendNotification(executionTime, deletedCount, deletedFolders, errorCount) {
+function sendNotification(
+  executionTime: Date,
+  deletedCount: number,
+  deletedFolders: EventFolderInfo[],
+  errorCount: number
+): void {
   if (!NOTIFICATION_EMAIL) {
     return;
   }
@@ -188,13 +223,16 @@ function sendNotification(executionTime, deletedCount, deletedFolders, errorCoun
   try {
     MailApp.sendEmail(NOTIFICATION_EMAIL, subject, body);
   } catch (error) {
-    Logger.log(`メール送信に失敗: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    Logger.log(`メール送信に失敗: ${errorMessage}`);
   }
 }
 
 /**
  * メイン関数（トリガーから呼び出される）
  */
+
+// biome-ignore lint/correctness/noUnusedVariables: トリガーから呼び出される想定なので未使用でも大丈夫
 function cleanupOldEvents() {
   const executionTime = new Date();
 
@@ -240,7 +278,8 @@ function cleanupOldEvents() {
     logToSpreadsheet(executionTime, deletedFolders.length, deletedFolders, errorCount);
     sendNotification(executionTime, deletedFolders.length, deletedFolders, errorCount);
   } catch (error) {
-    Logger.log(`エラー: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    Logger.log(`エラー: ${errorMessage}`);
 
     // エラー通知
     if (NOTIFICATION_EMAIL) {
@@ -249,7 +288,7 @@ function cleanupOldEvents() {
         '[写真配布] フォルダ削除でエラーが発生',
         `自動削除処理でエラーが発生しました。\n\n` +
           `実行日時: ${Utilities.formatDate(executionTime, Session.getScriptTimeZone(), 'yyyy年MM月dd日 HH:mm')}\n` +
-          `エラー: ${error.message}\n\n` +
+          `エラー: ${errorMessage}\n\n` +
           `Google Apps Scriptのログを確認してください。`
       );
     }
@@ -262,6 +301,8 @@ function cleanupOldEvents() {
  * セットアップ確認用の関数（手動実行用）
  * 削除は実行せず、削除対象のみを表示します
  */
+
+// biome-ignore lint/correctness/noUnusedVariables: 手動実行でテストが必要な場合に使うので大丈夫
 function testCleanup() {
   Logger.log('========================================');
   Logger.log('テストモード: 削除は実行しません');
@@ -287,7 +328,8 @@ function testCleanup() {
       Logger.log(`    経過日数: ${folder.daysOld}日`);
     }
   } catch (error) {
-    Logger.log(`エラー: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    Logger.log(`エラー: ${errorMessage}`);
   }
 
   Logger.log('========================================');
