@@ -13,7 +13,10 @@
     "intent": "deno run --allow-read --allow-write --allow-net --allow-env --allow-run --allow-sys tools/build-intent-urls.ts",
     "ship": "deno task archive && deno task upload && deno task distribution && deno task intent",
     "ship-folders": "deno task upload-folders && deno task distribution && deno task intent",
-    "build-package": "deno run --allow-read --allow-write --allow-run tools/build-package.ts"
+    "build-package": "deno run --allow-read --allow-write --allow-run tools/build-package.ts",
+    "gas:setup": "deno run --allow-read --allow-write --allow-run --allow-env tools/setup-gas-properties.ts",
+    "gas:push": "cd apps-script && npx tsc && npx clasp push --force",
+    "gas:deploy": "deno task gas:push && deno task gas:setup"
   },
   "nodeModulesDir": "auto",
   "imports": {

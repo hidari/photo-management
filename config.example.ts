@@ -51,6 +51,16 @@ export const config: Config = {
   // Google Apps Scriptによる自動削除時に通知を送信する先
   // 未設定の場合は通知を送信しません
   // cleanupNotificationEmail: 'your-email@example.com',
+
+  // 写真配布用Google DriveフォルダのID（オプション）
+  // Google Apps Scriptで自動削除対象となるフォルダを指定
+  // フォルダのURLから取得可能: https://drive.google.com/drive/folders/[FOLDER_ID]
+  // photoDistributionFolderId: 'your-folder-id',
+
+  // ログ記録用Google SpreadsheetのID（オプション）
+  // Google Apps Scriptの実行ログを記録するスプレッドシートを指定
+  // 未設定の場合は初回実行時に自動作成されます
+  // logSpreadsheetId: 'your-spreadsheet-id',
 };
 
 export default config;

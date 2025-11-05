@@ -53,4 +53,18 @@ export interface Config {
    * 未設定の場合は通知を送信しない
    */
   cleanupNotificationEmail?: string;
+
+  /**
+   * 写真配布用Google DriveフォルダのID
+   * Google Apps Scriptで自動削除対象となるフォルダを指定
+   * フォルダのURLから取得可能: https://drive.google.com/drive/folders/[FOLDER_ID]
+   */
+  photoDistributionFolderId?: string;
+
+  /**
+   * ログ記録用Google SpreadsheetのID
+   * Google Apps Scriptの実行ログを記録するスプレッドシートを指定
+   * 未設定の場合は初回実行時に自動作成される
+   */
+  logSpreadsheetId?: string;
 }

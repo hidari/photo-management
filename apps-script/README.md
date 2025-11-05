@@ -4,56 +4,79 @@
 
 ## ファイル
 
-- `cleanup-scheduler.gs` - 自動削除スクリプト本体
+- `src/cleanup-scheduler.ts` - 自動削除スクリプト本体（TypeScript）
+- `dist/` - コンパイル後のJavaScriptファイル
+- `.clasp.json` - clasp設定ファイル
+- `tsconfig.json` - TypeScript設定ファイル
 
 ## セットアップ手順
 
-### 1. Google Apps Scriptプロジェクトを作成
+### 前提条件
 
-1. [Google Apps Script](https://script.google.com/)にアクセス
-2. 「新しいプロジェクト」をクリック
-3. プロジェクト名を「PhotoDistribution Cleanup」などに変更
+1. [clasp](https://github.com/google/clasp)がインストールされていること
+2. `clasp login`でGoogle認証が完了していること
+3. プロジェクトのルートディレクトリに`config.ts`が作成されていること
 
-### 2. スクリプトをコピー
+### 1. config.tsに設定を記述
 
-1. `cleanup-scheduler.gs`の内容をコピー
-2. Google Apps Scriptエディタに貼り付け
+プロジェクトのルートディレクトリにある`config.ts`に以下の設定を追加します:
 
-### 3. 設定を編集
+```typescript
+export const config: Config = {
+  // ... 既存の設定 ...
 
-スクリプトの上部にある設定セクションを編集します:
+  // 写真配布用フォルダのID（必須）
+  photoDistributionFolderId: 'your-folder-id-here',
 
-```javascript
-// PhotoDistributionフォルダのID
-const PHOTO_DISTRIBUTION_FOLDER_ID = 'YOUR_FOLDER_ID_HERE';
+  // 削除通知先メールアドレス（必須）
+  cleanupNotificationEmail: 'your-email@example.com',
 
-// 保持期間(日数)
-const RETENTION_DAYS = 30;
+  // 保持期間(日数)（オプション、デフォルト: 30日）
+  distributionRetentionDays: 30,
 
-// 通知先メールアドレス
-const NOTIFICATION_EMAIL = 'your-email@example.com';
-
-// 実行ログを記録するスプレッドシートのID（オプション）
-const LOG_SPREADSHEET_ID = '';
+  // ログスプレッドシートID（オプション、未設定の場合は自動作成）
+  logSpreadsheetId: 'your-spreadsheet-id', // 省略可能
+};
 ```
 
 **PhotoDistributionフォルダのIDの取得方法:**
 
-1. Google Driveで「PhotoDistribution」フォルダを開く
+1. Google Driveで写真配布用フォルダを開く
 2. URLから`/folders/`の後ろの文字列をコピー
    - 例: `https://drive.google.com/drive/folders/1AbC2DeF3GhI4JkL5MnO6PqR7StU8VwX9YzA`
    - この場合、`1AbC2DeF3GhI4JkL5MnO6PqR7StU8VwX9YzA`がフォルダID
 
-### 4. テスト実行
+### 2. デプロイと設定の自動転送
 
-1. 関数選択ドロップダウンから「testCleanup」を選択
-2. 実行ボタン(▶)をクリック
-3. 初回実行時に権限の承認を求められるので承認
-4. 実行ログを確認し、削除対象が正しく検出されているか確認
+以下のコマンドでスクリプトをデプロイし、設定値をPropertiesServiceに自動登録します:
 
-### 5. トリガーを設定
+```bash
+# TypeScriptをコンパイル → clasp push → 設定値登録の一連の流れ
+deno task gas:deploy
+```
 
-1. 左メニューから「トリガー」をクリック
+または個別に実行:
+
+```bash
+# スクリプトのみデプロイ
+deno task gas:push
+
+# 設定値のみ登録
+deno task gas:setup
+```
+
+### 3. テスト実行
+
+1. [Google Apps Scriptエディタ](https://script.google.com/)にアクセス
+2. プロジェクトを開く
+3. 関数選択ドロップダウンから「testCleanup」を選択
+4. 実行ボタン(▶)をクリック
+5. 初回実行時に権限の承認を求められるので承認
+6. 実行ログを確認し、削除対象が正しく検出されているか確認
+
+### 4. トリガーを設定
+
+1. Google Apps Scriptエディタの左メニューから「トリガー」をクリック
 2. 「トリガーを追加」をクリック
 3. 以下のように設定:
    - 実行する関数: `cleanupOldEvents`
@@ -62,15 +85,10 @@ const LOG_SPREADSHEET_ID = '';
    - 時刻: `午前2時〜午前3時` (任意の時間)
 4. 「保存」をクリック
 
-### 6. ログ記録の設定(オプション)
+### 5. ログスプレッドシートについて
 
-実行ログをスプレッドシートに記録したい場合:
-
-1. 新しいGoogleスプレッドシートを作成
-2. スプレッドシートのURLからIDを取得
-   - 例: `https://docs.google.com/spreadsheets/d/1AbC2DeF3GhI4JkL5MnO6PqR7StU8VwX9YzA/edit`
-   - この場合、`1AbC2DeF3GhI4JkL5MnO6PqR7StU8VwX9YzA`がスプレッドシートID
-3. スクリプトの`LOG_SPREADSHEET_ID`にIDを設定
+`logSpreadsheetId`を設定しなかった場合、初回実行時に自動的に新しいスプレッドシートが作成されます。
+作成されたスプレッドシートのIDはPropertiesServiceに自動保存され、次回以降そのスプレッドシートが使用されます。
 
 ## 機能
 

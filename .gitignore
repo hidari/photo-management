@@ -20,6 +20,7 @@ coverage.lcov
 # Google App Scripts
 apps-script/dist/
 apps-script/node_modules/
+apps-script/src/setup-properties.ts
 .clasprc.json
 .clasp.json
 

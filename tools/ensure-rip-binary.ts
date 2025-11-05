@@ -11,8 +11,8 @@
 
 import { ensureDir } from 'https://deno.land/std@0.208.0/fs/mod.ts';
 import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
-import { Project, SyntaxKind } from 'https://deno.land/x/ts_morph@21.0.1/mod.ts';
 import { decompress } from 'https://deno.land/x/zip@v1.2.5/mod.ts';
+import { Project, SyntaxKind } from 'npm:ts-morph@27.0.0';
 import type { PlatformInfo } from '../types/binary-setup.ts';
 
 /**

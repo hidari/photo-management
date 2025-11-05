@@ -120,7 +120,7 @@ async function getAuthCodeFromLocalServer(_client: OAuth2Client): Promise<string
 async function performAuthFlow(client: OAuth2Client): Promise<object> {
   const authUrl = client.generateAuthUrl({
     access_type: 'offline',
-    scope: ['https://www.googleapis.com/auth/drive.file'],
+    scope: ['https://www.googleapis.com/auth/drive'],
   });
 
   console.log();
