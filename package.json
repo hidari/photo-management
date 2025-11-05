@@ -2,11 +2,7 @@
   "name": "photo-management",
   "scripts": {
     "lint": "biome check .",
-    "lint:fix": "biome check --fix .",
-    "gas:pull": "cd apps-script && clasp pull",
-    "gas:build": "cd apps-script && tsc && cp appsscript.json dist/",
-    "gas:push": "cd apps-script && clasp push",
-    "gas:deploy": "pnpm run lint && pnpm run gas:build && pnpm run gas:push"
+    "lint:fix": "biome check --fix ."
   },
   "license": "MIT",
   "packageManager": "pnpm@10.14.0",
