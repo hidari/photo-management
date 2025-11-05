@@ -1,10 +1,6 @@
-# 全てのファイルを一旦無視
-**/**
+# テストファイルを除外
+**/*.test.js
+**/*.spec.js
 
-# 以下のファイルのみアップロード対象とする
-!dist/**/*.js
-!dist/appsscript.json
-
-# ただし、テストファイルは除外
-dist/**/*.test.js
-dist/**/*.spec.js
+# TypeScriptソースファイルを除外
+**/*.ts

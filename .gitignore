@@ -21,6 +21,7 @@ coverage.lcov
 apps-script/dist/
 apps-script/node_modules/
 .clasprc.json
+.clasp.json
 
 # Claude Code
 /.claude/
