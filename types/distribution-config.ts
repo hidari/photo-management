@@ -23,6 +23,9 @@ export interface EventModel {
 
   /** XのDMインテントURL */
   intent_url?: string;
+
+  /** 配布済みフラグ (true: 配布済み, false/未設定: 未配布) */
+  distributed?: boolean;
 }
 
 /**
@@ -67,9 +70,6 @@ export interface DirectoryStructure {
 export interface ModelDirectory {
   /** モデル名 */
   modelName: string;
-
-  /** モデルディレクトリのパス */
-  modelDir: string;
 
   /** 配布用ディレクトリのパス */
   distDir: string;

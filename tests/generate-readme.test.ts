@@ -2,7 +2,7 @@ import { assertEquals, assertRejects } from 'https://deno.land/std@0.208.0/asser
 import { exists } from 'https://deno.land/std@0.208.0/fs/exists.ts';
 import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import { EtaError } from 'https://deno.land/x/eta@v3.4.0/src/index.ts';
-import { renderTemplate } from '../tools/generate-readme.ts';
+import { renderTemplate } from '../tools/lib/template-renderer.ts';
 import { minimalConfig, testConfig } from './helpers/test-config.ts';
 
 /**

@@ -14,15 +14,83 @@
 
 ## よく使うコマンド
 
-### Lint/Format
+### 開発用コマンド
+
+#### Lint/Format
+リポジトリルートで以下を実行:
+
 ```bash
 pnpm run lint:fix
 ```
 
 設定は `./biome.jsonc` を参照。
 
+#### テスト実行
+```bash
+deno task test
+```
+
+カバレッジ閾値は40%に設定されています。
+
+### 写真配布ツール
+
+#### 初期設定
+```bash
+deno task setup
+```
+
+**初回のみ実行:**
+- config.ts の作成
+- ripバイナリのダウンロード
+- Google Drive OAuth認証
+
+#### イベント作成
+```bash
+deno task init
+```
+
+**実行内容:**
+- イベント情報の対話的入力
+- ディレクトリ構造の自動作成
+- README.txt の生成
+- distribution.config.toml の保存
+
+#### モデル追加
+```bash
+# toml編集後、差分を同期
+deno task add
+
+# 対話的に追加
+deno task add --dialog
+```
+
+#### アップロード統合
+```bash
+# フォルダ配布（推奨）
+deno task upload --all
+
+# zip配布
+deno task upload --all --as-archive
+```
+
+**実行内容:**
+- Google Driveへのアップロード
+- 配布メッセージ生成
+- インテントURL生成（X連携）
+- distribution.config.toml 自動更新
+
+#### 配布実行
+```bash
+deno task ship
+```
+
+**実行内容:**
+- 対話的にモデル選択
+- ブラウザでDM画面を開く
+- 配布済みフラグの更新
+
 ### ツールの実行
-denoスクリプトは `deno task` でリポジトリのルートから実行されることを前提としています
+denoスクリプトは `deno task` でリポジトリのルートから実行されることを前提としています。
 
 ## アーキテクチャ
 

@@ -45,155 +45,238 @@ deno --version
 
 詳細なインストール手順は [Deno公式サイト](https://deno.land/) を参照してください。
 
+## クイックスタート
+
+初めて使う方は以下の手順で始められます：
+
+```bash
+# 1. 初期設定（対話式で config.ts 作成、ripバイナリ、OAuth認証）
+deno task setup
+
+# 2. イベント作成（イベント情報入力、ディレクトリ作成、README生成）
+deno task init
+
+# 3. 各モデルのディレクトリに写真を配置
+
+# 4. Google Driveにアップロードして配布準備
+deno task upload --all
+
+# 5. モデルへDM送信
+deno task ship
+```
+
 ## 基本的なワークフロー
 
-1. `deno task init` でイベント情報を対話的に入力
-2. `deno task dirs` でディレクトリ構造を作成
-3. 各ディレクトリに写真を配置
-4. 配布準備を一括実行:
-   - **フォルダ共有方式**: `deno task ship-folders`
-   - **zip配布方式**: `deno task ship`
-5. `distribution.config.toml` 内の `intent_url` のURLを開き、必要に応じてDMの内容を確認・修正して送信
-
-**個別実行する場合:**
-
-#### フォルダ共有方式
-4. `deno task upload-folders` で写真をフォルダとしてアップロード
-5. `deno task distribution` で配布用メッセージ作成
-6. `deno task intent` でXのDM送信URLを作成
-
-#### zip配布方式
-4. `deno task archive` でzipファイルを作成
-5. `deno task upload` でGoogle Driveにアップロード
-6. `deno task distribution` で配布用メッセージ作成
-7. `deno task intent` でXのDM送信URLを作成
-
-## セットアップ
-
-### 1. 設定ファイルの作成
-
-`config.example.ts` を `config.ts` にコピーして、設定を記入してください：
+### 1. 初回セットアップ
 
 ```bash
-cp config.example.ts config.ts
+deno task setup
 ```
 
-### 2. 設定項目の編集
+対話的に以下を設定します：
+- config.ts の作成（管理者名、連絡先、保存先ディレクトリ）
+- ripバイナリのダウンロード（高速アーカイブ作成用）
+- Google Drive OAuth認証（アップロード機能を使用する場合）
 
-`config.ts` を開き、以下の項目を設定してください：
-
-- `administrator`: あなたの名前
-- `contacts`: 連絡先となるSNSアカウント（X、Blueskyなど）
-- `developedDirectoryBase`: 現像済み画像を保存するディレクトリのパス
-- `archiveTool`: 配布用zipファイルを作成するツールを指定（オプション）
-- `googleDrive`: Google Driveアップロード機能を使用する場合は設定（OAuth 2.0認証）
-- `distributionRetentionDays`: 配布フォルダの保持期間(日数、デフォルト30日)
-- `cleanupNotificationEmail`: 自動削除時の通知先メールアドレス（Google Apps Script使用時）
-
-**注意**: このファイルは公開しないでください。
-
-## 利用可能なツール
-
-このリポジトリには写真配布を効率化する以下のツールが含まれています。
-
-### 1. README生成ツール
-
-テンプレートから写真配布用のREADMEを生成します。
-
-```bash
-deno task readme
-```
-
-📄 [詳細なドキュメント](docs/README%E7%94%9F%E6%88%90%E3%83%84%E3%83%BC%E3%83%AB.md)
-
-### 2. イベント情報初期化ツール
-
-対話的にイベント情報（日付、イベント名、モデル情報）を入力し、`distribution.config.toml` を作成するツールです。
+### 2. イベント作成
 
 ```bash
 deno task init
 ```
 
-画面の指示に従って以下の情報を入力します：
+イベント情報（日付、イベント名、モデル情報）を入力すると：
+- イベント用ディレクトリ自動作成
+- 各モデルの配布用ディレクトリ作成
+- README.txt ファイル生成
+- distribution.config.toml 保存
+
+### 3. 写真配置
+
+作成されたディレクトリ（`YYYYMMDD_イベント名/DIST_DIR_モデル名さん/`）に現像済み写真を配置します。
+
+### 4. アップロードと配布準備
+
+```bash
+# フォルダ配布（推奨）: モデルが個別の写真を選んでダウンロード可能
+deno task upload --all
+
+# zip配布: 全写真を1つのzipファイルにまとめて配布
+deno task upload --all --as-archive
+```
+
+このコマンドで以下が自動実行されます：
+- Google Driveへのアップロード
+- 配布メッセージ生成
+- X（Twitter）DM送信用URL生成（SNS設定がある場合）
+
+### 5. モデルへDM送信
+
+```bash
+deno task ship
+```
+
+対話的にモデルを選択して、ブラウザでDM画面を開きます。
+
+## セットアップ
+
+### 自動セットアップ（推奨）
+
+```bash
+deno task setup
+```
+
+対話的に以下を設定できます：
+- `config.ts` の作成
+- ripバイナリのダウンロード
+- Google Drive OAuth認証
+
+### 手動セットアップ
+
+#### 1. 設定ファイルの作成
+
+`config.example.ts` を `config.ts` にコピーして編集：
+
+```bash
+cp config.example.ts config.ts
+```
+
+#### 2. 必須項目
+
+- `administrator`: あなたの名前
+- `developedDirectoryBase`: 現像済み画像を保存するディレクトリのパス
+
+#### 3. オプション項目
+
+- `contacts`: 連絡先SNSアカウント（X、Blueskyなど）
+- `googleDrive`: OAuth 2.0認証設定（clientId, clientSecret）
+- `archiveTool`: zip作成ツール（未設定の場合は自動ダウンロード）
+- `distributionRetentionDays`: 配布フォルダの保持期間（デフォルト30日）
+- `cleanupNotificationEmail`: 自動削除通知先メール
+
+**注意**: `config.ts` は公開しないでください。
+
+## 利用可能なコマンド
+
+新しい統合コマンドにより、写真配布プロセスが大幅に簡素化されました。
+
+### 1. setup - 初期設定
+
+プロジェクトの初期設定を対話的に実行します。
+
+```bash
+deno task setup
+```
+
+**実行内容:**
+- config.ts の作成（管理者名、連絡先、保存先ディレクトリ）
+- ripバイナリのダウンロード（高速アーカイブ作成用）
+- Google Drive OAuth認証（任意）
+- Google Apps Script設定案内（任意）
+
+**初回のみ実行すればOKです。**
+
+### 2. init - イベント初期化
+
+新しいイベントを作成し、配布用ディレクトリを準備します。
+
+```bash
+# 対話的にイベント情報を入力
+deno task init
+
+# 既存のtomlから作成
+deno task init --config ./path/to/config.toml
+```
+
+**実行内容:**
+- イベント情報の入力（日付、イベント名、モデル情報）
+- ディレクトリ構造の自動作成
+- README.txt ファイルの生成
+- distribution.config.toml の保存
+
+**入力項目:**
 - イベント日付（YYYYMMDD形式）
 - イベント名
-- モデル情報（名前、初回撮影かどうか、SNS URL）
+- モデル情報（名前、初回撮影か、SNS URL）
 
-📄 [詳細なドキュメント](docs/%E3%82%A4%E3%83%99%E3%83%B3%E3%83%88%E6%83%85%E5%A0%B1%E5%88%9D%E6%9C%9F%E5%8C%96%E3%83%84%E3%83%BC%E3%83%AB.md)
+### 3. add - モデル追加
 
-### 3. ディレクトリ構造作成ツール
-
-イベント情報からモデルごとの配布用ディレクトリ構造を自動生成します。
-
-`deno task init` で作成された `distribution.config.toml` を使用して、以下のコマンドでディレクトリ構造を生成：
+既存イベントに新しいモデルを追加します。
 
 ```bash
-deno task dirs
+# tomlを編集後、差分を同期
+deno task add
+
+# 対話的にモデルを追加
+deno task add --dialog
+
+# 特定のtomlを指定
+deno task add --config ./path/to/config.toml
 ```
 
-📄 [詳細なドキュメント](docs/%E3%83%87%E3%82%A3%E3%83%AC%E3%82%AF%E3%83%88%E3%83%AA%E6%A7%8B%E9%80%A0%E4%BD%9C%E6%88%90%E3%83%84%E3%83%BC%E3%83%AB.md)
+**実行内容:**
+- 新しいモデルのディレクトリ作成
+- README.txt ファイル生成
+- distribution.config.toml 更新
 
-### 4. アーカイブ作成ツール
+### 4. upload - アップロード統合
 
-配布用ディレクトリをzip形式にアーカイブします。
-
-```bash
-deno task archive
-```
-
-📄 [詳細なドキュメント](docs/%E3%82%A2%E3%83%BC%E3%82%AB%E3%82%A4%E3%83%96%E4%BD%9C%E6%88%90%E3%83%84%E3%83%BC%E3%83%AB.md)
-
-### 5. Google Driveアップロードツール
-
-zipファイルをGoogle Driveにアップロードし、共有URLを自動取得します。
-
-このツールを利用するには初回のみ OAuth 2.0 認証のセットアップが必要です。ブラウザでGoogleアカウントにログインするだけで、他のツール（gcloud CLIなど）のインストールは不要です。詳細は下記ドキュメントを参照してください。
+Google Driveへのアップロード、メッセージ生成、インテントURL生成を一括実行します。
 
 ```bash
+# 全モデルをフォルダ配布（推奨）
+deno task upload --all
+
+# 全モデルをzip配布
+deno task upload --all --as-archive
+
+# 対話的に選択
 deno task upload
+
+# アップロード後にローカルzipを削除
+deno task upload --all --as-archive --delete-after-upload
 ```
 
-📄 [詳細なドキュメント](docs/Google%20Drive%E3%82%A2%E3%83%83%E3%83%97%E3%83%AD%E3%83%BC%E3%83%89%E3%83%84%E3%83%BC%E3%83%AB.md)
+**実行内容:**
+- Google Driveへのアップロード
+  - フォルダ配布: 個別写真をアップロード（モデルが選んでダウンロード可能）
+  - zip配布: zipファイルをアップロード
+- 配布メッセージの自動生成
+- X（Twitter）DM送信用URL生成（SNS設定がある場合）
+- distribution.config.toml 自動更新
 
-### 6. 配布メッセージ生成ツール
+**オプション:**
+- `--all`: 全モデルを処理
+- `--as-archive`: zip配布方式（デフォルトはフォルダ配布）
+- `--delete-after-upload`: アップロード後にローカルzipを削除
+- `--config`: tomlファイルを指定
 
-モデルごとの配布用メッセージを自動生成し、`distribution.config.toml`に追記します。Google Driveのダウンロードリンクを含む連絡文がTOMLファイルの各モデルセクションに`message`フィールドとして追加されます。
+### 5. ship - 配布実行
+
+モデルへの配布メッセージ送信とフラグ管理を行います。
 
 ```bash
-deno task distribution
+deno task ship
+
+# 配布済みモデルも含める
+deno task ship --force
 ```
 
-📄 [詳細なドキュメント](docs/%E9%85%8D%E5%B8%83%E3%83%A1%E3%83%83%E3%82%BB%E3%83%BC%E3%82%B8%E7%94%9F%E6%88%90%E3%83%84%E3%83%BC%E3%83%AB.md)
+**実行内容:**
+- 配布可能なモデルのリスト表示
+- 対話的にモデルを選択
+- 配布メッセージのプレビュー
+- ブラウザでDM画面を開く
+- 配布済みフラグの更新
 
-### 7. XのDMインテント作成ツール
+**オプション:**
+- `--force`: 配布済みモデルも再配布対象に含める
+- `--config`: tomlファイルを指定
 
-各モデルのXアカウントのDM画面を直接開くURLを生成し`distribution.config.toml`に追記します。リンクにアクセスするだけで配布メッセージが入力された状態でDM画面が開くため、写真配布の手間を大幅に削減できます。
+## その他の便利なコマンド
 
-```bash
-deno task intent
-```
+### cleanup - 古いフォルダ削除
 
-📄 [詳細なドキュメント](docs/X%E3%81%AEDM%E3%82%A4%E3%83%B3%E3%83%86%E3%83%B3%E3%83%88%E4%BD%9C%E6%88%90%E3%83%84%E3%83%BC%E3%83%AB.md)
-
-### 8. Google Driveフォルダ共有アップロードツール
-
-個別の写真ファイルをモデルごとのフォルダにアップロードし、フォルダ共有URLを自動取得します。モデルは必要な写真だけを選んでダウンロードできるため、スマホのストレージ容量を節約できます。
-
-```bash
-deno task upload-folders
-```
-
-**従来のzip配布との違い:**
-- モデルは個別の写真を選んでダウンロード可能
-- フォルダごと一括でzipダウンロードも可能
-- Google Driveアプリでより快適に閲覧可能
-- 検索結果に表示されない安全な共有設定
-
-📄 [詳細なドキュメント](docs/Google%20Drive%E3%83%95%E3%82%A9%E3%83%AB%E3%83%80%E5%85%B1%E6%9C%89%E3%82%A2%E3%83%83%E3%83%97%E3%83%AD%E3%83%BC%E3%83%89%E3%83%84%E3%83%BC%E3%83%AB.md)
-
-### 9. 古いフォルダ削除ツール
-
-Google Drive上の古いイベントフォルダを削除して、ストレージを効率的に管理します。
+Google Drive上の古いイベントフォルダを削除してストレージを管理します。
 
 ```bash
 # 削除対象を確認(dry-run)
@@ -206,34 +289,4 @@ deno task cleanup --execute
 deno task cleanup --execute --days 60
 ```
 
-**Google Apps Scriptによる自動削除:**
-トリガーで定期的に自動実行することも可能です。
-
 📄 [詳細なドキュメント](docs/%E5%8F%A4%E3%81%84%E3%83%95%E3%82%A9%E3%83%AB%E3%83%80%E5%89%8A%E9%99%A4%E3%83%84%E3%83%BC%E3%83%AB.md)
-
-### 10. 一括配布準備コマンド
-
-アーカイブ作成からDMインテントURL生成までの配布準備工程を一括で実行します。
-
-#### zip配布方式
-
-```bash
-deno task ship
-```
-
-1. `deno task archive` - zipファイルを作成
-2. `deno task upload` - Google Driveにアップロード
-3. `deno task distribution` - 配布用メッセージ作成
-4. `deno task intent` - XのDM送信URLを作成
-
-#### フォルダ共有方式
-
-```bash
-deno task ship-folders
-```
-
-1. `deno task upload-folders` - フォルダとして写真をアップロード
-2. `deno task distribution` - 配布用メッセージ作成
-3. `deno task intent` - XのDM送信URLを作成
-
-各ステップが成功した場合のみ次のステップに進むため、エラーが発生した場合はその時点で処理が停止します。

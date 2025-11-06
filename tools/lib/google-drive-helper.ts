@@ -2,6 +2,43 @@
  * Google Driveフォルダの検索・作成・検証を行うヘルパー関数
  */
 
+import { basename, join } from 'https://deno.land/std@0.208.0/path/mod.ts';
+
+/**
+ * 設定ディレクトリのパスを取得
+ */
+function getConfigDir(): string {
+  const home = Deno.env.get('HOME') || Deno.env.get('USERPROFILE') || '';
+  return join(home, '.config', 'photo-management');
+}
+
+/**
+ * PhotoDistributionフォルダのIDを読み込む
+ *
+ * @returns フォルダID（見つからない場合はnull）
+ */
+export async function loadFolderId(): Promise<string | null> {
+  try {
+    const configDir = getConfigDir();
+    const folderIdPath = join(configDir, 'folder-id.txt');
+    return (await Deno.readTextFile(folderIdPath)).trim();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * PhotoDistributionフォルダのIDを保存する
+ *
+ * @param folderId - 保存するフォルダID
+ */
+export async function saveFolderId(folderId: string): Promise<void> {
+  const configDir = getConfigDir();
+  await Deno.mkdir(configDir, { recursive: true });
+  const folderIdPath = join(configDir, 'folder-id.txt');
+  await Deno.writeTextFile(folderIdPath, folderId);
+}
+
 /**
  * Google Drive APIでフォルダIDの存在を確認する
  *
@@ -180,4 +217,280 @@ export async function ensurePhotoDistributionFolder(
   console.log(`  📁 「${defaultFolderName}」フォルダが見つかりませんでした`);
   const newFolderId = await createFolder(accessToken, defaultFolderName);
   return newFolderId;
+}
+
+/**
+ * Google Drive APIでフォルダを検索する（親ID指定版）
+ *
+ * @param accessToken - アクセストークン
+ * @param folderName - 検索するフォルダ名
+ * @param parentId - 親フォルダID（指定しない場合はルート直下を検索）
+ * @returns フォルダID（見つからない場合はnull）
+ */
+export async function findFolder(
+  accessToken: string,
+  folderName: string,
+  parentId?: string
+): Promise<string | null> {
+  const query = parentId
+    ? `name='${folderName}' and '${parentId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`
+    : `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`;
+
+  const response = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name)`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`フォルダ検索に失敗しました: ${error}`);
+  }
+
+  const data = await response.json();
+
+  if (data.files && data.files.length > 0) {
+    return data.files[0].id;
+  }
+
+  return null;
+}
+
+/**
+ * Google Drive APIでフォルダを作成する（親ID指定版）
+ *
+ * @param accessToken - アクセストークン
+ * @param folderName - フォルダ名
+ * @param parentId - 親フォルダID（指定しない場合はルート直下）
+ * @returns 作成されたフォルダのID
+ */
+export async function createFolderWithParent(
+  accessToken: string,
+  folderName: string,
+  parentId?: string
+): Promise<string> {
+  const metadata: Record<string, unknown> = {
+    name: folderName,
+    mimeType: 'application/vnd.google-apps.folder',
+  };
+
+  if (parentId) {
+    metadata.parents = [parentId];
+  }
+
+  const response = await fetch('https://www.googleapis.com/drive/v3/files', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(metadata),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`フォルダ作成に失敗しました: ${error}`);
+  }
+
+  const data = await response.json();
+  return data.id;
+}
+
+/**
+ * イベント用フォルダを作成する（既存の場合は再利用）
+ *
+ * @param accessToken - アクセストークン
+ * @param parentId - 親フォルダID
+ * @param eventDate - イベント日付
+ * @param eventName - イベント名
+ * @returns フォルダID
+ */
+export async function createEventFolder(
+  accessToken: string,
+  parentId: string,
+  eventDate: string,
+  eventName: string
+): Promise<string> {
+  const folderName = `${eventDate}_${eventName}`;
+
+  // 既存のフォルダを検索
+  let folderId = await findFolder(accessToken, folderName, parentId);
+
+  if (!folderId) {
+    // フォルダを作成
+    console.log(`📁 イベントフォルダを作成中: ${folderName}`);
+    folderId = await createFolderWithParent(accessToken, folderName, parentId);
+  }
+
+  return folderId;
+}
+
+/**
+ * モデル用フォルダを作成する
+ *
+ * @param accessToken - アクセストークン
+ * @param parentId - 親フォルダID（イベントフォルダ）
+ * @param modelName - モデル名
+ * @returns フォルダID
+ */
+export async function createModelFolder(
+  accessToken: string,
+  parentId: string,
+  modelName: string
+): Promise<string> {
+  const folderName = `${modelName}用フォルダ`;
+
+  // 既存のフォルダを検索
+  let folderId = await findFolder(accessToken, folderName, parentId);
+
+  if (!folderId) {
+    // フォルダを作成
+    folderId = await createFolderWithParent(accessToken, folderName, parentId);
+  }
+
+  return folderId;
+}
+
+/**
+ * ファイルをGoogle Driveにアップロードする
+ *
+ * @param accessToken - アクセストークン
+ * @param filePath - アップロードするファイルのパス
+ * @param folderId - アップロード先のフォルダID
+ * @returns アップロードされたファイルのID
+ */
+export async function uploadFile(
+  accessToken: string,
+  filePath: string,
+  folderId: string
+): Promise<string> {
+  const fileName = basename(filePath);
+  const fileContent = await Deno.readFile(filePath);
+
+  // メタデータを作成
+  const metadata = {
+    name: fileName,
+    parents: [folderId],
+  };
+
+  // マルチパートアップロード（バイナリ直接送信）
+  const boundary = '-------314159265358979323846';
+
+  // マルチパートボディの各部分を構築
+  const metadataPart = new TextEncoder().encode(
+    `--${boundary}\r\n` +
+      'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+      JSON.stringify(metadata) +
+      '\r\n'
+  );
+
+  const filePart = new TextEncoder().encode(
+    `--${boundary}\r\nContent-Type: application/octet-stream\r\n\r\n`
+  );
+
+  const closingBoundary = new TextEncoder().encode(`\r\n--${boundary}--`);
+
+  // すべてのパートを結合
+  const totalLength =
+    metadataPart.length + filePart.length + fileContent.length + closingBoundary.length;
+  const body = new Uint8Array(totalLength);
+
+  let offset = 0;
+  body.set(metadataPart, offset);
+  offset += metadataPart.length;
+  body.set(filePart, offset);
+  offset += filePart.length;
+  body.set(fileContent, offset);
+  offset += fileContent.length;
+  body.set(closingBoundary, offset);
+
+  const response = await fetch(
+    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': `multipart/related; boundary=${boundary}`,
+      },
+      body: body,
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`ファイルのアップロードに失敗しました: ${error}`);
+  }
+
+  const data = await response.json();
+  return data.id;
+}
+
+/**
+ * ファイルを公開して共有リンクを取得する
+ *
+ * @param accessToken - アクセストークン
+ * @param fileId - ファイルID
+ * @returns 共有リンク
+ */
+export async function makeFilePublic(accessToken: string, fileId: string): Promise<string> {
+  // ファイルを公開設定にする
+  const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      role: 'reader',
+      type: 'anyone',
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`ファイルの公開設定に失敗しました: ${error}`);
+  }
+
+  // ダイレクトダウンロードリンクを返す
+  // この形式ではリンクを開くと直接ダウンロードが開始される
+  // プレビュー画面を経由せず、モデルさんが混乱しない
+  return `https://drive.google.com/uc?export=download&id=${fileId}`;
+}
+
+/**
+ * フォルダを共有して共有リンクを取得する
+ * allowFileDiscovery: false により、検索結果に表示されない
+ *
+ * @param accessToken - アクセストークン
+ * @param folderId - フォルダID
+ * @returns 共有リンク
+ */
+export async function makeFolderPublic(accessToken: string, folderId: string): Promise<string> {
+  // フォルダを公開設定にする
+  const response = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${folderId}/permissions`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        role: 'reader',
+        type: 'anyone',
+        allowFileDiscovery: false,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`フォルダの公開設定に失敗しました: ${error}`);
+  }
+
+  // フォルダのウェブリンクを返す
+  return `https://drive.google.com/drive/folders/${folderId}`;
 }
