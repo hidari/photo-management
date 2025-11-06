@@ -3,6 +3,7 @@
  */
 
 import { assertEquals } from 'https://deno.land/std@0.208.0/assert/mod.ts';
+import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import {
   findLatestEventDir,
   findTomlConfigPath,
@@ -34,9 +35,9 @@ Deno.test('findLatestEventDir: 最新のイベントディレクトリを見つ�
   await Deno.mkdir(TEST_DIR, { recursive: true });
 
   // 複数のイベントディレクトリを作成（異なる時刻で）
-  const dir1 = `${TEST_DIR}/20251010_イベント1`;
-  const dir2 = `${TEST_DIR}/20251011_イベント2`;
-  const dir3 = `${TEST_DIR}/20251012_イベント3`;
+  const dir1 = join(TEST_DIR, '20251010_イベント1');
+  const dir2 = join(TEST_DIR, '20251011_イベント2');
+  const dir3 = join(TEST_DIR, '20251012_イベント3');
 
   await Deno.mkdir(dir1);
   await new Promise((resolve) => setTimeout(resolve, 10)); // 時間差を作る
@@ -58,7 +59,7 @@ Deno.test('findLatestEventDir: 最新のイベントディレクトリを見つ�
 Deno.test('findLatestEventDir: ディレクトリが存在しない場合nullを返す', async () => {
   await cleanup();
 
-  const latest = await findLatestEventDir(`${TEST_DIR}/non-existent`);
+  const latest = await findLatestEventDir(join(TEST_DIR, 'non-existent'));
 
   assertEquals(latest, null);
 
@@ -84,11 +85,11 @@ Deno.test('findLatestEventDir: 空のディレクトリの場合nullを返す', 
  */
 Deno.test('findTomlInEventDir: TOMLファイルを見つける', async () => {
   await cleanup();
-  const eventDir = `${TEST_DIR}/20251012_イベント`;
+  const eventDir = join(TEST_DIR, '20251012_イベント');
   await Deno.mkdir(eventDir, { recursive: true });
 
   // TOMLファイルを作成
-  const tomlPath = `${eventDir}/distribution.config.toml`;
+  const tomlPath = join(eventDir, 'distribution.config.toml');
   await Deno.writeTextFile(tomlPath, '# test');
 
   const foundPath = await findTomlInEventDir(eventDir);
@@ -103,7 +104,7 @@ Deno.test('findTomlInEventDir: TOMLファイルを見つける', async () => {
  */
 Deno.test('findTomlInEventDir: TOMLファイルが存在しない場合nullを返す', async () => {
   await cleanup();
-  const eventDir = `${TEST_DIR}/20251012_イベント`;
+  const eventDir = join(TEST_DIR, '20251012_イベント');
   await Deno.mkdir(eventDir, { recursive: true });
 
   const foundPath = await findTomlInEventDir(eventDir);
@@ -119,7 +120,7 @@ Deno.test('findTomlInEventDir: TOMLファイルが存在しない場合nullを�
 Deno.test('findTomlInEventDir: ディレクトリが存在しない場合nullを返す', async () => {
   await cleanup();
 
-  const foundPath = await findTomlInEventDir(`${TEST_DIR}/non-existent`);
+  const foundPath = await findTomlInEventDir(join(TEST_DIR, 'non-existent'));
 
   assertEquals(foundPath, null);
 
@@ -132,13 +133,13 @@ Deno.test('findTomlInEventDir: ディレクトリが存在しない場合nullを
 Deno.test('findTomlConfigPath: 最新イベントのTOML設定ファイルを見つける', async () => {
   await cleanup();
 
-  const baseDir = `${TEST_DIR}/developed`;
+  const baseDir = join(TEST_DIR, 'developed');
   await Deno.mkdir(baseDir, { recursive: true });
 
   // イベントディレクトリとTOMLファイルを作成
-  const eventDir = `${baseDir}/20251012_テストイベント`;
+  const eventDir = join(baseDir, '20251012_テストイベント');
   await Deno.mkdir(eventDir, { recursive: true });
-  const tomlPath = `${eventDir}/distribution.config.toml`;
+  const tomlPath = join(eventDir, 'distribution.config.toml');
   await Deno.writeTextFile(tomlPath, '# test');
 
   const config = {
@@ -159,7 +160,7 @@ Deno.test('findTomlConfigPath: 最新イベントのTOML設定ファイルを見
 Deno.test('findTomlConfigPath: イベントディレクトリが存在しない場合エラー', async () => {
   await cleanup();
 
-  const baseDir = `${TEST_DIR}/developed-empty`;
+  const baseDir = join(TEST_DIR, 'developed-empty');
   await Deno.mkdir(baseDir, { recursive: true });
 
   const config = {
@@ -184,11 +185,11 @@ Deno.test('findTomlConfigPath: イベントディレクトリが存在しない�
 Deno.test('findTomlConfigPath: TOMLファイルが存在しない場合エラー', async () => {
   await cleanup();
 
-  const baseDir = `${TEST_DIR}/developed-no-toml`;
+  const baseDir = join(TEST_DIR, 'developed-no-toml');
   await Deno.mkdir(baseDir, { recursive: true });
 
   // イベントディレクトリのみ作成（TOMLなし）
-  const eventDir = `${baseDir}/20251012_テストイベント`;
+  const eventDir = join(baseDir, '20251012_テストイベント');
   await Deno.mkdir(eventDir, { recursive: true });
 
   const config = {
