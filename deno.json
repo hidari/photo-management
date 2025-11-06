@@ -12,8 +12,5 @@
     "gas:push": "cd apps-script && npx tsc && npx clasp push --force",
     "gas:deploy": "deno task gas:push && deno task gas:setup"
   },
-  "nodeModulesDir": "auto",
-  "imports": {
-    "types": "./types/"
-  }
+  "nodeModulesDir": "auto"
 }
