@@ -61,18 +61,7 @@ export async function verifyFolderId(accessToken: string, folderId: string): Pro
 
     if (response.status === 404) {
       console.log(`  [DEBUG] フォルダが見つかりません (404)`);
-      console.log('');
-      console.log('  ⚠️  フォルダID検証エラー: このフォルダにアクセスできません');
-      console.log('');
-      console.log('  考えられる原因:');
-      console.log('  1. 古いアクセストークンを使用している（最も可能性が高い）');
-      console.log('     → 解決: 以下のコマンドでトークンを削除してから再実行');
-      console.log('       rm ~/.config/photo-management/google-drive-token.json');
-      console.log('       deno task gas:setup');
-      console.log('');
-      console.log('  2. フォルダが削除されている');
-      console.log('     → 解決: 新しいフォルダが自動作成されます');
-      console.log('');
+      console.log('  ℹ️  設定されたIDでフォルダが見つかりませんでした（自動的に再検索します）');
       return false;
     }
 
@@ -236,6 +225,10 @@ export async function findFolder(
     ? `name='${folderName}' and '${parentId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`
     : `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`;
 
+  console.log(`  [DEBUG] フォルダ検索: ${folderName}`);
+  console.log(`  [DEBUG] 親フォルダID: ${parentId || 'ルート直下'}`);
+  console.log(`  [DEBUG] クエリ: ${query}`);
+
   const response = await fetch(
     `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name)`,
     {
@@ -245,17 +238,23 @@ export async function findFolder(
     }
   );
 
+  console.log(`  [DEBUG] API Status: ${response.status}`);
+
   if (!response.ok) {
     const error = await response.text();
+    console.log(`  [DEBUG] API エラー: ${error}`);
     throw new Error(`フォルダ検索に失敗しました: ${error}`);
   }
 
   const data = await response.json();
+  console.log(`  [DEBUG] 検索結果: ${data.files?.length || 0}件`);
 
   if (data.files && data.files.length > 0) {
+    console.log(`  [DEBUG] 既存フォルダ検出: ${data.files[0].name} (${data.files[0].id})`);
     return data.files[0].id;
   }
 
+  console.log(`  [DEBUG] フォルダが見つかりませんでした`);
   return null;
 }
 
@@ -316,6 +315,9 @@ export async function createEventFolder(
 ): Promise<string> {
   const folderName = `${eventDate}_${eventName}`;
 
+  console.log(`\n📁 イベントフォルダを確認中: ${folderName}`);
+  console.log(`  [DEBUG] 親フォルダID: ${parentId}`);
+
   // 既存のフォルダを検索
   let folderId = await findFolder(accessToken, folderName, parentId);
 
@@ -323,6 +325,9 @@ export async function createEventFolder(
     // フォルダを作成
     console.log(`📁 イベントフォルダを作成中: ${folderName}`);
     folderId = await createFolderWithParent(accessToken, folderName, parentId);
+    console.log(`✅ イベントフォルダ作成完了: ${folderId}`);
+  } else {
+    console.log(`✅ 既存のイベントフォルダを使用: ${folderId}`);
   }
 
   return folderId;

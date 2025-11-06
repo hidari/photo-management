@@ -421,12 +421,14 @@ async function main() {
     // PhotoDistributionフォルダを確保
     console.log('📂 Google Driveフォルダ構造を確保中...');
     const currentFolderId = await loadFolderId();
+    console.log(`  [DEBUG] 保存されているフォルダID: ${currentFolderId || 'なし'}`);
     const photoDistFolderId = await ensurePhotoDistributionFolder(
       accessToken,
       currentFolderId ?? undefined
     );
     await saveFolderId(photoDistFolderId);
     console.log(`✅ PhotoDistributionフォルダ: ${photoDistFolderId}`);
+    console.log(`  [DEBUG] フォルダIDを保存しました: ${photoDistFolderId}`);
 
     // イベントフォルダを作成
     const eventFolderId = await createEventFolder(
@@ -435,7 +437,6 @@ async function main() {
       event.date,
       event.event_name
     );
-    console.log(`✅ イベントフォルダ作成完了`);
     console.log();
 
     // Puppeteerの準備（X連携モデルがいる場合のみ）
