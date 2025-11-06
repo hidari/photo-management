@@ -116,7 +116,12 @@ Deno.test('saveFolderId: 設定ディレクトリが自動作成される', asyn
 /**
  * fetchのモックヘルパー
  */
-function mockFetch(response: { ok: boolean; status?: number; json?: () => Promise<unknown>; text?: () => Promise<string> }) {
+function mockFetch(response: {
+  ok: boolean;
+  status?: number;
+  json?: () => Promise<unknown>;
+  text?: () => Promise<string>;
+}) {
   const originalFetch = globalThis.fetch;
 
   globalThis.fetch = async () => {
@@ -282,4 +287,3 @@ Deno.test('uploadFile: ファイルをアップロードする', async () => {
   restore();
   await cleanupTestDir();
 });
-

@@ -279,4 +279,3 @@ outreach = true
   // クリーンアップ
   await Deno.remove('./tests/tmp-toml', { recursive: true });
 });
-
