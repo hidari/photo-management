@@ -13,8 +13,8 @@
 
 import { parse as parseFlags } from 'https://deno.land/std@0.208.0/flags/mod.ts';
 import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
-import type { Config } from '../types/config.ts';
 import config from '../config.ts';
+import type { Config } from '../types/config.ts';
 import { type CleanupResult, cleanupOldEvents, type EventFolderInfo } from './lib/cleanup-logic.ts';
 import { getAccessToken, getAuthClient, getCurrentAccount } from './lib/google-auth.ts';
 
