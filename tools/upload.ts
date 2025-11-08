@@ -137,6 +137,8 @@ async function uploadAsArchive(
 async function uploadAsFolder(
   distDir: string,
   modelName: string,
+  eventDate: string,
+  eventName: string,
   accessToken: string,
   eventFolderId: string
 ): Promise<string> {
@@ -154,7 +156,7 @@ async function uploadAsFolder(
   console.log(`   📁 モデル用フォルダを作成中...`);
   const modelFolderId = await createFolderWithParent(
     accessToken,
-    `${modelName}さん`,
+    `${eventDate}_${eventName}_${config.administrator}撮影_${modelName}さん`,
     eventFolderId
   );
 
@@ -278,7 +280,14 @@ async function processModel(
         deleteAfterUpload
       );
     } else {
-      downloadUrl = await uploadAsFolder(distDir, model.name, accessToken, eventFolderId);
+      downloadUrl = await uploadAsFolder(
+        distDir,
+        model.name,
+        eventDate,
+        eventName,
+        accessToken,
+        eventFolderId
+      );
     }
 
     console.log(`   ✅ アップロード完了`);
