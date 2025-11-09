@@ -196,6 +196,9 @@ async function main() {
       });
       await Deno.writeTextFile(tomlPath, updatedToml);
 
+      // メモリ上のフラグも更新
+      selectedModel.distributed = true;
+
       console.log(`✅ ${selectedModel.name}さん への配布が完了しました`);
       console.log();
 
