@@ -37,26 +37,11 @@ export function configToToml(config: DistributionConfig): string {
       toml += '[[events.models]]\n';
       toml += `name = "${model.name}"\n`;
       toml += `outreach = ${model.outreach}\n`;
-
-      if (model.sns) {
-        toml += `sns = "${model.sns}"\n`;
-      }
-
-      if (model.download_url) {
-        toml += `download_url = "${model.download_url}"\n`;
-      }
-
-      if (model.message) {
-        toml += `message = ${formatMultilineToml(model.message)}\n`;
-      }
-
-      if (model.intent_url) {
-        toml += `intent_url = "${model.intent_url}"\n`;
-      }
-
-      if (model.distributed !== undefined) {
-        toml += `distributed = ${model.distributed}\n`;
-      }
+      toml += `sns = "${model.sns || ''}"\n`;
+      toml += `download_url = "${model.download_url || ''}"\n`;
+      toml += `message = ${formatMultilineToml(model.message || '')}\n`;
+      toml += `intent_url = "${model.intent_url || ''}"\n`;
+      toml += `distributed = ${model.distributed ?? false}\n`;
 
       toml += '\n';
     }

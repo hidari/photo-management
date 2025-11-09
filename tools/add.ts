@@ -58,7 +58,11 @@ function inputModelInfo(): EventModel {
   return {
     name: modelName,
     outreach,
-    sns,
+    sns: sns || '',
+    download_url: '',
+    message: '',
+    intent_url: '',
+    distributed: false,
   };
 }
 

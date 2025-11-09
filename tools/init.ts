@@ -116,7 +116,11 @@ async function inputEventInfo(): Promise<Event> {
     models.push({
       name: modelName,
       outreach,
-      sns,
+      sns: sns || '',
+      download_url: '',
+      message: '',
+      intent_url: '',
+      distributed: false,
     });
 
     console.log(`✅ ${modelName}さん を追加しました`);
