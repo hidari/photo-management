@@ -10,8 +10,8 @@
  */
 
 import { exists } from 'https://deno.land/std@0.208.0/fs/exists.ts';
-import { ensureRipBinary, getBinaryPath } from './ensure-rip-binary.ts';
 import { getAccessToken } from './lib/google-auth.ts';
+import { ensureRipBinary, getBinaryPath } from './lib/rip-binary-setup.ts';
 
 /**
  * 標準入力から1行読み取る

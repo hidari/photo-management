@@ -46,8 +46,8 @@ export async function resolveArchiveTool(appConfig: Config): Promise<string> {
   console.log('🔧 アーカイブツールが未設定です。自動セットアップを開始します...');
   console.log();
 
-  // ensure-rip-binary.tsの関数を動的にインポート
-  const { ensureRipBinary } = await import('../ensure-rip-binary.ts');
+  // rip-binary-setup.tsの関数を動的にインポート
+  const { ensureRipBinary } = await import('./rip-binary-setup.ts');
   const binaryPath = await ensureRipBinary();
 
   console.log();

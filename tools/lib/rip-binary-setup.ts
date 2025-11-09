@@ -1,19 +1,14 @@
-#!/usr/bin/env deno run --allow-read --allow-write --allow-net --allow-env --allow-run
-
 /**
- * ripバイナリ自動セットアップツール
+ * ripバイナリ自動セットアップユーティリティ
  *
- * このスクリプトは、GitHub Releasesからripバイナリをダウンロードしてセットアップします
- *
- * 使い方:
- *   deno task ensure-rip
+ * このライブラリは、GitHub Releasesからripバイナリをダウンロードしてセットアップします
  */
 
 import { ensureDir } from 'https://deno.land/std@0.208.0/fs/mod.ts';
 import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import { decompress } from 'https://deno.land/x/zip@v1.2.5/mod.ts';
 import { Project, SyntaxKind } from 'npm:ts-morph@27.0.0';
-import type { PlatformInfo } from '../types/binary-setup.ts';
+import type { PlatformInfo } from '../../types/binary-setup.ts';
 
 /**
  * GitHub Release情報
@@ -295,27 +290,4 @@ export async function ensureRipBinary(): Promise<string> {
   console.log(`   パス: ${binaryPath}`);
 
   return binaryPath;
-}
-
-/**
- * スクリプトエントリーポイント
- */
-async function main() {
-  try {
-    await ensureRipBinary();
-  } catch (error) {
-    console.error();
-    console.error(`❌ エラー: ${error instanceof Error ? error.message : String(error)}`);
-    console.error();
-    console.error(`手動インストール手順:`);
-    console.error(`1. https://github.com/hidari/rip-zip/releases から最新版をダウンロード`);
-    console.error(`2. バイナリを ~/.config/photo-management/bin/rip に配置（Windowsは rip.exe）`);
-    console.error(`3. config.ts の archiveTool にフルパスを設定`);
-    Deno.exit(1);
-  }
-}
-
-// このファイルが直接実行された場合のみ、main関数を実行する
-if (import.meta.main) {
-  main();
 }

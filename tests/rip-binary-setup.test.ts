@@ -4,7 +4,7 @@ import {
   detectPlatform,
   getBinaryPath,
   testBinary,
-} from '../tools/ensure-rip-binary.ts';
+} from '../tools/lib/rip-binary-setup.ts';
 
 /**
  * detectPlatformのテスト
