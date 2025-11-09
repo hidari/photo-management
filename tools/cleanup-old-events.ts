@@ -90,7 +90,7 @@ async function main() {
     Deno.exit(0);
   }
 
-  console.log('🗑️  古いイベントフォルダ削除ツール');
+  console.log('古いイベントフォルダ削除ツール');
   console.log();
 
   // Google Drive設定の存在確認
@@ -101,7 +101,7 @@ async function main() {
   }
 
   // OAuth認証を実行
-  console.log('🔐 Google Drive認証を確認中...');
+  console.log('Google Drive認証を確認中...');
 
   try {
     const client = await getAuthClient(
@@ -111,9 +111,9 @@ async function main() {
     const currentAccount = await getCurrentAccount(client);
 
     if (currentAccount) {
-      console.log(`   👤 認証アカウント: ${currentAccount}`);
+      console.log(`  認証アカウント: ${currentAccount}`);
     }
-    console.log('   ✅ 認証完了');
+    console.log('  ✅ 認証完了');
   } catch (error) {
     console.error('❌ エラー: Google Drive認証に失敗しました');
     console.error(`   詳細: ${error instanceof Error ? error.message : error}`);
@@ -131,7 +131,7 @@ async function main() {
     Deno.exit(1);
   }
 
-  console.log(`📁 PhotoDistributionフォルダ (ID: ${parentFolderId})`);
+  console.log(`PhotoDistributionフォルダ (ID: ${parentFolderId})`);
   console.log();
 
   // 保持期間を決定
@@ -142,7 +142,7 @@ async function main() {
     Deno.exit(1);
   }
 
-  console.log(`⏰ 保持期間: ${retentionDays}日`);
+  console.log(`保持期間: ${retentionDays}日`);
   console.log();
 
   try {
@@ -154,7 +154,7 @@ async function main() {
 
     const dryRun = !args.execute;
 
-    console.log(`🔍 削除対象のフォルダを検索中...`);
+    console.log(`削除対象のフォルダを検索中...`);
     const result = await cleanupOldEvents(accessToken, parentFolderId, retentionDays, dryRun);
 
     if (Array.isArray(result)) {
@@ -162,30 +162,30 @@ async function main() {
       const folders = result as EventFolderInfo[];
 
       if (folders.length === 0) {
-        console.log('   ✅ 削除対象のフォルダはありません');
+        console.log('  ✅ 削除対象のフォルダはありません');
         console.log();
         Deno.exit(0);
       }
 
-      console.log(`   ⚠️  ${folders.length}個のフォルダが削除対象です:`);
+      console.log(`  ⚠️ ${folders.length}個のフォルダが削除対象です:`);
       console.log();
 
       for (const folder of folders) {
-        console.log(`   • ${folder.name}`);
-        console.log(`     作成日: ${folder.createdTime.toISOString().split('T')[0]}`);
-        console.log(`     経過日数: ${folder.daysOld}日`);
+        console.log(`  • ${folder.name}`);
+        console.log(`    作成日: ${folder.createdTime.toISOString().split('T')[0]}`);
+        console.log(`    経過日数: ${folder.daysOld}日`);
         console.log();
       }
 
-      console.log('📝 実際に削除するには --execute オプションを付けて実行してください:');
-      console.log('   deno task cleanup --execute');
+      console.log('実際に削除するには --execute オプションを付けて実行してください:');
+      console.log('  deno task cleanup --execute');
       console.log();
     } else {
       // 実行モード: 削除結果を表示
       const cleanupResult = result as CleanupResult;
 
       if (cleanupResult.deletedCount === 0 && cleanupResult.errors.length === 0) {
-        console.log('   ✅ 削除対象のフォルダはありません');
+        console.log('  ✅ 削除対象のフォルダはありません');
         console.log();
         Deno.exit(0);
       }
@@ -195,24 +195,24 @@ async function main() {
       console.log();
 
       for (const folder of cleanupResult.deletedFolders) {
-        console.log(`   • ${folder.name}`);
-        console.log(`     作成日: ${folder.createdTime.toISOString().split('T')[0]}`);
-        console.log(`     経過日数: ${folder.daysOld}日`);
+        console.log(`  • ${folder.name}`);
+        console.log(`    作成日: ${folder.createdTime.toISOString().split('T')[0]}`);
+        console.log(`    経過日数: ${folder.daysOld}日`);
         console.log();
       }
 
       if (cleanupResult.errors.length > 0) {
-        console.error(`⚠️  ${cleanupResult.errors.length}個のフォルダの削除に失敗しました:`);
+        console.error(`⚠️ ${cleanupResult.errors.length}個のフォルダの削除に失敗しました:`);
         console.error();
 
         for (const error of cleanupResult.errors) {
-          console.error(`   • ${error.folder.name}`);
-          console.error(`     エラー: ${error.error}`);
+          console.error(`  • ${error.folder.name}`);
+          console.error(`    エラー: ${error.error}`);
           console.error();
         }
       }
 
-      console.log('🎉 クリーンアップが完了しました!');
+      console.log('✅ クリーンアップが完了しました');
     }
   } catch (error) {
     if (error instanceof Error) {

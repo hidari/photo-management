@@ -6,8 +6,8 @@
  * イベント情報の入力からディレクトリ構造作成、README生成までを一括で実行する
  *
  * 使い方:
- *   deno task init                                    # 対話的にイベント情報を入力
- *   deno task init --config ./path/to/config.toml    # 既存tomlから作成
+ *   deno task init                                # 対話的にイベント情報を入力
+ *   deno task init --config ./path/to/config.toml # 既存tomlから作成
  */
 
 import { parse } from 'https://deno.land/std@0.208.0/flags/mod.ts';
@@ -71,14 +71,14 @@ export function validateDate(date: string): boolean {
  */
 async function inputEventInfo(): Promise<Event> {
   clearScreen();
-  console.log('📅 イベント情報の入力');
+  console.log('イベント情報の入力');
   console.log('='.repeat(50));
   console.log();
 
   // 日付入力
   let date = '';
   while (true) {
-    date = readLine('📆 イベント日付 (YYYYMMDD形式):');
+    date = readLine('イベント日付 (YYYYMMDD形式):');
     if (validateDate(date)) {
       break;
     }
@@ -86,18 +86,18 @@ async function inputEventInfo(): Promise<Event> {
   }
 
   // イベント名入力
-  const eventName = readLine('🎪 イベント名:');
+  const eventName = readLine('イベント名:');
 
   // モデル情報入力
   const models: EventModel[] = [];
 
   console.log();
-  console.log('👥 モデル情報の入力');
+  console.log('モデル情報の入力');
   console.log('-'.repeat(50));
 
   while (true) {
     console.log();
-    const modelName = readLine(`📝 モデル名 (${models.length + 1}人目、空欄で終了):`);
+    const modelName = readLine(`モデル名 (${models.length + 1}人目、空欄で終了):`);
 
     if (!modelName) {
       if (models.length === 0) {
@@ -107,10 +107,10 @@ async function inputEventInfo(): Promise<Event> {
       break;
     }
 
-    const outreachInput = readLine('🆕 初回撮影ですか? (y/n):', 'y').toLowerCase();
+    const outreachInput = readLine('初回撮影ですか? (y/n):', 'y').toLowerCase();
     const outreach = outreachInput === 'y' || outreachInput === 'yes';
 
-    const snsInput = readLine('🔗 SNS URL (任意、スキップ可):');
+    const snsInput = readLine('SNS URL (任意、スキップ可):');
     const sns = snsInput ? normalizeSnsUrl(snsInput) : undefined;
 
     models.push({
@@ -183,7 +183,7 @@ async function main() {
     },
   });
 
-  console.log('🎬 イベント初期化ツール');
+  console.log('イベント初期化ツール');
   console.log('='.repeat(50));
   console.log();
 
@@ -192,7 +192,7 @@ async function main() {
 
     if (args.config) {
       // 既存tomlファイルから読み込み
-      console.log(`📂 設定ファイルを読み込んでいます: ${args.config}`);
+      console.log(`設定ファイルを読み込んでいます: ${args.config}`);
       distributionConfig = await loadTomlConfig(args.config);
       console.log(`✅ 読み込み完了`);
       console.log();
@@ -205,32 +205,32 @@ async function main() {
     // 各イベントに対して処理を実行
     for (const event of distributionConfig.events) {
       console.log();
-      console.log(`📅 イベント: ${event.event_name} (${event.date})`);
-      console.log(`👥 モデル数: ${event.models.length}人`);
+      console.log(`イベント: ${event.event_name} (${event.date})`);
+      console.log(`モデル数: ${event.models.length}人`);
       console.log();
 
       // ディレクトリ構造を構築
       const structure = buildDirectoryStructure(event, config);
 
       // ディレクトリを作成
-      console.log('📁 ディレクトリを作成しています...');
+      console.log('ディレクトリを作成しています...');
       await createDirectories(structure);
       console.log(`✅ ディレクトリ作成完了: ${structure.eventDir}`);
 
       // READMEファイルを生成
-      console.log('📝 READMEファイルを生成しています...');
+      console.log('READMEファイルを生成しています...');
       await generateReadmeFiles(structure, config, args.template);
       console.log(`✅ README生成完了 (${structure.models.length}ファイル)`);
 
       // TOMLファイルを保存
       const tomlPath = join(structure.eventDir, 'distribution.config.toml');
-      console.log('💾 設定ファイルを保存しています...');
+      console.log('設定ファイルを保存しています...');
       await saveTomlFile(distributionConfig, tomlPath);
       console.log(`✅ 設定ファイル保存完了: ${tomlPath}`);
     }
 
     console.log();
-    console.log('🎉 すべての処理が完了しました!');
+    console.log('✅ すべての処理が完了しました');
     console.log();
     console.log('次のステップ:');
     console.log('  1. 各モデルの配布用ディレクトリに写真を配置してください');

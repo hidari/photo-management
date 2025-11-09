@@ -23,7 +23,7 @@ async function getVersionFromGit(): Promise<string> {
     const { success, stdout } = await command.output();
 
     if (!success) {
-      console.warn('⚠ Gitタグが見つかりません。開発版バージョンを使用します。');
+      console.warn('⚠️  Gitタグが見つかりません。開発版バージョンを使用します。');
       return '0.0.0-dev';
     }
 
@@ -41,7 +41,7 @@ async function getVersionFromGit(): Promise<string> {
 
     return version;
   } catch (error) {
-    console.error('⚠ Gitコマンドの実行に失敗しました:', error);
+    console.error('⚠️  Gitコマンドの実行に失敗しました:', error);
     return '0.0.0-dev';
   }
 }
@@ -52,7 +52,7 @@ async function getVersionFromGit(): Promise<string> {
 async function ensureDistDir(): Promise<void> {
   try {
     await Deno.mkdir('dist', { recursive: true });
-    console.log('✓ dist/ ディレクトリを作成しました\n');
+    console.log('✅ dist/ ディレクトリを作成しました\n');
   } catch (error) {
     if (!(error instanceof Deno.errors.AlreadyExists)) {
       throw error;
@@ -100,7 +100,7 @@ async function copyDir(src: string, dest: string): Promise<void> {
  * 配布に必要なファイルを一時ディレクトリにコピー
  */
 async function copyDistributionFiles(tempDir: string): Promise<void> {
-  console.log('▶ 配布ファイルをコピー中...');
+  console.log('配布ファイルをコピー中...');
 
   // config.example.tsのコピー
   await copyFile('config.example.ts', `${tempDir}/config.example.ts`);
@@ -152,14 +152,14 @@ async function copyDistributionFiles(tempDir: string): Promise<void> {
     }
   }
 
-  console.log('✓ ファイルのコピーが完了しました\n');
+  console.log('✅ ファイルのコピーが完了しました\n');
 }
 
 /**
  * ZIPアーカイブを作成
  */
 async function createZip(sourceDir: string, zipName: string): Promise<boolean> {
-  console.log(`📦 ${zipName} を作成中...`);
+  console.log(`${zipName} を作成中...`);
 
   // sourceDirから'dist/'プレフィックスを削除してディレクトリ名だけを取得
   const dirName = sourceDir.replace(/^dist\//, '');
@@ -176,12 +176,12 @@ async function createZip(sourceDir: string, zipName: string): Promise<boolean> {
   const { success, stderr } = await command.output();
 
   if (!success) {
-    console.error('✗ ZIPの作成に失敗しました');
+    console.error('❌ ZIPの作成に失敗しました');
     console.error(new TextDecoder().decode(stderr));
     return false;
   }
 
-  console.log(`✓ ${zipName} を作成しました\n`);
+  console.log(`✅ ${zipName} を作成しました\n`);
   return true;
 }
 
@@ -197,7 +197,7 @@ async function createBuildInfo(version: string, zipName: string): Promise<void> 
   };
 
   await Deno.writeTextFile('dist/build-info.json', JSON.stringify(buildInfo, null, 2));
-  console.log('✓ ビルド情報を dist/build-info.json に保存しました\n');
+  console.log('✅ ビルド情報を dist/build-info.json に保存しました\n');
 }
 
 /**
@@ -241,10 +241,10 @@ async function main(): Promise<void> {
     console.log('========================================');
     console.log('  ビルド完了');
     console.log('========================================\n');
-    console.log('✓ 配布パッケージが正常に作成されました');
+    console.log('✅ 配布パッケージが正常に作成されました');
     console.log(`\n配布パッケージ: dist/${zipName}`);
   } catch (error) {
-    console.error('✗ ビルドに失敗しました:', error);
+    console.error('❌ ビルドに失敗しました:', error);
     await cleanupTempDir(tempDir);
     Deno.exit(1);
   }

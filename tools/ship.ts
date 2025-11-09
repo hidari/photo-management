@@ -78,7 +78,7 @@ async function main() {
     },
   });
 
-  console.log('🚀 配布実行ツール');
+  console.log('配布実行ツール');
   console.log('='.repeat(50));
   console.log();
 
@@ -87,9 +87,9 @@ async function main() {
     let tomlPath: string;
     if (args.config) {
       tomlPath = args.config;
-      console.log(`📂 設定ファイル: ${tomlPath}`);
+      console.log(`設定ファイル: ${tomlPath}`);
     } else {
-      console.log('🔍 最新イベントの設定ファイルを検索しています...');
+      console.log('最新イベントの設定ファイルを検索しています...');
       tomlPath = await findTomlConfigPath(config);
       console.log(`✅ 見つかりました: ${tomlPath}`);
     }
@@ -104,7 +104,7 @@ async function main() {
 
     const event = distributionConfig.events[0];
     console.log();
-    console.log(`📅 イベント: ${event.event_name} (${event.date})`);
+    console.log(`イベント: ${event.event_name} (${event.date})`);
     console.log();
 
     // 配布対象のモデルをフィルタリング
@@ -123,7 +123,7 @@ async function main() {
     });
 
     if (targetModels.length === 0) {
-      console.log('📭 配布可能なモデルがいません');
+      console.log('配布可能なモデルがいません');
       console.log();
       console.log('以下を確認してください:');
       console.log('  - deno task upload を実行して intent_url を生成済みか');
@@ -132,7 +132,7 @@ async function main() {
       return;
     }
 
-    console.log(`📋 配布可能なモデル: ${targetModels.length}人`);
+    console.log(`配布可能なモデル: ${targetModels.length}人`);
     console.log();
 
     // 配布処理のループ
@@ -141,7 +141,7 @@ async function main() {
       console.log('配布対象のモデル:');
       for (let i = 0; i < targetModels.length; i++) {
         const model = targetModels[i];
-        const status = model.distributed ? '✅ 配布済み' : '⏳ 未配布';
+        const status = model.distributed ? '✅ 配布済み' : '未配布';
         console.log(`  ${i + 1}. ${model.name}さん (${status})`);
       }
 
@@ -149,7 +149,7 @@ async function main() {
       const selection = readLine('配布するモデルの番号（数字を入力、qで終了）:');
 
       if (selection.toLowerCase() === 'q' || selection === '') {
-        console.log('👋 配布処理を終了します');
+        console.log('配布処理を終了します');
         break;
       }
 
@@ -164,7 +164,7 @@ async function main() {
       // メッセージプレビュー（あれば）
       if (selectedModel.message) {
         console.log();
-        console.log('📧 配布メッセージプレビュー:');
+        console.log('配布メッセージプレビュー:');
         console.log('-'.repeat(50));
         console.log(selectedModel.message.substring(0, 200));
         if (selectedModel.message.length > 200) {
@@ -177,20 +177,20 @@ async function main() {
       const proceed = confirm(`${selectedModel.name}さん に配布しますか?`);
 
       if (!proceed) {
-        console.log('⏭️  スキップしました');
+        console.log('スキップしました');
         console.log();
         continue;
       }
 
       // インテントURLを開く
       console.log();
-      console.log('🌐 ブラウザで開いています...');
+      console.log('ブラウザで開いています...');
       if (selectedModel.intent_url) {
         await openUrl(selectedModel.intent_url);
       }
 
       // 配布済みフラグを更新
-      console.log('💾 配布済みフラグを更新しています...');
+      console.log('配布済みフラグを更新しています...');
       const updatedToml = await updateModelFields(tomlPath, selectedModel.name, {
         distributed: true,
       });
@@ -212,7 +212,7 @@ async function main() {
     }
 
     console.log();
-    console.log('🎉 配布処理が完了しました!');
+    console.log('✅ 配布処理が完了しました');
   } catch (error) {
     console.error();
     if (error instanceof Error) {

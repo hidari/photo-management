@@ -47,7 +47,7 @@ async function checkConfigExists(): Promise<boolean> {
  * config.tsの作成をガイド
  */
 async function setupConfig(): Promise<void> {
-  console.log('📝 config.ts の作成');
+  console.log('config.ts の作成');
   console.log('-'.repeat(50));
   console.log();
   console.log('config.example.ts をベースに config.ts を作成します。');
@@ -57,7 +57,7 @@ async function setupConfig(): Promise<void> {
     console.log('✅ config.ts は既に存在します');
     const overwrite = confirm('上書きしますか?', false);
     if (!overwrite) {
-      console.log('⏭️  config.ts の作成をスキップしました');
+      console.log('config.ts の作成をスキップしました');
       return;
     }
   }
@@ -65,9 +65,9 @@ async function setupConfig(): Promise<void> {
   console.log('以下の情報を入力してください:');
   console.log();
 
-  const administrator = readLine('👤 管理者名（撮影者名）:', 'Hidari');
+  const administrator = readLine('管理者名（撮影者名）:', 'Hidari');
   const developedDirectoryBase = readLine(
-    '📁 現像済み画像の保存先ディレクトリ:',
+    '現像済み画像の保存先ディレクトリ:',
     '/Users/your_name/Pictures/Developed'
   );
 
@@ -98,7 +98,7 @@ export default config;
   console.log();
   console.log('✅ config.ts を作成しました');
   console.log();
-  console.log('📌 注意: Google Drive OAuth設定は後で手動で追加してください');
+  console.log('注意: Google Drive OAuth設定は後で手動で追加してください');
   console.log('   詳細は config.example.ts を参照してください');
 }
 
@@ -107,7 +107,7 @@ export default config;
  */
 async function setupRipBinary(): Promise<void> {
   console.log();
-  console.log('🗜️  ripバイナリのセットアップ');
+  console.log('ripバイナリのセットアップ');
   console.log('-'.repeat(50));
   console.log();
 
@@ -122,7 +122,7 @@ async function setupRipBinary(): Promise<void> {
   const proceed = confirm('ダウンロードしますか?');
 
   if (!proceed) {
-    console.log('⏭️  ripバイナリのセットアップをスキップしました');
+    console.log('ripバイナリのセットアップをスキップしました');
     return;
   }
 
@@ -136,7 +136,7 @@ async function setupRipBinary(): Promise<void> {
  */
 async function setupGoogleAuth(): Promise<void> {
   console.log();
-  console.log('🔐 Google Drive OAuth認証');
+  console.log('Google Drive OAuth認証');
   console.log('-'.repeat(50));
   console.log();
 
@@ -146,20 +146,20 @@ async function setupGoogleAuth(): Promise<void> {
   const proceed = confirm('OAuth認証を実行しますか?');
 
   if (!proceed) {
-    console.log('⏭️  OAuth認証をスキップしました');
-    console.log('💡 後で deno task upload を実行する際に認証できます');
+    console.log('OAuth認証をスキップしました');
+    console.log('後で deno task upload を実行する際に認証できます');
     return;
   }
 
   console.log();
-  console.log('📌 注意: config.ts に Google Drive OAuth設定（clientId, clientSecret）を');
+  console.log('注意: config.ts に Google Drive OAuth設定（clientId, clientSecret）を');
   console.log('   追加してから認証を実行してください。');
   console.log();
 
   const ready = confirm('設定済みですか?', false);
 
   if (!ready) {
-    console.log('⏭️  OAuth認証をスキップしました');
+    console.log('OAuth認証をスキップしました');
     console.log();
     console.log('設定方法:');
     console.log('  1. Google Cloud Console でOAuth 2.0クライアントIDを作成');
@@ -178,7 +178,7 @@ async function setupGoogleAuth(): Promise<void> {
     }
 
     console.log();
-    console.log('🌐 ブラウザが開きます。Googleアカウントでログインしてください...');
+    console.log('ブラウザが開きます。Googleアカウントでログインしてください...');
     await getAccessToken(config.googleDrive.clientId, config.googleDrive.clientSecret);
     console.log('✅ OAuth認証が完了しました');
   } catch (error) {
@@ -195,7 +195,7 @@ async function setupGoogleAuth(): Promise<void> {
  */
 function showGASSetupInstructions(): void {
   console.log();
-  console.log('📱 Google Apps Script 設定（任意）');
+  console.log('Google Apps Script 設定（任意）');
   console.log('-'.repeat(50));
   console.log();
   console.log('Google Drive上の古い配布フォルダを自動削除するには、');
@@ -212,7 +212,7 @@ function showGASSetupInstructions(): void {
  * メイン処理
  */
 async function main() {
-  console.log('🎬 初期設定ツール');
+  console.log('初期設定ツール');
   console.log('='.repeat(50));
   console.log();
   console.log('このツールは、photo-managementプロジェクトの初期設定を案内します。');
@@ -233,7 +233,7 @@ async function main() {
 
     // 完了メッセージ
     console.log();
-    console.log('🎉 初期設定が完了しました!');
+    console.log('✅ 初期設定が完了しました');
     console.log();
     console.log('次のステップ:');
     console.log('  1. deno task init でイベントを作成してください');

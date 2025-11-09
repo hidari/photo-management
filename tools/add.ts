@@ -6,8 +6,8 @@
  * 既存イベントに新しいモデルを追加する
  *
  * 使い方:
- *   deno task add                                    # 最新イベントのtomlを同期（toml編集後）
- *   deno task add --dialog                           # 対話的にモデルを追加
+ *   deno task add                                   # 最新イベントのtomlを同期（toml編集後）
+ *   deno task add --dialog                          # 対話的にモデルを追加
  *   deno task add --config ./path/to/config.toml    # 特定のtomlを指定
  */
 
@@ -40,19 +40,19 @@ function readLine(message: string, defaultValue?: string): string {
  */
 function inputModelInfo(): EventModel {
   console.log();
-  console.log('👤 新しいモデル情報の入力');
+  console.log('新しいモデル情報の入力');
   console.log('-'.repeat(50));
 
-  const modelName = readLine('📝 モデル名:');
+  const modelName = readLine('モデル名:');
   if (!modelName) {
     console.error('❌ モデル名は必須です');
     Deno.exit(1);
   }
 
-  const outreachInput = readLine('🆕 初回撮影ですか? (y/n):', 'y').toLowerCase();
+  const outreachInput = readLine('初回撮影ですか? (y/n):', 'y').toLowerCase();
   const outreach = outreachInput === 'y' || outreachInput === 'yes';
 
-  const snsInput = readLine('🔗 SNS URL (任意、スキップ可):');
+  const snsInput = readLine('SNS URL (任意、スキップ可):');
   const sns = snsInput ? normalizeSnsUrl(snsInput) : undefined;
 
   return {
@@ -99,7 +99,7 @@ async function main() {
     },
   });
 
-  console.log('➕ モデル追加ツール');
+  console.log('モデル追加ツール');
   console.log('='.repeat(50));
   console.log();
 
@@ -108,9 +108,9 @@ async function main() {
     let tomlPath: string;
     if (args.config) {
       tomlPath = args.config;
-      console.log(`📂 設定ファイル: ${tomlPath}`);
+      console.log(`設定ファイル: ${tomlPath}`);
     } else {
-      console.log('🔍 最新イベントの設定ファイルを検索しています...');
+      console.log('最新イベントの設定ファイルを検索しています...');
       tomlPath = await findTomlConfigPath(config);
       console.log(`✅ 見つかりました: ${tomlPath}`);
     }
@@ -128,8 +128,8 @@ async function main() {
     if (args.dialog) {
       // 対話的追加モード
       console.log();
-      console.log(`📅 イベント: ${event.event_name} (${event.date})`);
-      console.log(`👥 現在のモデル数: ${event.models.length}人`);
+      console.log(`イベント: ${event.event_name} (${event.date})`);
+      console.log(`現在のモデル数: ${event.models.length}人`);
 
       const newModel = inputModelInfo();
 
@@ -141,8 +141,8 @@ async function main() {
     } else {
       // 同期モード（toml編集後の差分検出）
       console.log();
-      console.log(`📅 イベント: ${event.event_name} (${event.date})`);
-      console.log(`👥 tomlに登録されているモデル数: ${event.models.length}人`);
+      console.log(`イベント: ${event.event_name} (${event.date})`);
+      console.log(`tomlに登録されているモデル数: ${event.models.length}人`);
     }
 
     // ディレクトリ構造を構築
@@ -150,7 +150,7 @@ async function main() {
 
     // 不足しているモデルを検出
     console.log();
-    console.log('🔍 ディレクトリとtomlの差分を確認しています...');
+    console.log('ディレクトリとtomlの差分を確認しています...');
     const missingModels = await detectMissingModels(structure);
 
     if (missingModels.length === 0) {
@@ -159,14 +159,14 @@ async function main() {
       return;
     }
 
-    console.log(`📁 ${missingModels.length}人分のディレクトリを作成します:`);
+    console.log(`${missingModels.length}人分のディレクトリを作成します:`);
     for (const modelName of missingModels) {
       console.log(`   - ${modelName}さん`);
     }
 
     // 不足しているディレクトリとREADMEを作成
     console.log();
-    console.log('📁 ディレクトリを作成しています...');
+    console.log('ディレクトリを作成しています...');
     let createdCount = 0;
 
     for (const model of structure.models) {
@@ -183,11 +183,11 @@ async function main() {
       const tomlContent = configToToml(distributionConfig);
       await Deno.writeTextFile(tomlPath, tomlContent);
       console.log();
-      console.log(`💾 設定ファイルを更新しました: ${tomlPath}`);
+      console.log(`設定ファイルを更新しました: ${tomlPath}`);
     }
 
     console.log();
-    console.log(`🎉 完了! ${createdCount}人分のディレクトリとREADMEを作成しました`);
+    console.log(`✅ 完了! ${createdCount}人分のディレクトリとREADMEを作成しました`);
     console.log();
     console.log('次のステップ:');
     console.log('  1. 追加したモデルの配布用ディレクトリに写真を配置してください');

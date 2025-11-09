@@ -7,9 +7,9 @@
  * デフォルトはフォルダ配布（--as-archiveでzip配布）
  *
  * 使い方:
- *   deno task upload --all                           # 全モデルをフォルダ配布
+ *   deno task upload --all                          # 全モデルをフォルダ配布
  *   deno task upload --all --as-archive             # 全モデルをzip配布
- *   deno task upload                                 # 対話的に選択
+ *   deno task upload                                # 対話的に選択
  *   deno task upload --config ./path/to/config.toml # 特定のtomlを指定
  */
 
@@ -103,7 +103,7 @@ async function uploadAsArchive(
   deleteAfterUpload: boolean
 ): Promise<string> {
   // 1. アーカイブ作成
-  console.log(`   📦 アーカイブ作成中...`);
+  console.log(`  アーカイブ作成中...`);
   await createArchive(distDir, archiveTool);
 
   // zipファイルパスを構築
@@ -111,20 +111,20 @@ async function uploadAsArchive(
   const zipPath = join(dirname(distDir), zipFileName);
 
   // 2. Google Driveにアップロード
-  console.log(`   ☁️  Google Driveにアップロード中...`);
+  console.log(`  Google Driveにアップロード中...`);
   const fileId = await uploadFile(accessToken, zipPath, eventFolderId);
 
   // 3. 公開設定してURLを取得
-  console.log(`   🔗 共有URLを取得中...`);
+  console.log(`  共有URLを取得中...`);
   const downloadUrl = await makeFilePublic(accessToken, fileId);
 
   // 4. オプション: ローカルzipを削除
   if (deleteAfterUpload) {
     try {
       await Deno.remove(zipPath);
-      console.log(`   🗑️  ローカルzipを削除しました`);
+      console.log(`  ローカルzipを削除しました`);
     } catch (error) {
-      console.log(`   ⚠️  ローカルzip削除に失敗: ${error}`);
+      console.log(`  ⚠️ ローカルzip削除に失敗: ${error}`);
     }
   }
 
@@ -143,17 +143,17 @@ async function uploadAsFolder(
   eventFolderId: string
 ): Promise<string> {
   // 1. 写真ファイルを検索
-  console.log(`   🔍 写真ファイルを検索中...`);
+  console.log(`  写真ファイルを検索中...`);
   const photoFiles = await listPhotoFiles(distDir);
 
   if (photoFiles.length === 0) {
     throw new Error(`写真ファイルが見つかりません: ${distDir}`);
   }
 
-  console.log(`   📸 ${photoFiles.length}枚の写真を発見しました`);
+  console.log(`  ${photoFiles.length}枚の写真を発見しました`);
 
   // 2. モデル用フォルダを作成
-  console.log(`   📁 モデル用フォルダを作成中...`);
+  console.log(`  モデル用フォルダを作成中...`);
   const modelFolderId = await createFolderWithParent(
     accessToken,
     `${eventDate}_${eventName}_${config.administrator}撮影_${modelName}さん`,
@@ -161,7 +161,7 @@ async function uploadAsFolder(
   );
 
   // 3. 写真を個別にアップロード
-  console.log(`   ☁️  写真をアップロード中...`);
+  console.log(`  写真をアップロード中...`);
   for (let i = 0; i < photoFiles.length; i++) {
     const photoPath = photoFiles[i];
     await uploadFile(accessToken, photoPath, modelFolderId);
@@ -173,7 +173,7 @@ async function uploadAsFolder(
   }
 
   // 4. フォルダを公開設定してURLを取得
-  console.log(`   🔗 共有URLを取得中...`);
+  console.log(`  共有URLを取得中...`);
   const downloadUrl = await makeFolderPublic(accessToken, modelFolderId);
 
   return downloadUrl;
@@ -206,7 +206,7 @@ async function generateIntentUrl(
 ): Promise<string | null> {
   // SNSがXかどうか確認
   if (!snsUrl.includes('twitter.com') && !snsUrl.includes('x.com')) {
-    console.log(`   ⏭️  SNSがX以外のため、インテントURL生成をスキップします`);
+    console.log(`  SNSがX以外のため、インテントURL生成をスキップします`);
     return null;
   }
 
@@ -215,11 +215,11 @@ async function generateIntentUrl(
     const username = cleanUsername(snsUrl);
 
     // Puppeteerでユーザー IDを取得
-    console.log(`   🤖 ユーザーID取得中 (@${username})...`);
+    console.log(`  ユーザーID取得中 (@${username})...`);
     const userId = await getUserIdFromUsername(username);
 
     if (!userId) {
-      console.log(`   ⚠️  ユーザーIDが取得できませんでした`);
+      console.log(`  ⚠️ ユーザーIDが取得できませんでした`);
       return null;
     }
 
@@ -228,7 +228,7 @@ async function generateIntentUrl(
 
     return intentUrl;
   } catch (error) {
-    console.log(`   ⚠️  インテントURL生成エラー: ${error}`);
+    console.log(`  ⚠️ インテントURL生成エラー: ${error}`);
     return null;
   }
 }
@@ -248,16 +248,16 @@ async function processModel(
   archiveTool: string | null,
   deleteAfterUpload: boolean
 ): Promise<void> {
-  console.log(`\n👤 ${model.name}さん の処理を開始`);
+  console.log(`\n${model.name}さん の処理を開始`);
   console.log('-'.repeat(50));
 
   try {
     // 既にアップロード済みの場合は確認
     if (model.download_url) {
-      console.log(`   ⚠️  既にアップロード済みです`);
-      const overwrite = confirm('   上書きしますか?', false);
+      console.log(`  ⚠️ 既にアップロード済みです`);
+      const overwrite = confirm('  上書きしますか?', false);
       if (!overwrite) {
-        console.log(`   ⏭️  スキップしました`);
+        console.log(`  スキップしました`);
         return;
       }
     }
@@ -290,30 +290,30 @@ async function processModel(
       );
     }
 
-    console.log(`   ✅ アップロード完了`);
+    console.log(`  ✅ アップロード完了`);
 
     // 2. 配布メッセージ生成
-    console.log(`   📝 配布メッセージ生成中...`);
+    console.log(`  配布メッセージ生成中...`);
     const message = await generateDistributionMessage(
       model.name,
       eventName,
       downloadUrl,
       model.outreach
     );
-    console.log(`   ✅ メッセージ生成完了`);
+    console.log(`  ✅ メッセージ生成完了`);
 
     // 3. インテントURL生成（SNSがXの場合のみ）
     let intentUrl: string | null = null;
     if (model.sns) {
-      console.log(`   🔗 インテントURL生成中...`);
+      console.log(`  インテントURL生成中...`);
       intentUrl = await generateIntentUrl(model.name, eventName, message, model.sns);
       if (intentUrl) {
-        console.log(`   ✅ インテントURL生成完了`);
+        console.log(`  ✅ インテントURL生成完了`);
       }
     }
 
     // 4. TOMLファイルを更新
-    console.log(`   💾 設定ファイルを更新中...`);
+    console.log(`  設定ファイルを更新中...`);
     const updateFields: Partial<EventModel> = {
       download_url: downloadUrl,
       message,
@@ -325,15 +325,15 @@ async function processModel(
     const updatedToml = await updateModelFields(tomlPath, model.name, updateFields);
     await Deno.writeTextFile(tomlPath, updatedToml);
 
-    console.log(`   ✅ ${model.name}さん の処理が完了しました`);
+    console.log(`  ✅ ${model.name}さん の処理が完了しました`);
 
     // Bot対策: ランダム待機（次のモデルがいる場合）
     const delay = Math.floor(Math.random() * 3000) + 2000; // 2-5秒
     await new Promise((resolve) => setTimeout(resolve, delay));
   } catch (error) {
-    console.error(`   ❌ ${model.name}さん の処理中にエラーが発生しました`);
+    console.error(`  ❌ ${model.name}さん の処理中にエラーが発生しました`);
     if (error instanceof Error) {
-      console.error(`      ${error.message}`);
+      console.error(`    ${error.message}`);
     }
     throw error;
   }
@@ -353,7 +353,7 @@ async function main() {
     },
   });
 
-  console.log('📤 アップロード統合ツール');
+  console.log('アップロード統合ツール');
   console.log('='.repeat(50));
   console.log();
 
@@ -362,9 +362,9 @@ async function main() {
     let tomlPath: string;
     if (args.config) {
       tomlPath = args.config;
-      console.log(`📂 設定ファイル: ${tomlPath}`);
+      console.log(`設定ファイル: ${tomlPath}`);
     } else {
-      console.log('🔍 最新イベントの設定ファイルを検索しています...');
+      console.log('最新イベントの設定ファイルを検索しています...');
       tomlPath = await findTomlConfigPath(config);
       console.log(`✅ 見つかりました: ${tomlPath}`);
     }
@@ -379,16 +379,16 @@ async function main() {
 
     const event = distributionConfig.events[0];
     console.log();
-    console.log(`📅 イベント: ${event.event_name} (${event.date})`);
-    console.log(`👥 モデル数: ${event.models.length}人`);
+    console.log(`イベント: ${event.event_name} (${event.date})`);
+    console.log(`モデル数: ${event.models.length}人`);
     console.log();
 
     // アップロード方式を表示
     const asArchive = args['as-archive'];
     if (asArchive) {
-      console.log('📦 アップロード方式: ZIP配布');
+      console.log('アップロード方式: ZIP配布');
     } else {
-      console.log('📁 アップロード方式: フォルダ配布（デフォルト）');
+      console.log('アップロード方式: フォルダ配布（デフォルト）');
     }
     console.log();
 
@@ -396,24 +396,24 @@ async function main() {
     const targetModels = selectTargetModels(event.models, args.all);
 
     if (targetModels.length === 0) {
-      console.log('📭 アップロード対象がありません');
+      console.log('アップロード対象がありません');
       return;
     }
 
-    console.log(`🎯 ${targetModels.length}人のモデルをアップロードします`);
+    console.log(`${targetModels.length}人のモデルをアップロードします`);
     console.log();
 
     // アーカイブツールの準備（ZIP配布の場合のみ）
     let archiveTool: string | null = null;
     if (asArchive) {
-      console.log('🗜️  アーカイブツールを準備しています...');
+      console.log('アーカイブツールを準備しています...');
       archiveTool = await resolveArchiveTool(config);
       console.log(`✅ 使用ツール: ${archiveTool}`);
       console.log();
     }
 
     // Google Drive認証
-    console.log('🔐 Google Driveに認証中...');
+    console.log('Google Driveに認証中...');
     if (!config.googleDrive) {
       console.error('❌ config.tsにGoogle Drive設定が見つかりません');
       console.error('   config.tsのgoogleDriveセクションを設定してください');
@@ -428,7 +428,7 @@ async function main() {
     console.log();
 
     // PhotoDistributionフォルダを確保
-    console.log('📂 Google Driveフォルダ構造を確保中...');
+    console.log('Google Driveフォルダ構造を確保中...');
     const currentFolderId = await loadFolderId();
     console.log(`  [DEBUG] 保存されているフォルダID: ${currentFolderId || 'なし'}`);
     const photoDistFolderId = await ensurePhotoDistributionFolder(
@@ -454,7 +454,7 @@ async function main() {
     );
 
     if (hasXModels) {
-      console.log('🤖 Puppeteer（Chrome）を準備中...');
+      console.log('Puppeteer（Chrome）を準備中...');
       await ensureChrome();
       console.log('✅ Puppeteer準備完了');
       console.log();
@@ -494,7 +494,7 @@ async function main() {
         );
         successCount++;
       } catch (_error) {
-        console.error(`   💥 処理を中断しました`);
+        console.error(`  処理を中断しました`);
         failCount++;
 
         // 他のモデルは続行するか確認
@@ -510,11 +510,11 @@ async function main() {
     // サマリー表示
     console.log();
     console.log('='.repeat(50));
-    console.log('📊 処理結果サマリー');
+    console.log('処理結果サマリー');
     console.log('-'.repeat(50));
     console.log(`✅ 成功: ${successCount}人`);
     if (skipCount > 0) {
-      console.log(`⏭️  スキップ: ${skipCount}人`);
+      console.log(`  スキップ: ${skipCount}人`);
     }
     if (failCount > 0) {
       console.log(`❌ 失敗: ${failCount}人`);
@@ -523,7 +523,7 @@ async function main() {
     console.log();
 
     if (successCount > 0) {
-      console.log('🎉 アップロード処理が完了しました!');
+      console.log('✅ アップロード処理が完了しました');
       console.log();
       console.log('次のステップ:');
       console.log('  deno task ship で各モデルに配布メッセージを送信してください');

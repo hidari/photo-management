@@ -44,8 +44,8 @@ export const config: Config = {
 
   // 配布フォルダの保持期間(日数)（オプション）
   // 指定した日数より古いイベントフォルダは自動削除の対象になります
-  // デフォルト: 30日
-  // distributionRetentionDays: 30,
+  // デフォルト: 90日
+  // distributionRetentionDays: 90,
 
   // 削除通知先メールアドレス（オプション）
   // Google Apps Scriptによる自動削除時に通知を送信する先

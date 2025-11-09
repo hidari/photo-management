@@ -117,7 +117,7 @@ export function buildDownloadUrl(release: GitHubRelease, zipName: string): strin
 export async function downloadAndExtract(url: string, destPath: string): Promise<void> {
   const platform = detectPlatform();
 
-  console.log(`📥 ダウンロード中: ${url}`);
+  console.log(`ダウンロード中: ${url}`);
 
   const response = await fetch(url);
 
@@ -133,7 +133,7 @@ export async function downloadAndExtract(url: string, destPath: string): Promise
 
   await Deno.writeFile(tempZipPath, zipData);
 
-  console.log(`📦 解凍中...`);
+  console.log(`解凍中...`);
 
   // decompressを使用してクロスプラットフォーム対応の解凍を実行
   try {
@@ -198,7 +198,7 @@ export async function testBinary(binaryPath: string): Promise<boolean> {
  * @param binaryPath - 設定するバイナリのパス
  */
 export async function updateConfigFile(binaryPath: string): Promise<void> {
-  console.log(`📝 config.ts を更新中...`);
+  console.log(`config.ts を更新中...`);
 
   const project = new Project();
   const configFile = project.addSourceFileAtPath('./config.ts');
@@ -257,11 +257,11 @@ export async function ensureRipBinary(): Promise<string> {
     console.log(`⚠️  既存のバイナリが正常に動作しません。再ダウンロードします...`);
   } catch {
     // ファイルが存在しない場合は続行
-    console.log(`🔧 ripバイナリが見つかりません。自動セットアップを開始します...`);
+    console.log(`ripバイナリが見つかりません。自動セットアップを開始します...`);
   }
 
   // 最新リリースを取得
-  console.log(`🔍 最新バージョンを確認中...`);
+  console.log(`最新バージョンを確認中...`);
   const release = await getLatestRelease();
   console.log(`   最新バージョン: ${release.tag_name}`);
 
@@ -286,7 +286,7 @@ export async function ensureRipBinary(): Promise<string> {
   await updateConfigFile(binaryPath);
 
   console.log();
-  console.log(`🎉 ripバイナリのセットアップが完了しました!`);
+  console.log(`✅ ripバイナリのセットアップが完了しました`);
   console.log(`   パス: ${binaryPath}`);
 
   return binaryPath;

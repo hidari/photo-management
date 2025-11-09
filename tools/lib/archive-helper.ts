@@ -43,7 +43,7 @@ export async function resolveArchiveTool(appConfig: Config): Promise<string> {
   }
 
   // 未設定の場合は自動セットアップ
-  console.log('🔧 アーカイブツールが未設定です。自動セットアップを開始します...');
+  console.log('アーカイブツールが未設定です。自動セットアップを開始します...');
   console.log();
 
   // rip-binary-setup.tsの関数を動的にインポート
@@ -92,7 +92,7 @@ export async function archiveAllDistributions(
     const distDirName = basename(distDir);
     const outputPath = join(distDir, '..', `${distDirName}.zip`);
 
-    console.log(`📦 アーカイブ作成中: ${distDirName}`);
+    console.log(`アーカイブ作成中: ${distDirName}`);
     await createArchive(distDir, archiveTool);
     console.log(`   ✅ 完了: ${outputPath}`);
   }
@@ -107,7 +107,7 @@ export async function deleteLocalArchives(archivePaths: string[]): Promise<void>
   for (const path of archivePaths) {
     try {
       await Deno.remove(path);
-      console.log(`   🗑️  削除: ${basename(path)}`);
+      console.log(`   削除: ${basename(path)}`);
     } catch (error) {
       console.warn(`   ⚠️  削除失敗: ${basename(path)} - ${error}`);
     }

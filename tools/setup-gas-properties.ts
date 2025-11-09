@@ -80,7 +80,7 @@ function extractGasConfig(): Record<string, string> {
  * claspコマンドでPropertiesServiceに設定を登録する
  */
 async function setupProperties(properties: Record<string, string>): Promise<void> {
-  console.log('🔧 PropertiesServiceに設定を登録します...\n');
+  console.log('PropertiesServiceに設定を登録します...\n');
 
   // 設定内容を表示
   console.log('登録する設定:');
@@ -126,7 +126,7 @@ function setupPropertiesFromCli() {
   await Deno.writeTextFile(setupPropertiesFile, setupFunctionCode);
 
   // TypeScriptをコンパイル
-  console.log('📦 スクリプトをコンパイルしています...');
+  console.log('スクリプトをコンパイルしています...');
   const tscResult = await new Deno.Command('npx', {
     args: ['tsc', '--project', join(APPS_SCRIPT_DIR, 'tsconfig.json')],
     cwd: APPS_SCRIPT_DIR,
@@ -139,7 +139,7 @@ function setupPropertiesFromCli() {
   }
 
   // claspでpush
-  console.log('📤 Google Apps Scriptにデプロイしています...');
+  console.log('Google Apps Scriptにデプロイしています...');
   const pushResult = await new Deno.Command('npx', {
     args: ['clasp', 'push', '--force'],
     cwd: APPS_SCRIPT_DIR,
@@ -152,7 +152,7 @@ function setupPropertiesFromCli() {
   }
 
   // セットアップ関数を実行
-  console.log('⚙️  設定を登録しています...');
+  console.log('設定を登録しています...');
   const runResult = await new Deno.Command('npx', {
     args: ['clasp', 'run', 'setupPropertiesFromCli'],
     cwd: APPS_SCRIPT_DIR,
@@ -175,15 +175,15 @@ function setupPropertiesFromCli() {
  * メイン処理
  */
 async function main() {
-  console.log('🚀 Google Apps Script設定セットアップツール\n');
+  console.log('Google Apps Script設定セットアップツール\n');
 
   try {
     // scriptIdを確認
     const scriptId = await getScriptId();
-    console.log(`📋 Script ID: ${scriptId}\n`);
+    console.log(`Script ID: ${scriptId}\n`);
 
     // Google Drive APIのアクセストークンを取得
-    console.log('🔑 Google認証情報を取得しています...');
+    console.log('Google認証情報を取得しています...');
 
     if (!config.googleDrive) {
       throw new Error(
@@ -223,7 +223,7 @@ async function main() {
 
     // config.tsを更新
     if (Object.keys(configUpdates).length > 0) {
-      console.log('\n📝 config.tsを更新しています...');
+      console.log('\nconfig.tsを更新しています...');
       const updated = await updateConfigFields(configUpdates);
 
       if (updated) {
