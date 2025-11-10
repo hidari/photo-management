@@ -14,8 +14,11 @@ export const config: Config = {
   contacts: [{ X: '@<YOUR_ACCOUNT_ID>' }, { Bluesky: '@<YOUR_ACCOUNT_ID>' }],
 
   // 現像済み画像ディレクトリのパス
-  // macOS/Linux: 'Path/to/Your/Picture/Directory/' または '/Users/username/Pictures/'
-  // Windows: 'C:\\Users\\username\\Pictures\\' または 'C:/Users/username/Pictures/'
+  // セットアップ時のデフォルト値:
+  //   macOS: /Users/[username]/Pictures
+  //   Linux: /home/[username]/Pictures (環境変数 $HOME が /home/username の場合)
+  //   Windows: C:\Users\[username]\Pictures
+  // 例: '/Users/username/Pictures/' (macOS/Linux) または 'C:\\Users\\username\\Pictures\\' (Windows)
   developedDirectoryBase: 'Path/to/Your/Picture/Directory/',
 
   // アーカイブ作成ツールのフルパス（オプション）

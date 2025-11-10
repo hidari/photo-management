@@ -11,6 +11,7 @@
 
 import { exists } from 'https://deno.land/std@0.208.0/fs/exists.ts';
 import { getAccessToken } from './lib/google-auth.ts';
+import { getDefaultPicturesDirectory } from './lib/os-paths.ts';
 import { ensureRipBinary, getBinaryPath } from './lib/rip-binary-setup.ts';
 
 /**
@@ -68,7 +69,7 @@ async function setupConfig(): Promise<void> {
   const administrator = readLine('管理者名（撮影者名）:');
   const developedDirectoryBase = readLine(
     '現像済み画像の保存先ディレクトリ:',
-    '/Users/your_name/Pictures/Developed'
+    getDefaultPicturesDirectory()
   );
 
   console.log();
