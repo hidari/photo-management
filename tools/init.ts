@@ -6,8 +6,8 @@
  * イベント情報の入力からディレクトリ構造作成、README生成までを一括で実行する
  *
  * 使い方:
- *   deno task init                                # 対話的にイベント情報を入力
- *   deno task init --config ./path/to/config.toml # 既存tomlから作成
+ *   deno task init                                 # 対話的にイベント情報を入力
+ *   deno task init --config ./path/to/config.toml  # 既存tomlから作成
  */
 
 import { parse } from 'https://deno.land/std@0.208.0/flags/mod.ts';
@@ -72,7 +72,7 @@ export function validateDate(date: string): boolean {
 async function inputEventInfo(): Promise<Event> {
   clearScreen();
   console.log('イベント情報の入力');
-  console.log('='.repeat(50));
+  console.log('-'.repeat(50));
   console.log();
 
   // 日付入力
@@ -101,7 +101,7 @@ async function inputEventInfo(): Promise<Event> {
 
     if (!modelName) {
       if (models.length === 0) {
-        console.log('⚠️  最低1人のモデルを登録してください。');
+        console.log('⚠️ 最低1人のモデルを登録してください。');
         continue;
       }
       break;
@@ -220,7 +220,7 @@ async function main() {
       // READMEファイルを生成
       console.log('READMEファイルを生成しています...');
       await generateReadmeFiles(structure, config, args.template);
-      console.log(`✅ README生成完了 (${structure.models.length}ファイル)`);
+      console.log(`✅ README生成完了`);
 
       // TOMLファイルを保存
       const tomlPath = join(structure.eventDir, 'distribution.config.toml');

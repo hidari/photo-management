@@ -56,7 +56,7 @@ async function getAuthCodeFromLocalServer(_client: OAuth2Client): Promise<string
   return new Promise((resolve, reject) => {
     let abortController: AbortController | null = null;
 
-    console.log('   🌐 ローカルサーバーを起動しました (http://localhost:8080)');
+    console.log('🌐 ローカルサーバーを起動しました (http://localhost:8080)');
 
     const handler = (req: Request): Response => {
       const url = new URL(req.url);
@@ -69,17 +69,20 @@ async function getAuthCodeFromLocalServer(_client: OAuth2Client): Promise<string
           const errorMessage = `認証エラー: ${error}`;
           if (abortController) abortController.abort();
           reject(new Error(errorMessage));
-          return new Response(`<html><body><h1>認証失敗</h1><p>${errorMessage}</p></body></html>`, {
-            status: 400,
-            headers: { 'Content-Type': 'text/html; charset=utf-8' },
-          });
+          return new Response(
+            `<html lang="ja"><body><h1>認証失敗</h1><p>${errorMessage}</p></body></html>`,
+            {
+              status: 400,
+              headers: { 'Content-Type': 'text/html; charset=utf-8' },
+            }
+          );
         }
 
         if (code) {
           if (abortController) abortController.abort();
           resolve(code);
           return new Response(
-            '<html><body><h1>認証成功！</h1><p>このウィンドウを閉じて、ターミナルに戻ってください。</p></body></html>',
+            '<html lang="ja"><body><h1>認証成功！</h1><p>このウィンドウを閉じて、ターミナルに戻ってください。</p></body></html>',
             {
               status: 200,
               headers: { 'Content-Type': 'text/html; charset=utf-8' },
@@ -88,7 +91,7 @@ async function getAuthCodeFromLocalServer(_client: OAuth2Client): Promise<string
         }
 
         return new Response(
-          '<html><body><h1>エラー</h1><p>認証コードが見つかりません</p></body></html>',
+          '<html lang="ja"><body><h1>エラー</h1><p>認証コードが見つかりません</p></body></html>',
           {
             status: 400,
             headers: { 'Content-Type': 'text/html; charset=utf-8' },
@@ -124,13 +127,11 @@ async function performAuthFlow(client: OAuth2Client): Promise<object> {
   });
 
   console.log();
-  console.log('📋 以下のURLをブラウザで開いて認証してください:');
+  console.log('ブラウザが自動で開くので画面に従って認証してください:');
   console.log();
-  console.log(`   ${authUrl}`);
+  console.log(`${authUrl}`);
   console.log();
-  console.log(
-    '   ブラウザが自動的に開かない場合は、上記URLをコピーしてブラウザに貼り付けてください。'
-  );
+  console.log('ブラウザが自動的に開かない場合は、上記URLに直接アクセスしてください。');
   console.log();
 
   const code = await getAuthCodeFromLocalServer(client);
@@ -169,12 +170,12 @@ export async function getAuthClient(clientId: string, clientSecret: string): Pro
       }
     } catch {
       // トークンが無効な場合は再認証
-      console.log('⚠️  保存されたトークンが無効です。再認証が必要です。');
+      console.log('⚠️ 保存されたトークンが無効です。再認証が必要です。');
     }
   }
 
   // 初回認証またはトークンが無効な場合
-  console.log('🔐 Google Drive への認証が必要です');
+  console.log('Google Drive への認証を行います');
   const tokens = await performAuthFlow(client);
   client.setCredentials(tokens);
 

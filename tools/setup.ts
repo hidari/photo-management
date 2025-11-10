@@ -65,7 +65,7 @@ async function setupConfig(): Promise<void> {
   console.log('以下の情報を入力してください:');
   console.log();
 
-  const administrator = readLine('管理者名（撮影者名）:', 'Hidari');
+  const administrator = readLine('管理者名（撮影者名）:');
   const developedDirectoryBase = readLine(
     '現像済み画像の保存先ディレクトリ:',
     '/Users/your_name/Pictures/Developed'
@@ -107,28 +107,28 @@ export default config;
  */
 async function setupRipBinary(): Promise<void> {
   console.log();
-  console.log('ripバイナリのセットアップ');
+  console.log('ZIPアーカイブツールのセットアップ');
   console.log('-'.repeat(50));
   console.log();
 
   const binaryPath = getBinaryPath();
 
   if (await exists(binaryPath)) {
-    console.log(`✅ ripバイナリは既にインストールされています: ${binaryPath}`);
+    console.log(`✅ 既にインストールされています: ${binaryPath}`);
     return;
   }
 
-  console.log('高速アーカイブ作成のため、ripバイナリをダウンロードします。');
+  console.log('ZIPアーカイブツール rip をダウンロードします。');
   const proceed = confirm('ダウンロードしますか?');
 
   if (!proceed) {
-    console.log('ripバイナリのセットアップをスキップしました');
+    console.log('ripのセットアップをスキップしました');
     return;
   }
 
   console.log();
   await ensureRipBinary();
-  console.log('✅ ripバイナリのセットアップが完了しました');
+  console.log('✅ セットアップが完了しました');
 }
 
 /**
@@ -205,7 +205,7 @@ function showGASSetupInstructions(): void {
   console.log('  1. clasp でログイン: npm run clasp login （apps-scriptディレクトリで実行）');
   console.log('  2. GASをデプロイ: deno task gas:deploy');
   console.log();
-  console.log('詳細は .PrivateBox/Docs/GAS開発環境セットアップガイド.md を参照してください。');
+  console.log('詳細は docs/GASセットアップガイド.md を参照してください。');
 }
 
 /**
@@ -215,7 +215,7 @@ async function main() {
   console.log('初期設定ツール');
   console.log('='.repeat(50));
   console.log();
-  console.log('このツールは、photo-managementプロジェクトの初期設定を案内します。');
+  console.log('このツールは photo-management の初期設定を案内します。');
   console.log();
 
   try {

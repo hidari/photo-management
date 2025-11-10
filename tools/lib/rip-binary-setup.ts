@@ -250,14 +250,14 @@ export async function ensureRipBinary(): Promise<string> {
     const isWorking = await testBinary(binaryPath);
 
     if (isWorking) {
-      console.log(`✅ ripバイナリは既にセットアップされています: ${binaryPath}`);
+      console.log(`✅ rip は既にセットアップされています: ${binaryPath}`);
       return binaryPath;
     }
 
     console.log(`⚠️  既存のバイナリが正常に動作しません。再ダウンロードします...`);
   } catch {
     // ファイルが存在しない場合は続行
-    console.log(`ripバイナリが見つかりません。自動セットアップを開始します...`);
+    console.log(`rip が見つかりません。セットアップを開始します...`);
   }
 
   // 最新リリースを取得
@@ -279,14 +279,14 @@ export async function ensureRipBinary(): Promise<string> {
   const isWorking = await testBinary(binaryPath);
 
   if (!isWorking) {
-    throw new Error('バイナリのセットアップに失敗しました');
+    throw new Error('セットアップに失敗しました');
   }
 
   // config.tsを更新
   await updateConfigFile(binaryPath);
 
   console.log();
-  console.log(`✅ ripバイナリのセットアップが完了しました`);
+  console.log(`✅ rip のセットアップが完了しました`);
   console.log(`   パス: ${binaryPath}`);
 
   return binaryPath;
