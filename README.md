@@ -32,14 +32,43 @@ deno task upload --all
 deno task ship
 ```
 
+## 詳細ドキュメント
+
+各機能の詳細な使い方は以下のドキュメントを参照してください：
+
+### [初期設定ガイド](./docs/初期設定ガイド.md)
+- `deno task setup` コマンドの詳細
+- config.ts の設定
+- ZIPアーカイブツール rip のセットアップ
+- Google Drive OAuth認証
+
+### [イベント作成ガイド](./docs/イベント作成ガイド.md)
+- `deno task init` - 新規イベントの作成
+- `deno task add` - モデルの追加
+- ディレクトリ構造の理解
+- TOMLファイルの編集
+
+### [写真配布ガイド](./docs/写真配布ガイド.md)
+- `deno task upload --all` - アップロード
+- `deno task ship` - 配布実行
+- フォルダ共有 vs zip配布
+- 配布メッセージとインテントURL
+
+### [メンテナンスガイド](./docs/メンテナンスガイド.md)
+- `deno task cleanup` - 古いフォルダ削除
+- Google Driveのストレージ管理
+
+----
+
 ## 開発者向けセットアップ
 
 リポジトリをクローンして開発環境で使用する場合の手順です。配布版を使う場合は読み飛ばしてください。
 
 ### 必要な環境
 
-- Deno - メインランタイム
-- pnpm - リンター/フォーマッター管理用
+- Deno  - メインランタイム
+- pnpm  - リンター/フォーマッター管理用
+- clasp - GAS開発
 
 ### Denoのインストール
 
@@ -87,34 +116,6 @@ pnpm run lint:fix
 # テストを実行
 deno task test
 ```
-
-## 詳細ドキュメント
-
-各機能の詳細な使い方は以下のドキュメントを参照してください：
-
-### [初期設定ガイド](./docs/初期設定ガイド.md)
-- `deno task setup` コマンドの詳細
-- config.ts の設定
-- ripバイナリのセットアップ
-- Google Drive OAuth認証
-
-### [イベント作成ガイド](./docs/イベント作成ガイド.md)
-- `deno task init` - 新規イベントの作成
-- `deno task add` - モデルの追加
-- ディレクトリ構造の理解
-- TOMLファイルの編集
-
-### [写真配布ガイド](./docs/写真配布ガイド.md)
-- `deno task upload --all` - アップロード
-- `deno task ship` - 配布実行
-- フォルダ共有 vs zip配布
-- 配布メッセージとインテントURL
-- トラブルシューティング
-
-### [メンテナンスガイド](./docs/メンテナンスガイド.md)
-- `deno task cleanup` - 古いフォルダ削除
-- Google Driveのストレージ管理
-- バックアップの確認
 
 ## ライセンス
 
