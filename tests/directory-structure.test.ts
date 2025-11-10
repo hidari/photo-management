@@ -8,6 +8,7 @@ import {
   findArchiveFiles,
   findPhotoFiles,
   listDistDirectories,
+  listDistributionFiles,
   listPhotoFiles,
 } from '../tools/lib/directory-structure.ts';
 import type { DistributionConfig } from '../types/distribution-config.ts';
@@ -131,6 +132,86 @@ Deno.test('listPhotoFiles: 空のディレクトリの場合空配列を返す',
   const photos = await listPhotoFiles(TEST_DIR);
 
   assertEquals(photos.length, 0);
+
+  await cleanup();
+});
+
+/**
+ * listDistributionFiles: 写真ファイルと_README.txtを取得する
+ */
+Deno.test('listDistributionFiles: 写真ファイルと_README.txtを取得する', async () => {
+  await cleanup();
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+
+  // 写真ファイルと_README.txtを作成
+  await Deno.writeTextFile(join(TEST_DIR, 'photo1.jpg'), 'test');
+  await Deno.writeTextFile(join(TEST_DIR, 'photo2.png'), 'test');
+  await Deno.writeTextFile(join(TEST_DIR, '_README.txt'), 'readme');
+
+  const files = await listDistributionFiles(TEST_DIR);
+
+  assertEquals(files.length, 3);
+  assertEquals(files[0].endsWith('_README.txt'), true);
+  assertEquals(files[1].endsWith('photo1.jpg'), true);
+  assertEquals(files[2].endsWith('photo2.png'), true);
+
+  await cleanup();
+});
+
+/**
+ * listDistributionFiles: サポートされている拡張子のみを取得
+ */
+Deno.test('listDistributionFiles: サポートされている拡張子のみを取得する', async () => {
+  await cleanup();
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+
+  // 様々な拡張子のファイルと_README.txtを作成
+  await Deno.writeTextFile(join(TEST_DIR, 'photo.jpg'), 'test');
+  await Deno.writeTextFile(join(TEST_DIR, 'photo.jpeg'), 'test');
+  await Deno.writeTextFile(join(TEST_DIR, 'photo.png'), 'test');
+  await Deno.writeTextFile(join(TEST_DIR, 'photo.gif'), 'test');
+  await Deno.writeTextFile(join(TEST_DIR, 'photo.webp'), 'test');
+  await Deno.writeTextFile(join(TEST_DIR, '_README.txt'), 'readme');
+  await Deno.writeTextFile(join(TEST_DIR, 'document.pdf'), 'test'); // 除外されるべき
+  await Deno.writeTextFile(join(TEST_DIR, 'data.json'), 'test'); // 除外されるべき
+
+  const files = await listDistributionFiles(TEST_DIR);
+
+  assertEquals(files.length, 6); // 写真5枚 + _README.txt
+
+  await cleanup();
+});
+
+/**
+ * listDistributionFiles: _README.txtがない場合は写真のみ
+ */
+Deno.test('listDistributionFiles: _README.txtがない場合は写真のみを取得する', async () => {
+  await cleanup();
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+
+  // 写真ファイルのみ作成
+  await Deno.writeTextFile(join(TEST_DIR, 'photo1.jpg'), 'test');
+  await Deno.writeTextFile(join(TEST_DIR, 'photo2.png'), 'test');
+
+  const files = await listDistributionFiles(TEST_DIR);
+
+  assertEquals(files.length, 2);
+  assertEquals(files[0].endsWith('photo1.jpg'), true);
+  assertEquals(files[1].endsWith('photo2.png'), true);
+
+  await cleanup();
+});
+
+/**
+ * listDistributionFiles: 空のディレクトリの場合空配列を返す
+ */
+Deno.test('listDistributionFiles: 空のディレクトリの場合空配列を返す', async () => {
+  await cleanup();
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+
+  const files = await listDistributionFiles(TEST_DIR);
+
+  assertEquals(files.length, 0);
 
   await cleanup();
 });

@@ -22,7 +22,7 @@ import { ensureChrome } from './lib/browser-helper.ts';
 import { loadTomlConfig } from './lib/config-loader.ts';
 import { updateConfigField } from './lib/config-writer.ts';
 import { findTomlConfigPath } from './lib/directory-finder.ts';
-import { buildDirectoryStructure, listPhotoFiles } from './lib/directory-structure.ts';
+import { buildDirectoryStructure, listDistributionFiles } from './lib/directory-structure.ts';
 import { getAccessToken } from './lib/google-auth.ts';
 import {
   createEventFolder,
@@ -141,15 +141,21 @@ async function uploadAsFolder(
   accessToken: string,
   eventFolderId: string
 ): Promise<string> {
-  // 1. 写真ファイルを検索
-  console.log(`  写真ファイルを検索中...`);
-  const photoFiles = await listPhotoFiles(distDir);
+  // 1. 配布ファイルを検索（写真ファイル + _README.txt）
+  console.log(`  配布ファイルを検索中...`);
+  const distributionFiles = await listDistributionFiles(distDir);
 
-  if (photoFiles.length === 0) {
+  // 写真ファイルのみをカウント
+  const photoCount = distributionFiles.filter((filePath) => {
+    const ext = filePath.toLowerCase().split('.').pop();
+    return ext && ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext);
+  }).length;
+
+  if (photoCount === 0) {
     throw new Error(`写真ファイルが見つかりません: ${distDir}`);
   }
 
-  console.log(`  ${photoFiles.length}枚の写真を発見しました`);
+  console.log(`  ${photoCount}枚の写真を発見しました`);
 
   // 2. モデル用フォルダを作成
   console.log(`  モデル用フォルダを作成中...`);
@@ -159,15 +165,15 @@ async function uploadAsFolder(
     eventFolderId
   );
 
-  // 3. 写真を個別にアップロード
-  console.log(`  写真をアップロード中...`);
-  for (let i = 0; i < photoFiles.length; i++) {
-    const photoPath = photoFiles[i];
-    await uploadFile(accessToken, photoPath, modelFolderId);
+  // 3. 配布ファイルを個別にアップロード
+  console.log(`  ファイルをアップロード中...`);
+  for (let i = 0; i < distributionFiles.length; i++) {
+    const filePath = distributionFiles[i];
+    await uploadFile(accessToken, filePath, modelFolderId);
 
     // 進捗表示
-    if ((i + 1) % 10 === 0 || i === photoFiles.length - 1) {
-      console.log(`      ${i + 1}/${photoFiles.length}枚 完了`);
+    if ((i + 1) % 10 === 0 || i === distributionFiles.length - 1) {
+      console.log(`      ${i + 1}/${distributionFiles.length}ファイル 完了`);
     }
   }
 

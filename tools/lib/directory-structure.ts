@@ -145,6 +145,33 @@ export async function listPhotoFiles(distDir: string): Promise<string[]> {
 }
 
 /**
+ * DIST_DIRから配布ファイル（写真ファイル + _README.txt）を取得する
+ *
+ * @param distDir - DIST_DIRのパス
+ * @returns 配布ファイルのパス配列
+ */
+export async function listDistributionFiles(distDir: string): Promise<string[]> {
+  const files: string[] = [];
+
+  for await (const entry of Deno.readDir(distDir)) {
+    if (entry.isFile) {
+      const name = entry.name.toLowerCase();
+      const ext = name.split('.').pop();
+
+      // 写真ファイルまたは_README.txtを含める
+      if (
+        (ext && ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext)) ||
+        name === '_readme.txt'
+      ) {
+        files.push(join(distDir, entry.name));
+      }
+    }
+  }
+
+  return files.sort();
+}
+
+/**
  * ディレクトリ構造から写真ファイルの情報を取得する
  *
  * @param directoryConfig - TOMLから読み込んだ設定
