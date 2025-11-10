@@ -10,6 +10,7 @@
  */
 
 import { exists } from 'https://deno.land/std@0.208.0/fs/exists.ts';
+import { updateConfigFields, updateContactsField } from './lib/config-writer.ts';
 import { getAccessToken } from './lib/google-auth.ts';
 import { getDefaultPicturesDirectory } from './lib/os-paths.ts';
 import { ensureRipBinary, getBinaryPath } from './lib/rip-binary-setup.ts';
@@ -77,25 +78,30 @@ async function setupConfig(): Promise<void> {
   const xHandle = readLine('  X (Twitter) ハンドル (@なし):');
   const email = readLine('  メールアドレス:');
 
-  // config.tsの内容を生成
-  const configContent = `import type { Config } from './types/config.ts';
+  // 1. config.example.ts を config.ts にコピー
+  await Deno.copyFile('./config.example.ts', './config.ts');
+  console.log();
+  console.log('📄 config.example.ts をコピーしました');
 
-const config: Config = {
-  administrator: '${administrator}',
-  contacts: [
-${xHandle ? `    { 'X (Twitter)': '${xHandle}' },\n` : ''}${email ? `    { Email: '${email}' },\n` : ''}  ],
-  developedDirectoryBase: '${developedDirectoryBase}',
-  // Google Drive OAuth設定（アップロード機能を使用する場合）
-  // googleDrive: {
-  //   clientId: 'YOUR_CLIENT_ID',
-  //   clientSecret: 'YOUR_CLIENT_SECRET',
-  // },
-};
+  // 2. 必須フィールドを更新
+  await updateConfigFields({
+    administrator,
+    developedDirectoryBase,
+  });
 
-export default config;
-`;
+  // 3. contacts 配列を構築して更新
+  const contacts: Array<Record<string, string>> = [];
+  if (xHandle) {
+    contacts.push({ 'X (Twitter)': xHandle });
+  }
+  if (email) {
+    contacts.push({ Email: email });
+  }
+  // contacts が空でない場合のみ更新
+  if (contacts.length > 0) {
+    await updateContactsField(contacts);
+  }
 
-  await Deno.writeTextFile('./config.ts', configContent);
   console.log();
   console.log('✅ config.ts を作成しました');
   console.log();
