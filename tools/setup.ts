@@ -13,7 +13,7 @@ import { exists } from 'https://deno.land/std@0.208.0/fs/exists.ts';
 import { updateConfigFields, updateContactsField } from './lib/config-writer.ts';
 import { getAccessToken } from './lib/google-auth.ts';
 import { getDefaultPicturesDirectory } from './lib/os-paths.ts';
-import { ensureRipBinary, getBinaryPath } from './lib/rip-binary-setup.ts';
+import { ensureRipBinary } from './lib/rip-binary-setup.ts';
 
 /**
  * 標準入力から1行読み取る
@@ -118,24 +118,7 @@ async function setupRipBinary(): Promise<void> {
   console.log('-'.repeat(50));
   console.log();
 
-  const binaryPath = getBinaryPath();
-
-  if (await exists(binaryPath)) {
-    console.log(`✅ 既にインストールされています: ${binaryPath}`);
-    return;
-  }
-
-  console.log('ZIPアーカイブツール rip をダウンロードします。');
-  const proceed = confirm('ダウンロードしますか?');
-
-  if (!proceed) {
-    console.log('ripのセットアップをスキップしました');
-    return;
-  }
-
-  console.log();
   await ensureRipBinary();
-  console.log('✅ セットアップが完了しました');
 }
 
 /**
