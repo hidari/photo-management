@@ -12,34 +12,10 @@
  */
 
 import { parse as parseFlags } from 'https://deno.land/std@0.208.0/flags/mod.ts';
-import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import config from '../config.ts';
 import type { Config } from '../types/config.ts';
 import { type CleanupResult, cleanupOldEvents, type EventFolderInfo } from './lib/cleanup-logic.ts';
 import { getAccessToken, getAuthClient, getCurrentAccount } from './lib/google-auth.ts';
-
-/**
- * 設定ディレクトリのパスを取得
- */
-export function getConfigDir(): string {
-  const home = Deno.env.get('HOME') || Deno.env.get('USERPROFILE') || '';
-  return join(home, '.config', 'photo-management');
-}
-
-/**
- * PhotoDistributionフォルダのIDを読み込む
- *
- * @returns フォルダID（見つからない場合はnull）
- */
-export async function loadFolderId(): Promise<string | null> {
-  try {
-    const configDir = getConfigDir();
-    const folderIdPath = join(configDir, 'folder-id.txt');
-    return (await Deno.readTextFile(folderIdPath)).trim();
-  } catch {
-    return null;
-  }
-}
 
 /**
  * ユーザーに確認プロンプトを表示する
@@ -123,11 +99,11 @@ async function main() {
   console.log();
 
   // PhotoDistributionフォルダのIDを取得
-  const parentFolderId = await loadFolderId();
+  const parentFolderId = config.photoDistributionFolderId;
 
   if (!parentFolderId) {
     console.error('❌ エラー: PhotoDistributionフォルダIDが見つかりません');
-    console.error('   先に deno task upload-folders を実行してください');
+    console.error('   config.tsのphotoDistributionFolderIdを設定してください');
     Deno.exit(1);
   }
 

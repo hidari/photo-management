@@ -20,6 +20,7 @@ import type { EventModel } from '../types/distribution-config.ts';
 import { createArchive, resolveArchiveTool } from './lib/archive-helper.ts';
 import { ensureChrome } from './lib/browser-helper.ts';
 import { loadTomlConfig } from './lib/config-loader.ts';
+import { updateConfigField } from './lib/config-writer.ts';
 import { findTomlConfigPath } from './lib/directory-finder.ts';
 import { buildDirectoryStructure, listPhotoFiles } from './lib/directory-structure.ts';
 import { getAccessToken } from './lib/google-auth.ts';
@@ -27,10 +28,8 @@ import {
   createEventFolder,
   createFolderWithParent,
   ensurePhotoDistributionFolder,
-  loadFolderId,
   makeFilePublic,
   makeFolderPublic,
-  saveFolderId,
   uploadFile,
 } from './lib/google-drive-helper.ts';
 import { cleanUsername } from './lib/sns-utils.ts';
@@ -429,15 +428,17 @@ async function main() {
 
     // PhotoDistributionフォルダを確保
     console.log('Google Driveフォルダ構造を確保中...');
-    const currentFolderId = await loadFolderId();
-    console.log(`  [DEBUG] 保存されているフォルダID: ${currentFolderId || 'なし'}`);
-    const photoDistFolderId = await ensurePhotoDistributionFolder(
-      accessToken,
-      currentFolderId ?? undefined
-    );
-    await saveFolderId(photoDistFolderId);
+    const currentFolderId = config.photoDistributionFolderId;
+    console.log(`  [DEBUG] 設定されているフォルダID: ${currentFolderId || 'なし'}`);
+    const photoDistFolderId = await ensurePhotoDistributionFolder(accessToken, currentFolderId);
+
+    // フォルダIDが変更された場合は config.ts に保存
+    if (currentFolderId !== photoDistFolderId) {
+      await updateConfigField('photoDistributionFolderId', photoDistFolderId);
+      console.log(`  [DEBUG] フォルダIDをconfig.tsに保存しました: ${photoDistFolderId}`);
+    }
+
     console.log(`✅ PhotoDistributionフォルダ: ${photoDistFolderId}`);
-    console.log(`  [DEBUG] フォルダIDを保存しました: ${photoDistFolderId}`);
 
     // イベントフォルダを作成
     const eventFolderId = await createEventFolder(

@@ -5,23 +5,8 @@
  * デスクトップアプリケーション型の認証フローを実装
  */
 
-import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import { OAuth2Client } from 'npm:google-auth-library@^9.0.0';
-
-/**
- * 設定ディレクトリのパスを取得
- */
-export function getConfigDir(): string {
-  const home = Deno.env.get('HOME') || Deno.env.get('USERPROFILE') || '';
-  return join(home, '.config', 'photo-management');
-}
-
-/**
- * トークンファイルのパスを取得
- */
-function getTokenPath(): string {
-  return join(getConfigDir(), 'google-drive-token.json');
-}
+import { getConfigDir, getTokenPath } from './paths.ts';
 
 /**
  * 保存されたトークンを読み込む

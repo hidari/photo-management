@@ -3,17 +3,14 @@
  */
 
 import { assertEquals, assertStringIncludes } from 'https://deno.land/std@0.208.0/assert/mod.ts';
-import { exists } from 'https://deno.land/std@0.208.0/fs/exists.ts';
 import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import {
   createEventFolder,
   createFolderWithParent,
   createModelFolder,
   findFolder,
-  loadFolderId,
   makeFilePublic,
   makeFolderPublic,
-  saveFolderId,
   uploadFile,
 } from '../tools/lib/google-drive-helper.ts';
 
@@ -21,19 +18,6 @@ import {
  * テスト用の一時ディレクトリ
  */
 const TEST_CONFIG_DIR = './tests/tmp-google-drive';
-
-// 元のHOME環境変数を保存
-let originalHome: string | undefined;
-
-/**
- * テスト前のセットアップ: 環境変数を設定
- */
-function setupTestEnv() {
-  if (!originalHome) {
-    originalHome = Deno.env.get('HOME');
-  }
-  Deno.env.set('HOME', TEST_CONFIG_DIR);
-}
 
 /**
  * テストディレクトリのみクリーンアップ（環境変数は復元しない）
@@ -45,71 +29,6 @@ async function cleanupTestDir() {
     // ディレクトリが存在しない場合は無視
   }
 }
-
-/**
- * テスト後のクリーンアップ（環境変数も復元）
- */
-async function cleanup() {
-  await cleanupTestDir();
-
-  // 元のHOME環境変数を復元
-  if (originalHome) {
-    Deno.env.set('HOME', originalHome);
-  } else {
-    Deno.env.delete('HOME');
-  }
-}
-
-/**
- * loadFolderId: ファイルが存在しない場合nullを返す
- */
-Deno.test('loadFolderId: ファイルが存在しない場合nullを返す', async () => {
-  await cleanupTestDir();
-  setupTestEnv();
-
-  const loadedId = await loadFolderId();
-
-  assertEquals(loadedId, null);
-
-  await cleanup();
-});
-
-/**
- * saveFolderId/loadFolderId: フォルダIDを保存して読み込める
- */
-Deno.test('saveFolderId/loadFolderId: フォルダIDを保存して読み込める', async () => {
-  await cleanupTestDir();
-  setupTestEnv();
-
-  const testFolderId = 'test-folder-id-12345';
-
-  // 保存
-  await saveFolderId(testFolderId);
-
-  // 読み込み
-  const loadedId = await loadFolderId();
-
-  assertEquals(loadedId, testFolderId);
-
-  await cleanup();
-});
-
-/**
- * saveFolderId: 設定ディレクトリが自動作成される
- */
-Deno.test('saveFolderId: 設定ディレクトリが自動作成される', async () => {
-  await cleanupTestDir();
-  setupTestEnv();
-
-  await saveFolderId('test-id');
-
-  const configDir = join(TEST_CONFIG_DIR, '.config', 'photo-management');
-  const dirExists = await exists(configDir);
-
-  assertEquals(dirExists, true);
-
-  await cleanup();
-});
 
 // --- モックを使ったGoogle Drive API関数のテスト ---
 

@@ -55,33 +55,6 @@ export async function loadTestToken(): Promise<GoogleAuthToken | null> {
 }
 
 /**
- * テスト用のフォルダIDを保存する
- *
- * @param folderId - 保存するフォルダID
- */
-export async function saveTestFolderId(folderId: string): Promise<void> {
-  const configDir = getTestConfigDir();
-  await Deno.mkdir(configDir, { recursive: true });
-  const folderIdPath = join(configDir, 'folder-id.txt');
-  await Deno.writeTextFile(folderIdPath, folderId);
-}
-
-/**
- * テスト用のフォルダIDを読み込む
- *
- * @returns フォルダID（見つからない場合はnull）
- */
-export async function loadTestFolderId(): Promise<string | null> {
-  try {
-    const configDir = getTestConfigDir();
-    const folderIdPath = join(configDir, 'folder-id.txt');
-    return (await Deno.readTextFile(folderIdPath)).trim();
-  } catch {
-    return null;
-  }
-}
-
-/**
  * テスト用の認証情報を保存する
  *
  * @param credentials - 保存する認証情報

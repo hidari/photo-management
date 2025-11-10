@@ -2,42 +2,7 @@
  * Google Driveフォルダの検索・作成・検証を行うヘルパー関数
  */
 
-import { basename, join } from 'https://deno.land/std@0.208.0/path/mod.ts';
-
-/**
- * 設定ディレクトリのパスを取得
- */
-function getConfigDir(): string {
-  const home = Deno.env.get('HOME') || Deno.env.get('USERPROFILE') || '';
-  return join(home, '.config', 'photo-management');
-}
-
-/**
- * PhotoDistributionフォルダのIDを読み込む
- *
- * @returns フォルダID（見つからない場合はnull）
- */
-export async function loadFolderId(): Promise<string | null> {
-  try {
-    const configDir = getConfigDir();
-    const folderIdPath = join(configDir, 'folder-id.txt');
-    return (await Deno.readTextFile(folderIdPath)).trim();
-  } catch {
-    return null;
-  }
-}
-
-/**
- * PhotoDistributionフォルダのIDを保存する
- *
- * @param folderId - 保存するフォルダID
- */
-export async function saveFolderId(folderId: string): Promise<void> {
-  const configDir = getConfigDir();
-  await Deno.mkdir(configDir, { recursive: true });
-  const folderIdPath = join(configDir, 'folder-id.txt');
-  await Deno.writeTextFile(folderIdPath, folderId);
-}
+import { basename } from 'https://deno.land/std@0.208.0/path/mod.ts';
 
 /**
  * Google Drive APIでフォルダIDの存在を確認する

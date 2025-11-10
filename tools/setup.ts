@@ -12,7 +12,7 @@
 import { exists } from 'https://deno.land/std@0.208.0/fs/exists.ts';
 import { updateConfigFields, updateContactsField } from './lib/config-writer.ts';
 import { getAccessToken } from './lib/google-auth.ts';
-import { getDefaultPicturesDirectory } from './lib/os-paths.ts';
+import { getDefaultPicturesDirectory } from './lib/paths.ts';
 import { ensureRipBinary } from './lib/rip-binary-setup.ts';
 
 /**

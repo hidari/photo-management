@@ -1,8 +1,10 @@
 /**
- * OS固有のパス取得ユーティリティ
+ * パス関連ユーティリティ
  *
- * 各OSのデフォルトディレクトリやホームディレクトリを取得する関数を提供します。
+ * OS固有のパスやアプリケーション設定ファイルのパスを一元管理します。
  */
+
+import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 
 /**
  * ホームディレクトリのパスを取得
@@ -42,4 +44,23 @@ export function getDefaultPicturesDirectory(): string {
   }
   // フォールバック
   return '/Users/your_name/Pictures';
+}
+
+/**
+ * 設定ディレクトリのパスを取得
+ *
+ * @returns 設定ディレクトリのパス (~/.config/photo-management)
+ */
+export function getConfigDir(): string {
+  const home = getHomeDirectory() || '';
+  return join(home, '.config', 'photo-management');
+}
+
+/**
+ * トークンファイルのパスを取得
+ *
+ * @returns トークンファイルのパス
+ */
+export function getTokenPath(): string {
+  return join(getConfigDir(), 'google-drive-token.json');
 }
