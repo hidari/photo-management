@@ -4,6 +4,7 @@
  */
 
 import { assertEquals, assertStringIncludes } from 'https://deno.land/std@0.208.0/assert/mod.ts';
+import { join } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import {
   getConfigDir,
   getDefaultPicturesDirectory,
@@ -116,7 +117,7 @@ Deno.test('getConfigDir: HOME環境変数がある場合、正しいパスを返
 
     const configDir = getConfigDir();
 
-    assertEquals(configDir, '/Users/testuser/.config/photo-management');
+    assertEquals(configDir, join('/Users/testuser', '.config', 'photo-management'));
   } finally {
     // 環境変数を復元
     if (originalHome !== undefined) {
@@ -146,7 +147,7 @@ Deno.test('getConfigDir: 環境変数がない場合、空文字ベースのパ�
     const configDir = getConfigDir();
 
     // 空文字から始まるパスになる
-    assertEquals(configDir, '.config/photo-management');
+    assertEquals(configDir, join('.config', 'photo-management'));
   } finally {
     // 環境変数を復元
     if (originalHome !== undefined) {
@@ -187,7 +188,10 @@ Deno.test('getTokenPath: パスの形式が {configDir}/google-drive-token.json 
 
     const tokenPath = getTokenPath();
 
-    assertEquals(tokenPath, '/Users/testuser/.config/photo-management/google-drive-token.json');
+    assertEquals(
+      tokenPath,
+      join('/Users/testuser', '.config', 'photo-management', 'google-drive-token.json')
+    );
   } finally {
     if (originalHome !== undefined) {
       Deno.env.set('HOME', originalHome);
