@@ -209,10 +209,8 @@ deno task gas:setup
 - スクリプトを実行するアカウントが`photoDistributionFolder`にアクセスできることを確認
 - `clasp login` で正しいアカウントで認証しているか確認
 - トークンを再取得:
-  ```bash
-  rm ~/.config/photo-management/google-drive-token.json
-  deno task gas:setup
-  ```
+  - `~/.config/photo-management/` 配下の認証トークンを削除
+  - `deno task gas:setup` を実行
 
 ### メール通知が届かない
 
@@ -237,10 +235,8 @@ deno task gas:setup
 
 古いアクセストークンを使用している可能性があります:
 
-```bash
-rm ~/.config/photo-management/google-drive-token.json
-deno task gas:setup
-```
+1. `~/.config/photo-management/` 配下の認証トークンを削除
+2. `deno task gas:setup` を実行
 
 ## CLI版との違い
 
