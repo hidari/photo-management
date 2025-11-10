@@ -105,28 +105,24 @@ Deno.test('getDefaultPicturesDirectory: フォールバック動作をテスト'
 // ========================================
 
 Deno.test('getConfigDir: HOME環境変数がある場合、正しいパスを返す', () => {
-  const originalHome = Deno.env.get('HOME');
-  const originalUserProfile = Deno.env.get('USERPROFILE');
+  const os = Deno.build.os;
+  const envKey = os === 'windows' ? 'USERPROFILE' : 'HOME';
+  const testHome = os === 'windows' ? 'C:\\Users\\testuser' : '/Users/testuser';
+  const originalValue = Deno.env.get(envKey);
 
   try {
-    // HOME環境変数を設定
-    Deno.env.set('HOME', '/Users/testuser');
-    if (originalUserProfile !== undefined) {
-      Deno.env.delete('USERPROFILE');
-    }
+    // OS別の環境変数を設定
+    Deno.env.set(envKey, testHome);
 
     const configDir = getConfigDir();
 
-    assertEquals(configDir, join('/Users/testuser', '.config', 'photo-management'));
+    assertEquals(configDir, join(testHome, '.config', 'photo-management'));
   } finally {
     // 環境変数を復元
-    if (originalHome !== undefined) {
-      Deno.env.set('HOME', originalHome);
+    if (originalValue !== undefined) {
+      Deno.env.set(envKey, originalValue);
     } else {
-      Deno.env.delete('HOME');
-    }
-    if (originalUserProfile !== undefined) {
-      Deno.env.set('USERPROFILE', originalUserProfile);
+      Deno.env.delete(envKey);
     }
   }
 });
@@ -181,22 +177,27 @@ Deno.test('getTokenPath: 正しいトークンファイルパスを返す', () =
 });
 
 Deno.test('getTokenPath: パスの形式が {configDir}/google-drive-token.json になっている', () => {
-  const originalHome = Deno.env.get('HOME');
+  const os = Deno.build.os;
+  const envKey = os === 'windows' ? 'USERPROFILE' : 'HOME';
+  const testHome = os === 'windows' ? 'C:\\Users\\testuser' : '/Users/testuser';
+  const originalValue = Deno.env.get(envKey);
 
   try {
-    Deno.env.set('HOME', '/Users/testuser');
+    // OS別の環境変数を設定
+    Deno.env.set(envKey, testHome);
 
     const tokenPath = getTokenPath();
 
     assertEquals(
       tokenPath,
-      join('/Users/testuser', '.config', 'photo-management', 'google-drive-token.json')
+      join(testHome, '.config', 'photo-management', 'google-drive-token.json')
     );
   } finally {
-    if (originalHome !== undefined) {
-      Deno.env.set('HOME', originalHome);
+    // 環境変数を復元
+    if (originalValue !== undefined) {
+      Deno.env.set(envKey, originalValue);
     } else {
-      Deno.env.delete('HOME');
+      Deno.env.delete(envKey);
     }
   }
 });
