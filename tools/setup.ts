@@ -73,11 +73,6 @@ async function setupConfig(): Promise<void> {
     getDefaultPicturesDirectory()
   );
 
-  console.log();
-  console.log('連絡先情報を入力してください（スキップ可）:');
-  const xHandle = readLine('  X (Twitter) ハンドル (@なし):');
-  const email = readLine('  メールアドレス:');
-
   // 1. config.example.ts を config.ts にコピー
   await Deno.copyFile('./config.example.ts', './config.ts');
   console.log();
@@ -89,14 +84,80 @@ async function setupConfig(): Promise<void> {
     developedDirectoryBase,
   });
 
-  // 3. contacts 配列を構築して更新
+  // 3. 連絡先情報を対話的に入力
+  console.log();
+  console.log('連絡先情報を入力してください（スキップ可）:');
+  console.log();
+
+  // 推奨プラットフォームリスト
+  const recommendedPlatforms = [
+    { name: 'X (Twitter)', example: '@username' },
+    { name: 'Email', example: 'email@example.com' },
+    { name: 'Instagram', example: '@username' },
+    { name: 'Bluesky', example: '@username.bsky.social' },
+    { name: 'Discord', example: 'username#1234 または Discord ID' },
+    { name: 'LINE', example: 'LINE ID' },
+  ];
+
+  // contacts 配列を構築
   const contacts: Array<Record<string, string>> = [];
-  if (xHandle) {
-    contacts.push({ 'X (Twitter)': xHandle });
+
+  while (true) {
+    const addContact = confirm('連絡先を追加しますか?', false);
+    if (!addContact) {
+      break;
+    }
+
+    console.log();
+    console.log('推奨プラットフォーム:');
+    recommendedPlatforms.forEach((platform, index) => {
+      console.log(`  ${index + 1}. ${platform.name}`);
+    });
+    console.log(`  ${recommendedPlatforms.length + 1}. その他`);
+    console.log();
+
+    const choice = readLine(
+      `プラットフォームを選択してください (1-${recommendedPlatforms.length + 1}):`
+    );
+    const choiceNum = Number.parseInt(choice, 10);
+
+    let platformName: string;
+    let exampleText: string;
+
+    if (choiceNum >= 1 && choiceNum <= recommendedPlatforms.length) {
+      // 推奨プラットフォームから選択
+      const selected = recommendedPlatforms[choiceNum - 1];
+      platformName = selected.name;
+      exampleText = selected.example;
+    } else if (choiceNum === recommendedPlatforms.length + 1) {
+      // その他（自由入力）
+      platformName = readLine('プラットフォーム名を入力してください:');
+      exampleText = 'your-contact';
+    } else {
+      console.log('❌ 無効な選択です。スキップします。');
+      console.log();
+      continue;
+    }
+
+    if (!platformName) {
+      console.log('❌ プラットフォーム名が空です。スキップします。');
+      console.log();
+      continue;
+    }
+
+    const contactValue = readLine(`連絡先を入力してください（例: ${exampleText}）:`);
+
+    if (!contactValue) {
+      console.log('❌ 連絡先が空です。スキップします。');
+      console.log();
+      continue;
+    }
+
+    contacts.push({ [platformName]: contactValue });
+    console.log(`✅ ${platformName}: ${contactValue} を追加しました`);
+    console.log();
   }
-  if (email) {
-    contacts.push({ Email: email });
-  }
+
   // contacts が空でない場合のみ更新
   if (contacts.length > 0) {
     await updateContactsField(contacts);
