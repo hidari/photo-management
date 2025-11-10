@@ -8,9 +8,8 @@
     "ship": "deno run --allow-read --allow-write --allow-run tools/ship.ts",
     "cleanup": "deno run --allow-read --allow-write --allow-net --allow-env tools/cleanup-old-events.ts",
     "build-package": "deno run --allow-read --allow-write --allow-run tools/build-package.ts",
-    "gas:setup": "deno run --allow-read --allow-write --allow-run --allow-env tools/setup-gas-properties.ts",
-    "gas:push": "cd apps-script && npx tsc && npx clasp push --force",
-    "gas:deploy": "deno task gas:push && deno task gas:setup"
+    "gas:apply": "deno run --allow-read --allow-write --allow-run --allow-env tools/setup-gas-properties.ts",
+    "gas:push": "cd apps-script && npx tsc && npx clasp push --force"
   },
   "nodeModulesDir": "auto"
 }

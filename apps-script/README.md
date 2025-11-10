@@ -46,7 +46,7 @@ export const config: Config = {
 ### ステップ2: スクリプトをデプロイして設定を登録
 
 ```bash
-deno task gas:deploy
+deno task gas:apply
 ```
 
 このコマンドは以下を自動実行します:
@@ -77,21 +77,23 @@ deno task gas:deploy
 
 ## コマンドリファレンス
 
-### deno task gas:deploy（推奨: 初回セットアップ）
+### deno task gas:apply（推奨: 初回セットアップ・設定変更時）
 
 スクリプトのコンパイル、デプロイ、設定登録をすべて実行します。
 
 ```bash
-deno task gas:deploy
+deno task gas:apply
 ```
 
 **実行内容:**
-1. `gas:push` を実行（TypeScriptコンパイル + clasp push）
-2. `gas:setup` を実行（PropertiesService設定登録）
+1. TypeScriptをコンパイル
+2. clasp push --force
+3. PropertiesService設定登録
 
 **使用タイミング:**
 - 初回セットアップ時
 - コードと設定の両方を変更した時
+- config.tsの設定を変更した時
 
 ### deno task gas:push（コード変更時）
 

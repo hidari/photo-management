@@ -6,7 +6,7 @@
  *
  * セットアップ手順:
  * 1. プロジェクトのconfig.tsに必要な設定を記述
- * 2. `pnpm run gas:deploy` でデプロイ（clasp push + 設定値の自動転送）
+ * 2. `deno task gas:apply` で設定を適用（clasp push + 設定値の自動転送）
  * 3. Google Apps Scriptエディタで「トリガー」メニューから時間主導型トリガーを設定（例: 毎日午前2時）
  * 4. 初回実行時にGoogle Driveへのアクセス権限を承認
  *
@@ -21,7 +21,7 @@
 
 /**
  * PropertiesServiceから設定値を読み込む
- * 設定値はpnpm run gas:setupコマンドで事前に登録されている必要がある
+ * 設定値はdeno task gas:applyコマンドで事前に登録されている必要がある
  */
 function loadConfig(): {
   photoDistributionFolderId: string;
@@ -40,21 +40,21 @@ function loadConfig(): {
   if (!photoDistributionFolderId) {
     throw new Error(
       '設定エラー: PHOTO_DISTRIBUTION_FOLDER_IDが設定されていません。\n' +
-        'pnpm run gas:setup を実行して設定を登録してください。'
+        'deno task gas:apply を実行して設定を登録してください。'
     );
   }
 
   if (!retentionDaysStr) {
     throw new Error(
       '設定エラー: RETENTION_DAYSが設定されていません。\n' +
-        'pnpm run gas:setup を実行して設定を登録してください。'
+        'deno task gas:apply を実行して設定を登録してください。'
     );
   }
 
   if (!notificationEmail) {
     throw new Error(
       '設定エラー: NOTIFICATION_EMAILが設定されていません。\n' +
-        'pnpm run gas:setup を実行して設定を登録してください。'
+        'deno task gas:apply を実行して設定を登録してください。'
     );
   }
 

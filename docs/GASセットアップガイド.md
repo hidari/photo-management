@@ -138,18 +138,11 @@ deno task gas:open
 ### 設定をGASに登録
 
 ```bash
-deno task gas:setup
+deno task gas:apply
 ```
 
 `config.ts` の設定値をPropertiesServiceに登録します。設定を変更した場合は再実行してください。
-
-### ビルド + アップロード + 設定登録を一度に実行
-
-```bash
-deno task gas:deploy
-```
-
-上記の3つのステップ（build + push + setup）を一度に実行します。
+このコマンドはTypeScriptコンパイル、clasp push、設定登録を一度に実行します。
 
 ## トラブルシューティング
 

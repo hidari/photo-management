@@ -7,7 +7,7 @@
  * 自動作成されたIDをconfig.tsに書き戻します。
  *
  * 実行方法:
- *   deno task gas:setup
+ *   deno task gas:apply
  *
  * 前提条件:
  * 1. clasp login でGoogle認証が完了していること
@@ -102,7 +102,7 @@ async function setupProperties(properties: Record<string, string>): Promise<void
  * PropertiesServiceに設定値を登録する関数
  *
  * この関数は tools/setup-gas-properties.ts から clasp run 経由で実行されます。
- * ファイルの内容は deno task gas:setup 実行時に自動的に上書きされます。
+ * ファイルの内容は deno task gas:apply 実行時に自動的に上書きされます。
  *
  * 注意: このファイルを手動で編集しないでください。
  */
@@ -110,7 +110,7 @@ async function setupProperties(properties: Record<string, string>): Promise<void
 // biome-ignore lint/correctness/noUnusedVariables: clasp runから実行される想定なので未使用でも大丈夫
 function setupPropertiesFromCli() {
   const props = PropertiesService.getUserProperties();
-  const properties = ${JSON.stringify(properties, null, 2)};
+  const properties: Record<string, string> = ${JSON.stringify(properties, null, 2)};
 
   for (const [key, value] of Object.entries(properties)) {
     props.setProperty(key, value);
