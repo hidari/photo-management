@@ -105,10 +105,13 @@ async function copyDistributionFiles(tempDir: string): Promise<void> {
   // config.example.tsのコピー
   await copyFile('config.example.ts', `${tempDir}/config.example.ts`);
 
-  // deno.jsonのコピー（build-packageタスクを除外）
+  // deno.jsonのコピー（build-packageとtestタスクを除外）
   const denoConfig = JSON.parse(await Deno.readTextFile('deno.json'));
   if (denoConfig.tasks?.['build-package']) {
     delete denoConfig.tasks['build-package'];
+  }
+  if (denoConfig.tasks?.['test']) {
+    delete denoConfig.tasks['test'];
   }
   await Deno.writeTextFile(`${tempDir}/deno.json`, JSON.stringify(denoConfig, null, 2));
 
@@ -144,6 +147,20 @@ async function copyDistributionFiles(tempDir: string): Promise<void> {
     if (entry.name !== 'DISTRIBUTION_README.txt') {
       const srcPath = `templates/${entry.name}`;
       const destPath = `${tempDir}/templates/${entry.name}`;
+      if (entry.isDirectory) {
+        await copyDir(srcPath, destPath);
+      } else {
+        await copyFile(srcPath, destPath);
+      }
+    }
+  }
+
+  // apps-scriptディレクトリ（.clasp.jsonとappsscript.jsonは除外）
+  await Deno.mkdir(`${tempDir}/apps-script`, { recursive: true });
+  for await (const entry of Deno.readDir('apps-script')) {
+    if (entry.name !== '.clasp.json' && entry.name !== 'appsscript.json') {
+      const srcPath = `apps-script/${entry.name}`;
+      const destPath = `${tempDir}/apps-script/${entry.name}`;
       if (entry.isDirectory) {
         await copyDir(srcPath, destPath);
       } else {

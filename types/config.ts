@@ -43,7 +43,7 @@ export interface Config {
   /**
    * 配布フォルダの保持期間(日数)
    * 指定した日数より古いイベントフォルダは自動削除の対象になる
-   * デフォルト: 30日
+   * デフォルト: 90日
    */
   distributionRetentionDays?: number;
 

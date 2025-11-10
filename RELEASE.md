@@ -10,12 +10,13 @@ deno task build-package
 
 `dist/photo-management-v{VERSION}.zip` が生成されます。このZIPには以下が含まれます:
 
-- 必要なツール（`tools/`）
+- 必要なツール（`tools/`、ただし `build-package.ts` は除外）
 - 設定ファイルのテンプレート（`config.example.ts`、`distribution.config.example.toml`）
-- テンプレートファイル（`templates/`）
+- テンプレートファイル（`templates/`、ただし `DISTRIBUTION_README.txt` は除外）
 - 型定義（`types/`）
 - ドキュメント（`docs/`）
-- タスク定義（`deno.json`）
+- Google Apps Script（`apps-script/`、ただし `.clasp.json` と `appsscript.json` は除外）
+- タスク定義（`deno.json`、ただし `test` と `build-package` タスクは除外）
 - 配布版README（`README.txt`）
 
 ## バージョン管理
@@ -45,13 +46,15 @@ deno task test
 deno check tools/**/*.ts tests/**/*.ts
 ```
 
-2. リリース前確認が完了したら、バージョンタグを作成してプッシュ:
+2. リリース前確認が完了したら、変更をプッシュしてCIが通ることを確認する
+
+3. バージョンタグを作成してプッシュ:
 
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-3. GitHub Actionsが自動的にビルドを実行し、ReleasesページにZIPパッケージを公開
+4. GitHub Actionsが自動的にビルドを実行し、ReleasesページにZIPパッケージを公開
 
 **重要**: タグとバージョンは自動的に同期されるため、`deno.json` の編集は不要です。

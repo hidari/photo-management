@@ -4,7 +4,9 @@
 
 ## 対象者
 
-このツールはコマンドライン操作に慣れていたり、自動化に興味があるカメラマンを対象としています。以下のような作業に抵抗がない方向けです：
+このツールはコマンドライン操作に慣れていたり、自動化に興味があるカメラマンを対象としています。
+
+以下のような作業に抵抗がない方向けです：
 
 - ターミナル/コマンドプロンプトでのコマンド実行
 - テキストエディタでの設定ファイル編集
@@ -18,7 +20,7 @@
 
 ## 必要な環境
 
-このツールを使用するには **Deno** が必要です。
+このツールを使用するには [Deno](https://deno.land/) が必要です。
 
 ### Denoのインストール
 
@@ -43,21 +45,17 @@ brew install deno
 deno --version
 ```
 
-詳細なインストール手順は https://deno.land/ を参照してください。
-
 ## セットアップ
 
-### 1. 設定ファイルの作成
+### 対話式セットアップ（推奨）
 
 ダウンロードして展開したディレクトリで、以下のコマンドを実行してください：
 
 ```bash
-cp config.example.ts config.ts
+deno task setup
 ```
 
-### 2. 設定項目の編集
-
-`config.ts` をテキストエディタで開き、以下の項目を設定してください：
+画面の指示に従って、以下の項目を設定します：
 
 - `administrator`: あなたの名前
 - `contacts`: 連絡先となるSNSアカウント（X、Blueskyなど）
@@ -65,9 +63,21 @@ cp config.example.ts config.ts
 - `archiveTool`: 配布用zipファイルを作成するツールを指定（オプション）
 - `googleDrive`: Google Driveアップロード機能を使用する場合は設定（OAuth 2.0認証）
 
-**注意**: このファイルは機密情報を含むため、公開しないでください。
+設定ファイル（`config.ts`）は自動的に作成されます。
 
-### 3. Google Driveのセットアップ（オプション）
+**注意**: 作成された `config.ts` は個人情報を含むため、公開しないでください。
+
+### 手動セットアップ
+
+対話式セットアップの代わりに、手動で設定ファイルを作成することもできます：
+
+```bash
+cp config.example.ts config.ts
+```
+
+その後、`config.ts` をテキストエディタで開いて編集してください。
+
+### Google Driveのセットアップ（オプション）
 
 Google Driveへのアップロード機能を使用する場合は、以下のドキュメントを参照してセットアップしてください：
 
@@ -77,60 +87,50 @@ Google Driveへのアップロード機能を使用する場合は、以下の�
 
 ### ワークフロー
 
-1. **イベント情報を初期化:**
+1. イベント情報を初期化（ディレクトリ作成とREADME生成を含む）:
    ```bash
    deno task init
    ```
    画面の指示に従って、イベント日付、イベント名、モデル情報を入力します。
+   モデルごとの配布用ディレクトリとREADMEが自動生成されます。
 
-2. **ディレクトリ構造を作成:**
+2. 生成されたディレクトリに写真を配置
+
+3. モデルの追加（必要に応じて）:
    ```bash
-   deno task dirs
+   deno task add
    ```
-   モデルごとの配布用ディレクトリが自動生成されます。
+   追加でモデルをアサインする場合に使用します。
 
-3. **生成されたディレクトリに写真を配置**
+4. アーカイブ作成とGoogle Driveアップロード:
+   ```bash
+   deno task upload
+   ```
+   写真をzipファイルにアーカイブし、Google Driveにアップロードします。
 
-4. **配布準備を一括実行:**
+5. 配布メッセージ作成とDM送信URLの生成:
    ```bash
    deno task ship
    ```
-   以下の処理が順次実行されます：
-   - ZIPアーカイブ作成
-   - Google Driveへのアップロード
-   - 配布用メッセージ生成
-   - XのDM送信URL生成
+   モデルへの配布メッセージとXのDM送信URLを自動生成します。
 
-5. **DMを送信:**
-   `distribution.config.toml` 内の `intent_url` のURLを開き、内容を確認・修正してDMを送信
-
-### 個別実行する場合
-
-4の一括実行の代わりに、以下を順に実行できます：
-
-```bash
-deno task archive      # zipファイルを作成
-deno task upload       # Google Driveにアップロード
-deno task distribution # 配布用メッセージ作成
-deno task intent       # XのDM送信URLを作成
-```
+6. DMを送信:
+   `distribution.config.toml` 内の `intent_url` のURLを開き、内容を確認してDMを送信
 
 ## 利用可能なコマンド
 
+- `deno task setup` - セットアップ
 - `deno task init` - イベント初期化
-- `deno task readme` - README生成
-- `deno task dirs` - ディレクトリ作成
-- `deno task archive` - アーカイブ作成
-- `deno task upload` - Google Driveアップロード
-- `deno task distribution` - 配布ドキュメント作成
-- `deno task intent` - X用DMのURL生成
-- `deno task ship` - 配布一括実行
+- `deno task add` - モデル追加
+- `deno task upload` - アップロード
+- `deno task ship` - 配布実行
+- `deno task cleanup` - 古いフォルダ削除
 
-詳細な使い方は各ツールのドキュメント（`docs/` ディレクトリ内）を参照してください。
+詳細な使い方は各コマンドの実行時に表示されるヘルプや、`docs/` ディレクトリ内のドキュメントを参照してください。
 
 ## トラブルシューティング
 
-### コマンドが見つからない
+### `deno` コマンドが見つからない
 
 Denoが正しくインストールされているか、PATHが通っているか確認してください。
 
