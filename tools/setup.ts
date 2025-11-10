@@ -192,8 +192,12 @@ function showGASSetupInstructions(): void {
   console.log('Google Apps Scriptのセットアップが必要です。');
   console.log();
   console.log('セットアップ手順:');
-  console.log('  1. clasp でログイン: npm run clasp login （apps-scriptディレクトリで実行）');
-  console.log('  2. GASをデプロイ: deno task gas:deploy');
+  console.log('  1. clasp でログイン: pnpm exec clasp login');
+  console.log(
+    '  2. GASプロジェクトを作成: cd apps-script && pnpm exec clasp create --title "photo-management cleanup" --type standalone'
+  );
+  console.log('  3. スクリプトをデプロイ: deno task gas:push');
+  console.log('  4. 設定を登録: deno task gas:setup');
   console.log();
   console.log('詳細は docs/GASセットアップガイド.md を参照してください。');
 }
