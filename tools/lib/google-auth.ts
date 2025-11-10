@@ -115,6 +115,43 @@ async function getAuthCodeFromLocalServer(_client: OAuth2Client): Promise<string
 }
 
 /**
+ * ブラウザでURLを開く
+ *
+ * @param url 開くURL
+ */
+async function openBrowser(url: string): Promise<void> {
+  try {
+    let command: string;
+    let args: string[];
+
+    switch (Deno.build.os) {
+      case 'darwin': // macOS
+        command = 'open';
+        args = [url];
+        break;
+      case 'windows':
+        command = 'cmd';
+        args = ['/c', 'start', url];
+        break;
+      case 'linux':
+        command = 'xdg-open';
+        args = [url];
+        break;
+      default:
+        throw new Error(`Unsupported OS: ${Deno.build.os}`);
+    }
+
+    const process = new Deno.Command(command, { args });
+    await process.output();
+  } catch (error) {
+    console.warn(
+      '⚠️ ブラウザを開くことができませんでした:',
+      error instanceof Error ? error.message : String(error)
+    );
+  }
+}
+
+/**
  * OAuth 2.0 認可フローを実行する
  *
  * @param client OAuth2Client インスタンス
@@ -127,10 +164,14 @@ async function performAuthFlow(client: OAuth2Client): Promise<object> {
   });
 
   console.log();
-  console.log('ブラウザが自動で開くので画面に従って認証してください:');
+  console.log('ブラウザを開いて認証を行います...');
   console.log();
-  console.log(`${authUrl}`);
+  console.log(`認証URL: ${authUrl}`);
   console.log();
+
+  // ブラウザを自動的に開く
+  await openBrowser(authUrl);
+
   console.log('ブラウザが自動的に開かない場合は、上記URLに直接アクセスしてください。');
   console.log();
 
