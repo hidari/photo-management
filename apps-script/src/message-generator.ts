@@ -45,7 +45,7 @@ interface RowData {
 // biome-ignore lint/correctness/noUnusedVariables: GAS環境でグローバル関数として使用される
 function onOpen(): void {
   const ui = SpreadsheetApp.getUi();
-  ui.createMenu('📝 メッセージ生成').addItem('メッセージを生成', 'generateMessages').addToUi();
+  ui.createMenu('📝 メッセージ生成').addItem('メッセージを生成する', 'generateMessages').addToUi();
 }
 
 /**
@@ -93,6 +93,15 @@ function generateMessages(): void {
         continue;
       }
 
+      // MESSAGE列に値がある場合はスキップ（既に生成済み）
+      const messageValue = String(row[COLUMNS.MESSAGE - 1] || '').trim();
+      if (messageValue !== '') {
+        Logger.log(
+          `行 ${rowIndex}: 既にメッセージが生成済みのためスキップしました（ID: ${row[COLUMNS.ID - 1]}）`
+        );
+        continue;
+      }
+
       // 行データをオブジェクトに変換
       const rowData: RowData = {
         id: String(row[COLUMNS.ID - 1] || '').trim(),
@@ -122,13 +131,7 @@ function generateMessages(): void {
     }
 
     // 完了メッセージ
-    if (processedCount === 0) {
-      Browser.msgBox(
-        '対象行が見つかりませんでした。\n\nREADY=TRUEかつPUBLISHED≠TRUEで、必須項目（A-H列）がすべて入力されている行を確認してください。'
-      );
-    } else {
-      Browser.msgBox(`${processedCount}件のメッセージを生成しました。`);
-    }
+    Browser.msgBox(`${processedCount}件のメッセージを生成しました。`);
   } catch (error) {
     Browser.msgBox(
       `エラーが発生しました:\n${error instanceof Error ? error.message : String(error)}`
