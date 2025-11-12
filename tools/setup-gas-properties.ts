@@ -77,10 +77,45 @@ function extractGasConfig(): Record<string, string> {
 }
 
 /**
+ * appsscript.jsonにexecutionApiを追加する
+ * executionApiが既に存在する場合はスキップ
+ */
+async function ensureExecutionApi(): Promise<void> {
+  const appsscriptJsonPath = join(APPS_SCRIPT_DIR, 'appsscript.json');
+
+  try {
+    const content = await Deno.readTextFile(appsscriptJsonPath);
+    const appsscriptJson = JSON.parse(content);
+
+    // executionApiが既に存在する場合はスキップ
+    if (appsscriptJson.executionApi) {
+      console.log('✅ executionApiは既に設定されています');
+      return;
+    }
+
+    // executionApiを追加
+    appsscriptJson.executionApi = {
+      access: 'MYSELF',
+    };
+
+    // ファイルに書き戻し
+    await Deno.writeTextFile(appsscriptJsonPath, `${JSON.stringify(appsscriptJson, null, 2)}\n`);
+
+    console.log('✅ appsscript.jsonにexecutionApiを追加しました');
+  } catch (error) {
+    console.warn('⚠️  appsscript.jsonの更新に失敗しました:', error);
+  }
+}
+
+/**
  * claspコマンドでPropertiesServiceに設定を登録する
  */
 async function setupProperties(properties: Record<string, string>): Promise<void> {
   console.log('PropertiesServiceに設定を登録します...\n');
+
+  // appsscript.jsonにexecutionApiを追加
+  await ensureExecutionApi();
+  console.log('');
 
   // 設定内容を表示
   console.log('登録する設定:');
@@ -138,6 +173,18 @@ function setupPropertiesFromCli() {
     throw new Error('TypeScriptのコンパイルに失敗しました');
   }
 
+  // appsscript.jsonをdistディレクトリにコピー
+  console.log('appsscript.jsonをdistにコピーしています...');
+  const appsscriptJsonPath = join(APPS_SCRIPT_DIR, 'appsscript.json');
+  const distAppsscriptJsonPath = join(APPS_SCRIPT_DIR, 'dist', 'appsscript.json');
+
+  try {
+    await Deno.copyFile(appsscriptJsonPath, distAppsscriptJsonPath);
+    console.log('✅ appsscript.jsonをコピーしました\n');
+  } catch (error) {
+    throw new Error(`appsscript.jsonのコピーに失敗しました: ${error}`);
+  }
+
   // claspでpush
   console.log('Google Apps Scriptにデプロイしています...');
   const pushResult = await new Deno.Command('npx', {
@@ -151,6 +198,53 @@ function setupPropertiesFromCli() {
     throw new Error('clasp pushに失敗しました');
   }
 
+  // バージョンを作成
+  console.log('\nバージョンを作成しています...');
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+  const versionDescription = `Setup properties - ${timestamp}`;
+
+  const versionResult = await new Deno.Command('npx', {
+    args: ['clasp', 'version', versionDescription],
+    cwd: APPS_SCRIPT_DIR,
+    stdout: 'piped',
+    stderr: 'piped',
+  }).output();
+
+  if (!versionResult.success) {
+    const errorText = new TextDecoder().decode(versionResult.stderr);
+    throw new Error(`clasp versionに失敗しました: ${errorText}`);
+  }
+
+  // バージョン番号を取得
+  const versionOutput = new TextDecoder().decode(versionResult.stdout);
+  const versionMatch = versionOutput.match(/Created version (\d+)/);
+
+  if (!versionMatch) {
+    console.warn('⚠️ バージョン番号の取得に失敗しました。デプロイ作成をスキップします。');
+  } else {
+    const versionNumber = versionMatch[1];
+    console.log(`✅ バージョン ${versionNumber} を作成しました\n`);
+
+    // デプロイを作成
+    console.log('デプロイを作成しています...');
+    const deploymentDescription = `Properties setup deployment - ${timestamp}`;
+
+    const deployResult = await new Deno.Command('npx', {
+      args: ['clasp', 'deploy', '-V', versionNumber, '-d', deploymentDescription],
+      cwd: APPS_SCRIPT_DIR,
+      stdout: 'inherit',
+      stderr: 'inherit',
+    }).output();
+
+    if (!deployResult.success) {
+      console.warn('⚠️  デプロイの作成に失敗しましたが、処理を続行します。');
+    } else {
+      console.log('✅ デプロイを作成しました\n');
+    }
+  }
+
+  console.log('');
+
   // セットアップ関数を実行
   console.log('設定を登録しています...');
   const runResult = await new Deno.Command('npx', {
@@ -162,9 +256,12 @@ function setupPropertiesFromCli() {
 
   if (!runResult.success) {
     throw new Error(
-      'clasp runに失敗しました。\n' +
-        'Google Apps Scriptエディタで手動で実行するか、\n' +
-        'clasp login --creds <credentials.json> で認証情報を確認してください。'
+      'clasp runに失敗しました。\n\n' +
+        'このコマンドを実行するには、事前にGoogle Cloud Platformでの設定が必要です。\n' +
+        '詳細は docs/GASセットアップガイド.md の「事前準備（GCP設定）」セクションを参照してください。\n\n' +
+        '設定が完了している場合は、以下の方法で手動実行できます：\n' +
+        '- Google Apps Scriptエディタで setupPropertiesFromCli() を実行\n' +
+        '   https://script.google.com/'
     );
   }
 

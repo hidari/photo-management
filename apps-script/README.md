@@ -15,8 +15,11 @@
 ### 前提条件
 
 1. [clasp](https://github.com/google/clasp)がインストールされていること
-2. `clasp login`でGoogle認証が完了していること
-3. プロジェクトのルートディレクトリに`config.ts`が作成されていること
+2. `docs/GASセットアップガイド.md` の「事前準備（GCP設定）」が完了していること
+3. `clasp login --creds ~/.config/photo-management/cred.json`で認証が完了していること
+4. プロジェクトのルートディレクトリに`config.ts`が作成されていること
+
+**重要**: `deno task gas:apply` コマンドで設定を自動登録するには、事前にGoogle Cloud Platform（GCP）でプロジェクト作成、API有効化、OAuth設定が必要です。詳細は `docs/GASセットアップガイド.md` を参照してください。
 
 ### ステップ1: config.tsに設定を記述
 
@@ -33,8 +36,8 @@ export const config: Config = {
   // Google Drive URL から /folders/ の後の文字列
   photoDistributionFolderId: 'your-folder-id-here',
 
-  // 保持期間(日数)（オプション、デフォルト: 30日）
-  distributionRetentionDays: 30,
+  // 保持期間(日数)（オプション、デフォルト: 90日）
+  distributionRetentionDays: 90,
 
   // ログスプレッドシートID（オプション、未設定の場合は自動作成）
   logSpreadsheetId: 'your-spreadsheet-id',
@@ -50,10 +53,26 @@ deno task gas:apply
 ```
 
 このコマンドは以下を自動実行します:
-1. TypeScriptをコンパイル
-2. Google Apps Scriptへpush
-3. PropertiesServiceに設定値を登録
-4. 必要に応じてconfig.tsを更新（フォルダIDなど）
+1. `appsscript.json`の確認と`executionApi`の追加（必要な場合）
+2. `appsscript.json`を`dist/`にコピー
+3. TypeScriptをコンパイル
+4. Google Apps Scriptへpush
+5. バージョンを作成（`clasp version`）
+6. デプロイを作成（`clasp deploy`）
+7. PropertiesServiceに設定値を登録
+8. 必要に応じてconfig.tsを更新（フォルダIDなど）
+
+**既存プロジェクトの場合**: `apps-script/appsscript.json` に `executionApi` の設定がない場合は、以下を手動で追加してください:
+
+```json
+{
+  "executionApi": {
+    "access": "MYSELF"
+  }
+}
+```
+
+この設定により、`deno task gas:apply` で設定が自動的に反映されるようになります。
 
 ### ステップ3: トリガーを設定
 
@@ -75,102 +94,7 @@ deno task gas:apply
 3. 初回実行時に権限承認を許可
 4. 実行ログで削除対象が正しく検出されているか確認
 
-## コマンドリファレンス
-
-### deno task gas:apply（推奨: 初回セットアップ・設定変更時）
-
-スクリプトのコンパイル、デプロイ、設定登録をすべて実行します。
-
-```bash
-deno task gas:apply
-```
-
-**実行内容:**
-1. TypeScriptをコンパイル
-2. clasp push --force
-3. PropertiesService設定登録
-
-**使用タイミング:**
-- 初回セットアップ時
-- コードと設定の両方を変更した時
-- config.tsの設定を変更した時
-
-### deno task gas:push（コード変更時）
-
-スクリプトのみをコンパイルしてデプロイします（設定登録は行いません）。
-
-```bash
-deno task gas:push
-```
-
-**実行内容:**
-- TypeScriptをコンパイル
-- clasp push --force
-
-**使用タイミング:**
-- cleanup-scheduler.ts のコード変更時
-- 設定値は変更していない時
-
-### deno task gas:setup（設定変更時 or 初回セットアップ）
-
-PropertiesServiceに設定値を登録します。
-
-```bash
-deno task gas:setup
-```
-
-**実行内容:**
-1. config.ts から設定値を読み込み
-2. Google Drive で photoDistributionFolderId を検証・検索・作成
-3. setup-properties.ts を生成
-4. TypeScriptをコンパイル
-5. clasp push --force
-6. setupPropertiesFromCli() を実行してPropertiesServiceに登録
-7. 必要に応じてconfig.tsを更新
-
-**使用タイミング:**
-- config.ts の設定値を変更した時
-- 初回セットアップ時（gas:deploy経由で実行される）
-
-**注意**: 内部でコンパイルとpushも実行されるため、このコマンド単体でデプロイまで完了します。
-
-## 使用フロー
-
-### 初回セットアップ
-
-```bash
-# 1. clasp 認証
-clasp login
-
-# 2. config.ts を作成・編集
-# (cleanupNotificationEmail は必須)
-
-# 3. デプロイと設定登録
-deno task gas:deploy
-
-# 4. Google Apps Scriptエディタでトリガー設定
-# (手動操作が必要)
-```
-
-### 設定変更時
-
-```bash
-# 1. config.ts を編集
-
-# 2. 設定を反映
-deno task gas:setup
-```
-
-### コード変更時
-
-```bash
-# 1. apps-script/src/*.ts を編集
-
-# 2. デプロイ
-deno task gas:push
-```
-
-### コードと設定の両方変更時
+### コード/設定の変更時
 
 ```bash
 deno task gas:deploy
@@ -272,3 +196,37 @@ cd apps-script && npx clasp pull
 # ログを確認
 cd apps-script && npx clasp logs
 ```
+
+## トラブルシューティング
+
+### clasp run で "Script function not found" エラーが出る
+
+**症状**: `deno task gas:apply` 実行時に以下のエラーが表示される：
+```
+Script function not found. Please make sure script is deployed as API executable.
+```
+
+**原因**: Google Cloud Platform（GCP）の事前準備が完了していません。
+
+**解決方法**:
+
+#### 方法1: 事前準備を完了する（推奨）
+`docs/GASセットアップガイド.md` の「事前準備（GCP設定）」セクションに従って、以下を完了してください：
+
+1. GCPプロジェクトの作成
+2. Apps Script API、Drive API、Cloud Logging API の有効化
+3. OAuth同意画面の設定
+4. OAuthクライアントの作成
+5. `clasp login --creds ~/.config/photo-management/cred.json` での認証
+6. GASプロジェクトとGCPプロジェクトの紐付け
+
+#### 方法2: GASエディタで手動実行
+事前準備が完了していない場合でも、以下の手順で設定を手動登録できます：
+
+1. [Google Apps Script エディタ](https://script.google.com/) にアクセス
+2. プロジェクトを開く
+3. `setupPropertiesFromCli` 関数を選択
+4. 実行ボタン（▶）をクリック
+5. 初回実行時に権限承認を許可
+
+**注意**: 手動実行の場合、次回以降も `clasp run` は使用できません。設定を変更するたびにGASエディタでの手動実行が必要になります。

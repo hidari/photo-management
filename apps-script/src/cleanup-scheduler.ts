@@ -298,10 +298,8 @@ function cleanupOldEvents() {
     // 設定を読み込む
     const config = loadConfig();
 
-    Logger.log('========================================');
     Logger.log(`実行開始: ${executionTime}`);
     Logger.log(`保持期間: ${config.retentionDays}日`);
-    Logger.log('========================================');
 
     // ログスプレッドシートが未設定の場合は自動作成
     const logSpreadsheetId = ensureLogSpreadsheet();
@@ -376,8 +374,6 @@ function cleanupOldEvents() {
       Logger.log('設定読み込みに失敗したため、エラー通知を送信できませんでした');
     }
   }
-
-  Logger.log('========================================');
 }
 
 /**
@@ -391,10 +387,8 @@ function testCleanup() {
     // 設定を読み込む
     const config = loadConfig();
 
-    Logger.log('========================================');
     Logger.log('テストモード: 削除は実行しません');
     Logger.log(`保持期間: ${config.retentionDays}日`);
-    Logger.log('========================================');
 
     const allFolders = listEventFolders(config.photoDistributionFolderId);
     Logger.log(`イベントフォルダ数: ${allFolders.length}`);
@@ -417,6 +411,4 @@ function testCleanup() {
     const errorMessage = error instanceof Error ? error.message : String(error);
     Logger.log(`エラー: ${errorMessage}`);
   }
-
-  Logger.log('========================================');
 }

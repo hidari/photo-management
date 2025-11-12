@@ -4,13 +4,80 @@
 
 Google Drive上の古い配布フォルダを自動削除するには、Google Apps Scriptのセットアップが必要です。
 
-このガイドでは、リポジトリをクローンした後、GASプロジェクトを新規作成してデプロイするまでの完全な手順を説明します。
+このガイドでは、用意されたスクリプトを実行可能にするため、GASプロジェクトを新規作成してデプロイするまでの完全な手順を説明します。
+
+## 事前準備（GCP設定）
+
+`deno task gas:apply` コマンドで設定を自動登録するには、事前にGoogle Cloud Platform（GCP）でプロジェクトとAPIの設定が必要です。
+
+### 1. GCPプロジェクトを作成
+
+1. [Google Cloud Console](https://console.cloud.google.com/) にアクセス
+2. 画面上部の「プロジェクトを選択」→「新しいプロジェクト」をクリック
+3. プロジェクト名を入力（例: `photo-management`）
+4. 「作成」をクリック
+
+### 2. 必要なAPIを有効化
+
+作成したプロジェクトで以下のAPIを有効化します:
+
+1. [Apps Script API](https://console.cloud.google.com/apis/library/script.googleapis.com) にアクセス
+   - 「有効にする」をクリック
+2. [Google Drive API](https://console.cloud.google.com/apis/library/drive.googleapis.com) にアクセス
+   - 「有効にする」をクリック
+3. [Cloud Logging API](https://console.cloud.google.com/apis/library/logging.googleapis.com) にアクセス
+   - 「有効にする」をクリック
+
+### 3. OAuth同意画面を設定
+
+1. [OAuth同意画面](https://console.cloud.google.com/apis/credentials/consent) にアクセス
+2. User Type で「外部」を選択し「作成」をクリック
+3. アプリ情報を入力:
+   - **アプリ名**: `photo-management`
+   - **ユーザーサポートメール**: 自分のメールアドレス
+   - **デベロッパーの連絡先情報**: 自分のメールアドレス
+4. 「保存して次へ」をクリック
+5. スコープ画面はそのまま「保存して次へ」
+6. テストユーザーに自分のメールアドレスを追加
+7. 「保存して次へ」をクリック
+
+### 4. OAuthクライアントを作成
+
+1. [認証情報ページ](https://console.cloud.google.com/apis/credentials) にアクセス
+2. 「認証情報を作成」→「OAuth クライアント ID」をクリック
+3. アプリケーションの種類で「デスクトップアプリ」を選択
+4. 名前を入力（例: `clasp-client`）
+5. 「作成」をクリック
+6. クライアントIDとクライアントシークレットが表示されるのでメモ
+7. 「JSONをダウンロード」をクリックしてクレデンシャルファイルをダウンロード
+
+### 5. クレデンシャルファイルを配置
+
+ダウンロードしたJSONファイルを `~/.config/photo-management/cred.json` に配置します:
+
+```bash
+mkdir -p ~/.config/photo-management
+mv ~/Downloads/client_secret_*.json ~/.config/photo-management/cred.json
+```
+
+### 6. claspで認証
+
+作成したOAuthクライアントを使ってclaspにログインします:
+
+```bash
+pnpm exec clasp login --creds ~/.config/photo-management/cred.json
+```
+
+ブラウザが開くので、Googleアカウントでログインして権限を承認してください。
+
+**重要**: この事前準備を完了していない場合、`deno task gas:apply` コマンドの実行時に `clasp run` が失敗します。
 
 ## 前提条件
 
 - Node.js と pnpm がインストール済み
 - Deno がインストール済み
 - Google アカウントを持っている
+- 上記「事前準備（GCP設定）」が完了していること
 
 ## セットアップ手順
 
@@ -24,16 +91,16 @@ pnpm install
 
 これにより、clasp、TypeScript、Biomeなどの開発ツールがインストールされます。
 
-### 2. claspでログイン
+### 2. claspの認証を確認
 
-Google Apps Scriptを操作するため、Googleアカウントで認証します:
+事前準備で `clasp login` を実行済みであることを確認します:
 
 ```bash
-pnpm exec clasp login
+pnpm exec clasp login --status
 ```
 
-ブラウザが自動的に開くので、Googleアカウントでログインして認証してください。
-認証が完了すると、ホームディレクトリに `.clasprc.json` が作成されます。
+ログイン済みの場合は、メールアドレスが表示されます。
+ログインしていない場合は、「事前準備（GCP設定）」の手順6を実行してください。
 
 ### 3. GASプロジェクトを新規作成
 
@@ -43,6 +110,16 @@ apps-scriptディレクトリに移動し、新規プロジェクトを作成し
 cd apps-script
 pnpm exec clasp create --title "photo-management cleanup" --type standalone
 ```
+
+次に、作成したGASプロジェクトを、事前準備で作成したGCPプロジェクトに紐付けます:
+
+1. [Apps Script エディタ](https://script.google.com) にアクセス
+2. 作成したプロジェクトを開く
+3. 左メニューの「プロジェクトの設定」（歯車アイコン）をクリック
+4. 「Google Cloud Platform（GCP）プロジェクト」セクションで「プロジェクトを変更」をクリック
+5. 事前準備で作成したGCPプロジェクトの番号を入力
+   - プロジェクト番号は [GCP Console](https://console.cloud.google.com/) のダッシュボードで確認できます
+6. 「プロジェクトを設定」をクリック
 
 このコマンドは以下を実行します:
 - Google Apps Scriptサービス側に新規プロジェクトを作成
