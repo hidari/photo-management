@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "test": "deno check tools/**/*.ts tests/**/*.ts && deno test --allow-read --allow-write --allow-run --allow-env --allow-net --coverage=coverage/ && deno coverage coverage/ --lcov --output=coverage.lcov && deno run --allow-read --allow-run tests/helpers/check-coverage.ts 45",
+    "test": "deno check tools/**/*.ts tests/**/*.ts && deno test --allow-read --allow-write --allow-run --allow-env --allow-net --coverage=coverage/ && deno coverage coverage/ --lcov --output=coverage/coverage.lcov && deno run --allow-read --allow-run tests/helpers/check-coverage.ts 45",
     "setup": "deno run --allow-read --allow-write --allow-run --allow-env --allow-net tools/setup.ts",
     "init": "deno run --allow-read --allow-write tools/init.ts",
     "add": "deno run --allow-read --allow-write tools/add.ts",
