@@ -1,13 +1,27 @@
-# Google Apps Script 自動削除スクリプト
+# Google Apps Script プロジェクト
 
-このディレクトリには、Google Drive上の古いイベントフォルダを自動削除するGoogle Apps Scriptが含まれています。
+このディレクトリには、この写真管理ツール群で使用するGoogle Apps Scriptプロジェクトが含まれています。
 
-## ファイル構成
+## プロジェクト構成
 
-- `src/cleanup-scheduler.ts` - 自動削除スクリプト本体（TypeScript）
+### cleanup-scheduler/
+
+古いイベントフォルダを自動削除するスクリプト
+
+- `src/cleanup-scheduler.ts` - 自動削除スクリプト本体
 - `src/setup-properties.ts` - PropertiesService設定用スクリプト（自動生成）
 - `dist/` - コンパイル後のJavaScriptファイル
 - `.clasp.json` - clasp設定ファイル
+- `tsconfig.json` - TypeScript設定ファイル
+
+### message-generator/
+
+SNS投稿メッセージ生成スクリプト
+
+- `src/message-generator.ts` - メッセージ生成スクリプト本体
+- `src/setup-properties.ts` - PropertiesService設定用スクリプト（自動生成）
+- `dist/` - コンパイル後のJavaScriptファイル
+- `.clasp.json` - clasp設定ファイル（スプレッドシートIDを含む）
 - `tsconfig.json` - TypeScript設定ファイル
 
 ## セットアップ手順
@@ -15,11 +29,13 @@
 ### 前提条件
 
 1. [clasp](https://github.com/google/clasp)がインストールされていること
-2. `docs/GASセットアップガイド.md` の「事前準備（GCP設定）」が完了していること
+2. [GASセットアップガイド](../docs/GASセットアップガイド.md) の「事前準備（GCP設定）」が完了していること
 3. `clasp login --creds ~/.config/photo-management/cred.json`で認証が完了していること
-4. プロジェクトのルートディレクトリに`config.ts`が作成されていること
+4. プロジェクトのルートディレクトリに `config.ts` が作成されていること
 
-**重要**: `deno task gas:apply` コマンドで設定を自動登録するには、事前にGoogle Cloud Platform（GCP）でプロジェクト作成、API有効化、OAuth設定が必要です。詳細は `docs/GASセットアップガイド.md` を参照してください。
+**重要**: `deno task gas:apply-*` コマンドで設定を自動登録するには、事前にGoogle Cloud Platform（GCP）でプロジェクト作成、API有効化、OAuth設定が必要です。
+
+## cleanup-scheduler（自動削除スクリプト）のセットアップ
 
 ### ステップ1: config.tsに設定を記述
 
@@ -49,10 +65,11 @@ export const config: Config = {
 ### ステップ2: スクリプトをデプロイして設定を登録
 
 ```bash
-deno task gas:apply
+deno task gas:apply-cleanup-scheduler
 ```
 
 このコマンドは以下を自動実行します:
+
 1. `appsscript.json`の確認と`executionApi`の追加（必要な場合）
 2. `appsscript.json`を`dist/`にコピー
 3. TypeScriptをコンパイル
@@ -61,18 +78,6 @@ deno task gas:apply
 6. デプロイを作成（`clasp deploy`）
 7. PropertiesServiceに設定値を登録
 8. 必要に応じてconfig.tsを更新（フォルダIDなど）
-
-**既存プロジェクトの場合**: `apps-script/appsscript.json` に `executionApi` の設定がない場合は、以下を手動で追加してください:
-
-```json
-{
-  "executionApi": {
-    "access": "MYSELF"
-  }
-}
-```
-
-この設定により、`deno task gas:apply` で設定が自動的に反映されるようになります。
 
 ### ステップ3: トリガーを設定
 
@@ -94,31 +99,64 @@ deno task gas:apply
 3. 初回実行時に権限承認を許可
 4. 実行ログで削除対象が正しく検出されているか確認
 
-### コード/設定の変更時
+## message-generator（X投稿メッセージ生成スクリプト）のセットアップ
+
+### 1. サンプルファイルを使った設定
+
+セットアップを簡単にするため、サンプルファイルを用意しています：
+
+📁 サンプルフォルダ: https://drive.google.com/drive/folders/1DwrIU6a0FzhWo-KmSB2Leu_uRmWUCrjs?usp=sharing
+
+**含まれるファイル:**
+- スプレッドシートテンプレート: 11列すべて定義済み、サンプルデータ入り
+- POST.txtサンプル: テンプレート変数の使用例、実際に動作するテンプレート
+
+**使い方:**
+1. 上記のサンプルフォルダにアクセス
+2. スプレッドシートを開き、「ファイル」→「コピーを作成」
+3. POST.txt をダウンロードまたは自分のDriveにコピー
+4. スプレッドシートと POST.txt のURLから `FILE_ID` を取得：
+   - スプレッドシート: https://docs.google.com/spreadsheets/d/[FILE_ID]/edit
+   - POST.txt: `https://drive.google.com/file/d/[FILE_ID]/view`
+5. config.ts に設定を記述
+
+   ```typescript
+   export const config: Config = {
+     // ... 既存の設定 ...
+   
+     // メッセージ生成用スプレッドシートのID（必須）
+     messageGeneratorSpreadsheetId: 'your-spreadsheet-id',
+   
+     // SNS投稿メッセージテンプレートファイルのID（必須）
+     postTemplateFileId: 'your-template-file-id',
+   };
+   ```
+
+### 2. スクリプトをデプロイして設定を登録
 
 ```bash
-deno task gas:deploy
+deno task gas:apply-message-generator
 ```
 
-## 機能
+このコマンドは以下を自動実行します:
+1. スプレッドシートバインド型プロジェクトを自動作成（`clasp create --parentId`）
+2. TypeScriptをコンパイル
+3. Google Apps Scriptへpush
+4. PropertiesServiceに設定値を登録（`POST_TEMPLATE_FILE_ID`）
+5. バージョンを作成とデプロイ
 
-### 自動削除
+### 3. 投稿メッセージの生成
 
-- 設定した保持期間より古いイベントフォルダを自動的に削除
-- トリガーで設定した時刻に毎日実行
-- 削除前の確認は不要（完全自動）
+1. スプレッドシートを開く
+2. カスタムメニュー「メッセージ生成」が表示されることを確認
+3. データを入力し、`READY`列を`TRUE`に設定
+4. カスタムメニューから「メッセージ生成」を実行
+5. `MESSAGE`列に生成されたメッセージが自動入力される
 
-### メール通知
-
-- 削除実行後に結果をメールで通知
-- 削除されたフォルダの一覧を含む
-- エラーが発生した場合も通知
-
-### 実行ログ
-
-- スプレッドシートに実行履歴を記録
-- 実行日時、削除数、削除フォルダ名、エラー数を記録
-- `logSpreadsheetId` を未設定の場合は初回実行時に自動作成
+**自動検証機能**:
+- `READY`列を編集すると、自動的にデータの整合性がチェックされます
+- 必須項目（ID, FILE, PHOTO_TITLE, TITLE, CHARACTER, MODEL_NAME, MODEL_ACCOUNT）が入力されているか確認
+- 必須項目が不足している場合、READYは自動的にFALSEに戻されます
 
 ## トラブルシューティング
 
@@ -127,81 +165,43 @@ deno task gas:deploy
 PropertiesServiceに設定が登録されていません。以下を実行してください:
 
 ```bash
-deno task gas:setup
+# cleanup-schedulerの場合
+deno task gas:apply-cleanup-scheduler
+
+# message-generatorの場合
+deno task gas:apply-message-generator
 ```
 
 ### 権限エラーが発生する
 
-- スクリプトを実行するアカウントが`photoDistributionFolder`にアクセスできることを確認
+- スクリプトを実行するアカウントが対象リソースにアクセスできることを確認
 - `clasp login` で正しいアカウントで認証しているか確認
 - トークンを再取得:
   - `~/.config/photo-management/` 配下の認証トークンを削除
-  - `deno task gas:setup` を実行
-
-### メール通知が届かない
-
-- `config.ts`の`cleanupNotificationEmail`が正しく設定されているか確認
-- `deno task gas:setup`を実行してPropertiesServiceを更新
-- Google Apps Scriptのログで送信エラーがないか確認
+  - セットアップコマンドを再実行
 
 ### setupPropertiesFromCli が見つからない
 
-`deno task gas:setup` を実行したが、Google Apps Scriptエディタに関数が表示されない場合:
+セットアップコマンドを実行したが、Google Apps Scriptエディタに関数が表示されない場合:
 
 1. 手動でデプロイを試す:
    ```bash
-   cd apps-script
-   npx tsc
-   npx clasp push --force
+   # cleanup-schedulerの場合
+   cd apps-script/cleanup-scheduler
+   tsc
+   clasp push --force
+
+   # message-generatorの場合
+   cd apps-script/message-generator
+   tsc
+   clasp push --force
    ```
 
 2. それでも表示されない場合、`clasp login` を再実行
 
-### フォルダIDの検証で404エラーが発生する
-
-古いアクセストークンを使用している可能性があります:
-
-1. `~/.config/photo-management/` 配下の認証トークンを削除
-2. `deno task gas:setup` を実行
-
-## CLI版との違い
-
-| 機能         | Google Apps Script版 | CLI版            |
-|------------|---------------------|-----------------|
-| 実行方式       | 完全自動(トリガー)          | 手動実行            |
-| 確認プロンプト    | なし                  | あり(--execute必要) |
-| dry-runモード | testCleanup()で可能    | あり              |
-| メール通知      | あり                  | なし              |
-| ログ記録       | スプレッドシート            | コンソール           |
-| 実行環境       | Google Cloud        | ローカル            |
-
-## 関連コマンド
-
-### CLI版の削除コマンド
-
-```bash
-# dry-run(削除対象を表示のみ)
-deno task cleanup
-
-# 実際に削除を実行
-deno task cleanup --execute
-```
-
-### その他のGAS操作
-
-```bash
-# Google Apps Scriptから最新のコードを取得
-cd apps-script && npx clasp pull
-
-# ログを確認
-cd apps-script && npx clasp logs
-```
-
-## トラブルシューティング
-
 ### clasp run で "Script function not found" エラーが出る
 
-**症状**: `deno task gas:apply` 実行時に以下のエラーが表示される：
+**症状**: `deno task gas:apply-*` 実行時に以下のエラーが表示される：
 ```
 Script function not found. Please make sure script is deployed as API executable.
 ```
@@ -211,14 +211,7 @@ Script function not found. Please make sure script is deployed as API executable
 **解決方法**:
 
 #### 方法1: 事前準備を完了する（推奨）
-`docs/GASセットアップガイド.md` の「事前準備（GCP設定）」セクションに従って、以下を完了してください：
-
-1. GCPプロジェクトの作成
-2. Apps Script API、Drive API、Cloud Logging API の有効化
-3. OAuth同意画面の設定
-4. OAuthクライアントの作成
-5. `clasp login --creds ~/.config/photo-management/cred.json` での認証
-6. GASプロジェクトとGCPプロジェクトの紐付け
+[GASセットアップガイド](../docs/GASセットアップガイド.md) の「事前準備（GCP設定）」セクションに従って、設定を完了してください。
 
 #### 方法2: GASエディタで手動実行
 事前準備が完了していない場合でも、以下の手順で設定を手動登録できます：
@@ -230,3 +223,7 @@ Script function not found. Please make sure script is deployed as API executable
 5. 初回実行時に権限承認を許可
 
 **注意**: 手動実行の場合、次回以降も `clasp run` は使用できません。設定を変更するたびにGASエディタでの手動実行が必要になります。
+
+## CLIでの実行
+
+[メンテナンスガイド](../docs/メンテナンスガイド.md) を参照してください。

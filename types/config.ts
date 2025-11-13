@@ -67,4 +67,16 @@ export interface Config {
    * 未設定の場合は初回実行時に自動作成される
    */
   logSpreadsheetId?: string;
+
+  /**
+   * SNS投稿メッセージ生成用スプレッドシートのID
+   * メッセージジェネレーターがバインドされるスプレッドシートのIDを指定
+   */
+  messageGeneratorSpreadsheetId?: string;
+
+  /**
+   * SNS投稿メッセージテンプレートファイルのID
+   * Google Drive上のPOST.txtファイルのIDを指定
+   */
+  postTemplateFileId?: string;
 }

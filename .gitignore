@@ -2,27 +2,25 @@
 .DS_Store
 
 # IDE Configs
-/.idea/
+.idea/
 
 # Node packages directory
-/node_modules/
+node_modules/
 
 # Tools
 /config.ts
-/distribution.config.toml
-/Output/
-/dist/
+distribution.config.toml
+Output/
+dist/
 
 # Test coverage
-/coverage/
+coverage/
 coverage.lcov
 
 # Google App Scripts
-apps-script/dist/
-apps-script/node_modules/
-apps-script/src/setup-properties.ts
+setup-properties.ts
 .clasprc.json
 .clasp.json
 
 # Claude Code
-/.claude/
+.claude/

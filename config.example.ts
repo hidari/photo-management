@@ -64,6 +64,16 @@ export const config: Config = {
   // Google Apps Scriptの実行ログを記録するスプレッドシートを指定
   // 未設定の場合は初回実行時に自動作成されます
   // logSpreadsheetId: 'your-spreadsheet-id',
+
+  // SNS投稿メッセージ生成用スプレッドシートのID（オプション）
+  // メッセージジェネレーターがバインドされるスプレッドシートのIDを指定
+  // スプレッドシートのURLから取得可能: https://docs.google.com/spreadsheets/d/[SPREADSHEET_ID]
+  // messageGeneratorSpreadsheetId: 'your-spreadsheet-id',
+
+  // SNS投稿メッセージテンプレートファイルのID（オプション）
+  // Google Drive上のPOST.txtファイルのIDを指定
+  // ファイルのURLから取得可能: https://drive.google.com/file/d/[FILE_ID]
+  // postTemplateFileId: 'your-template-file-id',
 };
 
 export default config;
