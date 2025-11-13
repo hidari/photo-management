@@ -1,6 +1,7 @@
 # SNS投稿メッセージ生成システム - セットアップガイド
 
-このドキュメントでは、Google SpreadsheetとGoogle Apps Scriptを使用した、SNS投稿メッセージ生成システムのセットアップ手順を説明します。
+このドキュメントでは、Google SpreadsheetとGoogle Apps Scriptを使用した、
+SNS投稿メッセージ生成システムのセットアップ手順を説明します。
 
 ## 前提条件
 
@@ -168,11 +169,13 @@ CosPhoto:『 Ethereal 』
 Title: 原神 - Genshin Impact
 Character: ダリア - Dahlia
 
-Model. @test_account
+Model. テストモデルさん（@test_account )
 Photo. Hidari
 At. #C105 #コスホリ
 Discover more → #HidariPhoto
 ```
+
+> `OPTIONAL_EVENT_HASHTAGS` が空の場合 「At.」の行が削除されます。
 
 ## 使用方法
 
@@ -213,16 +216,18 @@ Google Sheetsモバイルアプリでも実行可能です：
 2. ファイルIDが正しいか確認
 3. ファイルの共有設定を確認（自分がオーナーまたは編集権限を持っているか）
 
-### メッセージ: 「対象行が見つかりませんでした」
+### 生成結果が0件になる
 
 原因:
 - READY列が `TRUE` になっていない
 - 必須項目（A-H列）のいずれかが空白
+- すでに `MESSAGE` が存在している行は無視されます
 
 解決方法:
 1. READY列（I列）に `TRUE` と入力されているか確認
 2. A-H列のすべてに値が入力されているか確認
 3. 条件付き書式を設定している場合、警告色になっていないか確認
+4. `MESSAGE` が空になっていることを確認
 
 ### カスタムメニューが表示されない
 

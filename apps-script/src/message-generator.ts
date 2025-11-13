@@ -225,3 +225,126 @@ function removeEmptyHashtagLine(message: string): string {
   // "At." で始まり、その後が空白のみの行を削除（改行含む）
   return message.replace(/^At\.\s*$\n?/gm, '').replace(/\n{3,}/g, '\n\n');
 }
+
+/**
+ * セル編集時に自動実行される関数（Simple Trigger）
+ * READY列のチェック時とデータ列編集時に検証を行う
+ * @param e イベントオブジェクト
+ */
+// biome-ignore lint/correctness/noUnusedVariables: GAS環境でグローバル関数として使用される
+function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
+  try {
+    const sheet = e.source.getActiveSheet();
+    const range = e.range;
+    const row = range.getRow();
+    const col = range.getColumn();
+
+    // ヘッダー行は無視
+    if (row <= 1) {
+      return;
+    }
+
+    // I列（READY列）が編集された場合
+    if (col === COLUMNS.READY) {
+      handleReadyColumnEdit(sheet, row);
+      return;
+    }
+
+    // A～H列（データ列）が編集された場合
+    if (col >= COLUMNS.ID && col <= COLUMNS.OPTIONAL_EVENT_HASHTAGS) {
+      handleDataColumnEdit(sheet, row);
+      return;
+    }
+  } catch (error) {
+    // onEditトリガーではBrowser.msgBoxが使えないため、Loggerに記録
+    Logger.log(`onEditエラー: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * READY列がチェックされたときの処理
+ * 必須項目が揃っていない場合はチェックを外してアラート表示
+ * @param sheet スプレッドシート
+ * @param row 行番号
+ */
+function handleReadyColumnEdit(sheet: GoogleAppsScript.Spreadsheet.Sheet, row: number): void {
+  const readyCell = sheet.getRange(row, COLUMNS.READY);
+  const isChecked = readyCell.getValue();
+
+  // チェックが入れられた場合のみ検証
+  if (isChecked !== true && isChecked !== 'TRUE') {
+    return;
+  }
+
+  // 必須項目を検証
+  const emptyColumns = getEmptyRequiredColumns(sheet, row);
+
+  if (emptyColumns.length > 0) {
+    // チェックを外す
+    readyCell.setValue(false);
+
+    // アラート表示
+    const columnNames = emptyColumns.join('、');
+    SpreadsheetApp.getUi().alert(
+      'READYチェック不可',
+      `必須項目が入力されていないため、READYにチェックを入れることができません。\n\n` +
+        `未入力の項目: ${columnNames}`,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  }
+}
+
+/**
+ * データ列（A～H列）が編集されたときの処理
+ * READY列がチェック済みの場合、再検証してチェックを外す
+ * @param sheet スプレッドシート
+ * @param row 行番号
+ */
+function handleDataColumnEdit(sheet: GoogleAppsScript.Spreadsheet.Sheet, row: number): void {
+  const readyCell = sheet.getRange(row, COLUMNS.READY);
+  const isChecked = readyCell.getValue();
+
+  // READY列がチェックされていない場合は何もしない
+  if (isChecked !== true && isChecked !== 'TRUE') {
+    return;
+  }
+
+  // 必須項目を検証
+  const emptyColumns = getEmptyRequiredColumns(sheet, row);
+
+  // 必須項目が揃っていない場合はチェックを外す（サイレント）
+  if (emptyColumns.length > 0) {
+    readyCell.setValue(false);
+  }
+}
+
+/**
+ * 指定行の空の必須項目を取得する
+ * @param sheet スプレッドシート
+ * @param row 行番号
+ * @returns 空の必須項目の列名配列
+ */
+function getEmptyRequiredColumns(sheet: GoogleAppsScript.Spreadsheet.Sheet, row: number): string[] {
+  const emptyColumns: string[] = [];
+
+  // 必須項目の定義（列番号と列名のマッピング）
+  const requiredColumns: Array<{ col: number; name: string }> = [
+    { col: COLUMNS.ID, name: 'ID（A列）' },
+    { col: COLUMNS.FILE, name: 'FILE（B列）' },
+    { col: COLUMNS.PHOTO_TITLE, name: 'PHOTO_TITLE（C列）' },
+    { col: COLUMNS.TITLE, name: 'TITLE（D列）' },
+    { col: COLUMNS.CHARACTER, name: 'CHARACTER（E列）' },
+    { col: COLUMNS.MODEL_NAME, name: 'MODEL_NAME（F列）' },
+    { col: COLUMNS.MODEL_ACCOUNT, name: 'MODEL_ACCOUNT（G列）' },
+  ];
+
+  // 各必須項目をチェック
+  for (const { col, name } of requiredColumns) {
+    const value = String(sheet.getRange(row, col).getValue() || '').trim();
+    if (value === '') {
+      emptyColumns.push(name);
+    }
+  }
+
+  return emptyColumns;
+}
