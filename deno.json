@@ -9,7 +9,9 @@
     "cleanup": "deno run --allow-read --allow-write --allow-net --allow-env tools/cleanup-old-events.ts",
     "build-package": "deno run --allow-read --allow-write --allow-run tools/build-package.ts",
     "gas:apply-cleanup-scheduler": "deno run --allow-read --allow-write --allow-run --allow-env tools/setup-cleanup-scheduler.ts",
-    "gas:apply-message-generator": "deno run --allow-read --allow-write --allow-run --allow-env tools/setup-message-generator.ts"
+    "gas:apply-message-generator": "deno run --allow-read --allow-write --allow-run --allow-env tools/setup-message-generator.ts",
+    "gas:type-check": "pnpm exec tsc --project apps-script/cleanup-scheduler/tsconfig.json --noEmit && pnpm exec tsc --project apps-script/message-generator/tsconfig.json --noEmit",
+    "gas:test": "deno test --allow-read apps-script/"
   },
   "nodeModulesDir": "auto"
 }
