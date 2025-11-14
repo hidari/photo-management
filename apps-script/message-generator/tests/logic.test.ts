@@ -70,8 +70,8 @@ function replaceTemplateVariables(template: string, data: RowData): string {
  * OPTIONAL_EVENT_HASHTAGSが空の場合、"At. "で始まる行全体を削除する
  */
 function removeEmptyHashtagLine(message: string): string {
-  // "At." で始まり、その後が空白のみの行を削除（改行含む）
-  return message.replace(/^At\.\s*$\n?/gm, '').replace(/\n{3,}/g, '\n\n');
+  // "At." で始まり、その後が空白のみの行とその改行を削除
+  return message.replace(/^At\.\s*\n/gm, '');
 }
 
 // ==================== テスト ====================
@@ -244,14 +244,6 @@ Deno.test('removeEmptyHashtagLine - At.のみの行が削除される', () => {
   assertEquals(result, 'タイトル\n説明文');
 });
 
-Deno.test('removeEmptyHashtagLine - 3連続以上の改行が2つに圧縮される', () => {
-  const message = 'タイトル\n\n\n\n説明文';
-
-  const result = removeEmptyHashtagLine(message);
-
-  assertEquals(result, 'タイトル\n\n説明文');
-});
-
 Deno.test('removeEmptyHashtagLine - At.で始まるが後ろに文字がある行は削除されない', () => {
   const message = 'タイトル\nAt. イベント会場\n説明文';
 
@@ -274,12 +266,4 @@ Deno.test('removeEmptyHashtagLine - At.がない場合はそのまま', () => {
   const result = removeEmptyHashtagLine(message);
 
   assertEquals(result, 'タイトル\n説明文\n#ハッシュタグ');
-});
-
-Deno.test('removeEmptyHashtagLine - 複雑なケース：空行削除と改行圧縮が両方適用される', () => {
-  const message = 'タイトル\n\nAt. \n\n\n説明文\n\nAt. \n\n#ハッシュタグ';
-
-  const result = removeEmptyHashtagLine(message);
-
-  assertEquals(result, 'タイトル\n\n説明文\n\n#ハッシュタグ');
 });

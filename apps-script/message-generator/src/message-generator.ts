@@ -222,12 +222,8 @@ function replaceTemplateVariables(template: string, data: RowData): string {
  * @returns 処理後のメッセージ
  */
 function removeEmptyHashtagLine(message: string): string {
-  // "At." で始まり、その後が空白のみの行を削除（改行1つを含む）
-  let result = message.replace(/^At\.\s*$\n/gm, '');
-  // 末尾など改行がない場合に備えて、改行なしのパターンも削除
-  result = result.replace(/^At\.\s*$/gm, '');
-  // 3連続以上の改行を2つに圧縮
-  return result.replace(/\n{3,}/g, '\n\n');
+  // "At." で始まり、その後が空白のみの行とその改行を削除
+  return message.replace(/^At\.\s*\n/gm, '');
 }
 
 /**
