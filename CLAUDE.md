@@ -67,6 +67,12 @@ feat: React Router v7フロントエンド基盤を実装
 - Welcome画面とCloudflare Workers統合
 ```
 
+## エージェント起動ルール
+
+- 大きなコード変更（3ファイル以上、または100行以上）を完了した後は、必ずcode-reviewerエージェントを起動すること
+- 複数ファイルに変更がある場合は、並列でcode-reviewerを起動すること
+- セキュリティ関連のファイル（auth*, security*, credential* など）を変更した場合は、必ずsecurity-auditorエージェントを起動すること
+
 ## 必ず守ること
 
 - コメントとドキュメントの主要言語は日本語です

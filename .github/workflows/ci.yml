@@ -49,6 +49,14 @@ jobs:
       - name: Lint and Format check
         run: pnpm run lint
 
+      - name: GAS Type Check
+        if: matrix.os == 'ubuntu-latest'
+        run: deno task gas:type-check
+
+      - name: GAS Tests
+        if: matrix.os == 'ubuntu-latest'
+        run: deno task gas:test
+
       - name: Run type check, tests, and coverage
         run: deno task test
 
