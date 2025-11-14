@@ -223,7 +223,8 @@ function replaceTemplateVariables(template: string, data: RowData): string {
  */
 function removeEmptyHashtagLine(message: string): string {
   // "At." で始まり、その後が空白のみの行とその改行を削除
-  return message.replace(/^At\.\s*\n/gm, '');
+  // [ \t]* は改行を除くスペース・タブのみにマッチ
+  return message.replace(/^At\.[ \t]*\n/gm, '');
 }
 
 /**
