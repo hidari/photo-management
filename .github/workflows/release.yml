@@ -23,6 +23,26 @@ jobs:
         with:
           deno-version: v2.x
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run lint
+        run: pnpm run lint:fix
+
+      - name: Run tests
+        run: deno task test
+
       - name: Build distribution package
         run: deno task build-package
 

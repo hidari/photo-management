@@ -94,6 +94,44 @@ docs/Google Driveアップロードツール.md
 
 詳細な使い方は各コマンドの実行時に表示されるヘルプや、docs/ ディレクトリ内のドキュメントを参照してください。
 
+## Google Apps Script機能（オプション）
+
+このツールには、Google Apps Scriptを利用した追加機能が含まれています。
+
+### 利用可能なGAS機能
+
+1. cleanup-scheduler（古いフォルダの自動削除）
+   Google Drive上の古いイベントフォルダを自動的に削除するスクリプトです。
+   保持期間（デフォルト90日）を過ぎたフォルダを検出し、削除通知メールを送信します。
+
+2. message-generator（X用写真投稿メッセージ自動生成）
+   スプレッドシートのデータからX（Twitter）投稿用のメッセージを自動生成するスクリプトです。
+   写真タイトル、モデル名、アカウントなどの情報をテンプレートに基づいて整形します。
+
+### セットアップ方法
+
+#### 自動セットアップ（推奨）
+
+配布版には自動セットアップツールが含まれています：
+
+1. 依存関係のインストール（初回のみ）:
+   pnpm install
+
+2. GASスクリプトのデプロイと設定:
+   deno run --allow-read --allow-run tools/setup-cleanup-scheduler.ts
+   deno run --allow-read --allow-run tools/setup-message-generator.ts
+
+注意: GASの自動セットアップには、事前にGoogle Cloud Platform（GCP）でのプロジェクト作成とOAuth設定が必要です。
+詳細は apps-script/README.md または docs/GASセットアップガイド.md を参照してください。
+
+#### 手動セットアップ
+
+自動セットアップツールを使用せず、手動でセットアップすることもできます。
+詳細な手順は以下のドキュメントを参照してください:
+
+- apps-script/README.md
+- docs/GASセットアップガイド.md
+
 ## トラブルシューティング
 
 ### deno コマンドが見つからない

@@ -102,16 +102,29 @@ async function copyDir(src: string, dest: string): Promise<void> {
 async function copyDistributionFiles(tempDir: string): Promise<void> {
   console.log('配布ファイルをコピー中...');
 
+  // LICENSEファイルのコピー
+  await copyFile('LICENSE', `${tempDir}/LICENSE`);
+
+  // package.jsonのコピー（GAS自動セットアップ用の依存関係定義）
+  await copyFile('package.json', `${tempDir}/package.json`);
+
   // config.example.tsのコピー
   await copyFile('config.example.ts', `${tempDir}/config.example.ts`);
 
-  // deno.jsonのコピー（build-packageとtestタスクを除外）
+  // deno.jsonのコピー（開発用タスクとGASタスクを除外）
   const denoConfig = JSON.parse(await Deno.readTextFile('deno.json'));
+  // 開発用タスクの除外
   if (denoConfig.tasks?.['build-package']) {
     delete denoConfig.tasks['build-package'];
   }
-  if (denoConfig.tasks?.['test']) {
-    delete denoConfig.tasks['test'];
+  if (denoConfig.tasks?.test) {
+    delete denoConfig.tasks.test;
+  }
+  // GASタスクの除外（gas:apply-*, gas:type-check, gas:testなど）
+  for (const taskName in denoConfig.tasks) {
+    if (taskName.startsWith('gas:')) {
+      delete denoConfig.tasks[taskName];
+    }
   }
   await Deno.writeTextFile(`${tempDir}/deno.json`, JSON.stringify(denoConfig, null, 2));
 
@@ -155,14 +168,33 @@ async function copyDistributionFiles(tempDir: string): Promise<void> {
     }
   }
 
-  // apps-scriptディレクトリ（.clasp.jsonとappsscript.jsonは除外）
+  // apps-scriptディレクトリ（.clasp.json, appsscript.jsonは除外）
+  // 各プロジェクト内のdist/, tests/も除外
   await Deno.mkdir(`${tempDir}/apps-script`, { recursive: true });
   for await (const entry of Deno.readDir('apps-script')) {
     if (entry.name !== '.clasp.json' && entry.name !== 'appsscript.json') {
       const srcPath = `apps-script/${entry.name}`;
       const destPath = `${tempDir}/apps-script/${entry.name}`;
+
       if (entry.isDirectory) {
-        await copyDir(srcPath, destPath);
+        // プロジェクトディレクトリの場合、dist/とtests/を除外してコピー
+        await Deno.mkdir(destPath, { recursive: true });
+        for await (const subEntry of Deno.readDir(srcPath)) {
+          if (
+            subEntry.name !== 'dist' &&
+            subEntry.name !== 'tests' &&
+            subEntry.name !== '.clasp.json' &&
+            subEntry.name !== 'appsscript.json'
+          ) {
+            const subSrcPath = `${srcPath}/${subEntry.name}`;
+            const subDestPath = `${destPath}/${subEntry.name}`;
+            if (subEntry.isDirectory) {
+              await copyDir(subSrcPath, subDestPath);
+            } else {
+              await copyFile(subSrcPath, subDestPath);
+            }
+          }
+        }
       } else {
         await copyFile(srcPath, destPath);
       }
