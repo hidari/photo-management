@@ -202,13 +202,21 @@ async function generateDistributionMessage(
 
 /**
  * インテントURLを生成
+ *
+ * @param modelName - モデル名
+ * @param eventName - イベント名
+ * @param message - DMメッセージ
+ * @param snsUrl - SNS URL
+ * @param existingRecipientId - 既存のrecipient_id（再アップロード時のスクレイピング回数削減用）
+ * @returns { intentUrl, recipientId } - インテントURLと取得/使用したrecipient_id
  */
 async function generateIntentUrl(
   modelName: string,
   eventName: string,
   message: string,
-  snsUrl: string
-): Promise<string | null> {
+  snsUrl: string,
+  existingRecipientId?: string
+): Promise<{ intentUrl: string; recipientId: string } | null> {
   // SNSがXかどうか確認
   if (!snsUrl.includes('twitter.com') && !snsUrl.includes('x.com')) {
     console.log(`  SNSがX以外のため、インテントURL生成をスキップします`);
@@ -216,22 +224,32 @@ async function generateIntentUrl(
   }
 
   try {
-    // ユーザー名を抽出
-    const username = cleanUsername(snsUrl);
+    let userId: string | null = null;
 
-    // Puppeteerでユーザー IDを取得
-    console.log(`  ユーザーID取得中 (@${username})...`);
-    const userId = await getUserIdFromUsername(username);
+    // 既存のrecipient_idがある場合はそれを使用（スクレイピングスキップ）
+    if (existingRecipientId) {
+      console.log(`  既存のrecipient_idを使用します: ${existingRecipientId}`);
+      userId = existingRecipientId;
+    } else {
+      // ユーザー名を抽出
+      const username = cleanUsername(snsUrl);
 
-    if (!userId) {
-      console.log(`  ⚠️ ユーザーIDが取得できませんでした`);
-      return null;
+      // Puppeteerでユーザー IDを取得
+      console.log(`  ユーザーID取得中 (@${username})...`);
+      userId = await getUserIdFromUsername(username);
+
+      if (!userId) {
+        console.log(`  ⚠️ ユーザーIDが取得できませんでした`);
+        return null;
+      }
+
+      console.log(`  ✅ ユーザーID取得完了: ${userId}`);
     }
 
     // インテントURLを構築
     const intentUrl = buildIntentUrl(userId, message, modelName, eventName);
 
-    return intentUrl;
+    return { intentUrl, recipientId: userId };
   } catch (error) {
     console.log(`  ⚠️ インテントURL生成エラー: ${error}`);
     return null;
@@ -309,10 +327,19 @@ async function processModel(
 
     // 3. インテントURL生成（SNSがXの場合のみ）
     let intentUrl: string | null = null;
+    let recipientId: string | null = null;
     if (model.sns) {
       console.log(`  インテントURL生成中...`);
-      intentUrl = await generateIntentUrl(model.name, eventName, message, model.sns);
-      if (intentUrl) {
+      const result = await generateIntentUrl(
+        model.name,
+        eventName,
+        message,
+        model.sns,
+        model.recipient_id
+      );
+      if (result) {
+        intentUrl = result.intentUrl;
+        recipientId = result.recipientId;
         console.log(`  ✅ インテントURL生成完了`);
       }
     }
@@ -325,6 +352,9 @@ async function processModel(
     };
     if (intentUrl) {
       updateFields.intent_url = intentUrl;
+    }
+    if (recipientId) {
+      updateFields.recipient_id = recipientId;
     }
 
     const updatedToml = await updateModelFields(tomlPath, model.name, updateFields);
