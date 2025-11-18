@@ -145,6 +145,17 @@ export async function listPhotoFiles(distDir: string): Promise<string[]> {
 }
 
 /**
+ * macOSのシステムファイルかどうか判定する
+ *
+ * @param filename - ファイル名
+ * @returns システムファイルの場合true
+ */
+function isSystemFile(filename: string): boolean {
+  // .DS_Store や ._* などのシステムファイルを除外
+  return filename === '.DS_Store' || filename.startsWith('._');
+}
+
+/**
  * DIST_DIRから配布ファイル（写真ファイル + _README.txt）を取得する
  *
  * @param distDir - DIST_DIRのパス
@@ -155,6 +166,11 @@ export async function listDistributionFiles(distDir: string): Promise<string[]> 
 
   for await (const entry of Deno.readDir(distDir)) {
     if (entry.isFile) {
+      // システムファイルを除外
+      if (isSystemFile(entry.name)) {
+        continue;
+      }
+
       const name = entry.name.toLowerCase();
       const ext = name.split('.').pop();
 

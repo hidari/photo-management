@@ -24,6 +24,9 @@ export interface EventModel {
   /** XのDMインテントURL */
   intent_url?: string;
 
+  /** XのユーザーID（再アップロード時のスクレイピング回数削減用） */
+  recipient_id?: string;
+
   /** 配布済みフラグ (true: 配布済み, false/未設定: 未配布) */
   distributed?: boolean;
 }
