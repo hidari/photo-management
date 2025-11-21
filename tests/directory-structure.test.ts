@@ -405,3 +405,101 @@ Deno.test('findPhotoFiles: ディレクトリが存在しない場合警告し�
 
   await cleanup();
 });
+
+/**
+ * listDistributionFiles: サブディレクトリ内のファイルも再帰的に取得する
+ */
+Deno.test('listDistributionFiles: サブディレクトリ内のファイルも再帰的に取得する', async () => {
+  await cleanup();
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+
+  // ルートディレクトリのファイル
+  await Deno.writeTextFile(join(TEST_DIR, 'photo1.jpg'), 'test');
+  await Deno.writeTextFile(join(TEST_DIR, '_README.txt'), 'readme');
+
+  // サブディレクトリ1のファイル
+  const subDir1 = join(TEST_DIR, 'subdir1');
+  await Deno.mkdir(subDir1);
+  await Deno.writeTextFile(join(subDir1, 'photo2.jpg'), 'test');
+  await Deno.writeTextFile(join(subDir1, 'photo3.png'), 'test');
+
+  // サブディレクトリ2のファイル
+  const subDir2 = join(TEST_DIR, 'subdir2');
+  await Deno.mkdir(subDir2);
+  await Deno.writeTextFile(join(subDir2, 'photo4.jpg'), 'test');
+
+  // ネストしたサブディレクトリのファイル
+  const subDir3 = join(subDir1, 'nested');
+  await Deno.mkdir(subDir3);
+  await Deno.writeTextFile(join(subDir3, 'photo5.jpg'), 'test');
+
+  const files = await listDistributionFiles(TEST_DIR);
+
+  assertEquals(files.length, 6); // _README.txt + 5枚の写真
+
+  await cleanup();
+});
+
+/**
+ * listDistributionFiles: システムディレクトリを除外する
+ */
+Deno.test('listDistributionFiles: システムディレクトリを除外する', async () => {
+  await cleanup();
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+
+  // 通常のファイル
+  await Deno.writeTextFile(join(TEST_DIR, 'photo1.jpg'), 'test');
+
+  // システムディレクトリ内のファイル（除外されるべき）
+  const gitDir = join(TEST_DIR, '.git');
+  await Deno.mkdir(gitDir);
+  await Deno.writeTextFile(join(gitDir, 'config.jpg'), 'test');
+
+  const nodeModulesDir = join(TEST_DIR, 'node_modules');
+  await Deno.mkdir(nodeModulesDir);
+  await Deno.writeTextFile(join(nodeModulesDir, 'package.jpg'), 'test');
+
+  const macosxDir = join(TEST_DIR, '__MACOSX');
+  await Deno.mkdir(macosxDir);
+  await Deno.writeTextFile(join(macosxDir, 'resource.jpg'), 'test');
+
+  // ドットで始まるディレクトリ（除外されるべき）
+  const dotDir = join(TEST_DIR, '.hidden');
+  await Deno.mkdir(dotDir);
+  await Deno.writeTextFile(join(dotDir, 'hidden.jpg'), 'test');
+
+  const files = await listDistributionFiles(TEST_DIR);
+
+  assertEquals(files.length, 1); // photo1.jpg のみ
+  assertEquals(files[0].endsWith('photo1.jpg'), true);
+
+  await cleanup();
+});
+
+/**
+ * listDistributionFiles: システムファイルを除外する
+ */
+Deno.test('listDistributionFiles: システムファイルを除外する（再帰的）', async () => {
+  await cleanup();
+  await Deno.mkdir(TEST_DIR, { recursive: true });
+
+  // 通常のファイル
+  await Deno.writeTextFile(join(TEST_DIR, 'photo1.jpg'), 'test');
+
+  // システムファイル（除外されるべき）
+  await Deno.writeTextFile(join(TEST_DIR, '.DS_Store'), 'system');
+  await Deno.writeTextFile(join(TEST_DIR, '._photo1.jpg'), 'resource fork');
+
+  // サブディレクトリ内のファイル
+  const subDir = join(TEST_DIR, 'subdir');
+  await Deno.mkdir(subDir);
+  await Deno.writeTextFile(join(subDir, 'photo2.jpg'), 'test');
+  await Deno.writeTextFile(join(subDir, '.DS_Store'), 'system');
+  await Deno.writeTextFile(join(subDir, '._photo2.jpg'), 'resource fork');
+
+  const files = await listDistributionFiles(TEST_DIR);
+
+  assertEquals(files.length, 2); // photo1.jpg と photo2.jpg のみ
+
+  await cleanup();
+});
