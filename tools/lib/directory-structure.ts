@@ -156,7 +156,19 @@ function isSystemFile(filename: string): boolean {
 }
 
 /**
- * DIST_DIRから配布ファイル（写真ファイル + _README.txt）を取得する
+ * システムディレクトリかどうか判定する
+ *
+ * @param dirname - ディレクトリ名
+ * @returns システムディレクトリの場合true
+ */
+function isSystemDirectory(dirname: string): boolean {
+  // .git, node_modules, __MACOSX などのシステムディレクトリを除外
+  const systemDirs = ['.git', 'node_modules', '__MACOSX', '.svn', '.hg'];
+  return systemDirs.includes(dirname) || dirname.startsWith('.');
+}
+
+/**
+ * DIST_DIRから配布ファイル（写真ファイル + _README.txt）を再帰的に取得する
  *
  * @param distDir - DIST_DIRのパス
  * @returns 配布ファイルのパス配列
@@ -164,25 +176,39 @@ function isSystemFile(filename: string): boolean {
 export async function listDistributionFiles(distDir: string): Promise<string[]> {
   const files: string[] = [];
 
-  for await (const entry of Deno.readDir(distDir)) {
-    if (entry.isFile) {
+  async function scanDirectory(currentDir: string): Promise<void> {
+    for await (const entry of Deno.readDir(currentDir)) {
       // システムファイルを除外
       if (isSystemFile(entry.name)) {
         continue;
       }
 
-      const name = entry.name.toLowerCase();
-      const ext = name.split('.').pop();
+      const entryPath = join(currentDir, entry.name);
 
-      // 写真ファイルまたは_README.txtを含める
-      if (
-        (ext && ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext)) ||
-        name === '_readme.txt'
-      ) {
-        files.push(join(distDir, entry.name));
+      if (entry.isFile) {
+        const name = entry.name.toLowerCase();
+        const ext = name.split('.').pop();
+
+        // 写真ファイルまたは_README.txtを含める
+        if (
+          (ext && ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext)) ||
+          name === '_readme.txt'
+        ) {
+          files.push(entryPath);
+        }
+      } else if (entry.isDirectory) {
+        // システムディレクトリを除外
+        if (isSystemDirectory(entry.name)) {
+          continue;
+        }
+
+        // サブディレクトリを再帰的に走査
+        await scanDirectory(entryPath);
       }
     }
   }
+
+  await scanDirectory(distDir);
 
   return files.sort();
 }
