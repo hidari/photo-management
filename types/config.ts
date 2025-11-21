@@ -75,8 +75,16 @@ export interface Config {
   messageGeneratorSpreadsheetId?: string;
 
   /**
-   * SNS投稿メッセージテンプレートファイルのID
-   * Google Drive上のPOST.txtファイルのIDを指定
+   * SNS投稿メッセージテンプレートファイル（イベントあり）のID
+   * Google Drive上のPOST_WITH_EVENT.txtファイルのIDを指定
+   * OPTIONAL_EVENT_HASHTAGSに値がある場合に使用される
    */
-  postTemplateFileId?: string;
+  postWithEventTemplateFileId?: string;
+
+  /**
+   * SNS投稿メッセージテンプレートファイル（イベントなし）のID
+   * Google Drive上のPOST_WITHOUT_EVENT.txtファイルのIDを指定
+   * OPTIONAL_EVENT_HASHTAGSが空の場合に使用される
+   */
+  postWithoutEventTemplateFileId?: string;
 }
