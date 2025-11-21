@@ -9,7 +9,7 @@
  *
  * 前提条件:
  * 1. clasp login でGoogle認証が完了していること
- * 2. config.tsが作成され、messageGeneratorSpreadsheetIdとpostTemplateFileIdが設定されていること
+ * 2. config.tsが作成され、messageGeneratorSpreadsheetId、postWithEventTemplateFileId、postWithoutEventTemplateFileIdが設定されていること
  */
 
 import { join } from 'jsr:@std/path@1';
@@ -74,13 +74,23 @@ async function ensureSpreadsheetBoundProject(spreadsheetId: string): Promise<voi
 function extractGasConfig(): Record<string, string> {
   const properties: Record<string, string> = {};
 
-  // SNS投稿メッセージテンプレートファイルID（必須）
-  if (config.postTemplateFileId) {
-    properties.POST_TEMPLATE_FILE_ID = config.postTemplateFileId;
+  // SNS投稿メッセージテンプレートファイル（イベントあり）のID（必須）
+  if (config.postWithEventTemplateFileId) {
+    properties.POST_WITH_EVENT_TEMPLATE_FILE_ID = config.postWithEventTemplateFileId;
   } else {
     throw new Error(
-      'config.tsにpostTemplateFileIdが設定されていません。\n' +
-        '設定例: postTemplateFileId: "your-template-file-id"'
+      'config.tsにpostWithEventTemplateFileIdが設定されていません。\n' +
+        '設定例: postWithEventTemplateFileId: "your-template-file-id"'
+    );
+  }
+
+  // SNS投稿メッセージテンプレートファイル（イベントなし）のID（必須）
+  if (config.postWithoutEventTemplateFileId) {
+    properties.POST_WITHOUT_EVENT_TEMPLATE_FILE_ID = config.postWithoutEventTemplateFileId;
+  } else {
+    throw new Error(
+      'config.tsにpostWithoutEventTemplateFileIdが設定されていません。\n' +
+        '設定例: postWithoutEventTemplateFileId: "your-template-file-id"'
     );
   }
 

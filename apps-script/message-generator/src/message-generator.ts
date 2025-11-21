@@ -64,9 +64,6 @@ function generateMessages(): void {
       return;
     }
 
-    // テンプレートを取得
-    const template = getTemplateContent();
-
     // 全データを取得（ヘッダー行を除く）
     const dataRange = sheet.getRange(2, 1, lastRow - 1, 11);
     const data = dataRange.getValues();
@@ -121,9 +118,12 @@ function generateMessages(): void {
         continue;
       }
 
+      // OPTIONAL_EVENT_HASHTAGSの内容に基づいてテンプレートを選択
+      const templateFileId = selectTemplateFileId(rowData.optionalEventHashtags);
+      const template = getTemplateContent(templateFileId);
+
       // メッセージ生成
-      let message = replaceTemplateVariables(template, rowData);
-      message = removeEmptyHashtagLine(message);
+      const message = replaceTemplateVariables(template, rowData);
 
       // MESSAGE列に書き込み
       sheet.getRange(rowIndex, COLUMNS.MESSAGE).setValue(message);
@@ -141,28 +141,55 @@ function generateMessages(): void {
 }
 
 /**
- * Google DriveからPOST.txtテンプレートを読み込む
- * @returns テンプレート文字列
- * @throws ファイルIDが未設定またはファイルが見つからない場合
+ * OPTIONAL_EVENT_HASHTAGSの内容に基づいて適切なテンプレートファイルIDを選択する
+ * @param optionalEventHashtags イベントハッシュタグ（省略可能）
+ * @returns テンプレートファイルID
+ * @throws ファイルIDが未設定の場合
  */
-function getTemplateContent(): string {
+function selectTemplateFileId(optionalEventHashtags: string): string {
   const properties = PropertiesService.getScriptProperties();
-  const fileId = properties.getProperty('POST_TEMPLATE_FILE_ID');
 
+  // OPTIONAL_EVENT_HASHTAGSが空（スペース系文字のみ含む）かどうかを判定
+  const isEmpty = optionalEventHashtags.trim() === '';
+
+  if (isEmpty) {
+    // イベントなしテンプレート
+    const fileId = properties.getProperty('POST_WITHOUT_EVENT_TEMPLATE_FILE_ID');
+    if (!fileId) {
+      throw new Error(
+        'POST_WITHOUT_EVENT.txtのファイルIDが設定されていません。\n\n' +
+          'スクリプトプロパティに「POST_WITHOUT_EVENT_TEMPLATE_FILE_ID」を設定してください。\n' +
+          '設定方法：GASエディタ → プロジェクトの設定 → スクリプト プロパティ'
+      );
+    }
+    return fileId;
+  }
+
+  // イベントありテンプレート
+  const fileId = properties.getProperty('POST_WITH_EVENT_TEMPLATE_FILE_ID');
   if (!fileId) {
     throw new Error(
-      'POST.txtのファイルIDが設定されていません。\n\n' +
-        'スクリプトプロパティに「POST_TEMPLATE_FILE_ID」を設定してください。\n' +
+      'POST_WITH_EVENT.txtのファイルIDが設定されていません。\n\n' +
+        'スクリプトプロパティに「POST_WITH_EVENT_TEMPLATE_FILE_ID」を設定してください。\n' +
         '設定方法：GASエディタ → プロジェクトの設定 → スクリプト プロパティ'
     );
   }
+  return fileId;
+}
 
+/**
+ * Google Driveからテンプレートを読み込む
+ * @param fileId テンプレートファイルのID
+ * @returns テンプレート文字列
+ * @throws ファイルが見つからない場合
+ */
+function getTemplateContent(fileId: string): string {
   try {
     const file = DriveApp.getFileById(fileId);
     return file.getBlob().getDataAsString('UTF-8');
   } catch (_error) {
     throw new Error(
-      `POST.txtファイルを読み込めませんでした（ファイルID: ${fileId}）\n\n` +
+      `テンプレートファイルを読み込めませんでした（ファイルID: ${fileId}）\n\n` +
         'ファイルが存在するか、アクセス権限があるか確認してください。'
     );
   }
@@ -214,17 +241,6 @@ function replaceTemplateVariables(template: string, data: RowData): string {
   }
 
   return message;
-}
-
-/**
- * OPTIONAL_EVENT_HASHTAGSが空の場合、"At. "で始まる行全体を削除する
- * @param message メッセージ文字列
- * @returns 処理後のメッセージ
- */
-function removeEmptyHashtagLine(message: string): string {
-  // "At." で始まり、その後が空白のみの行とその改行を削除
-  // [ \t]* は改行を除くスペース・タブのみにマッチ
-  return message.replace(/^At\.[ \t]*\n/gm, '');
 }
 
 /**
