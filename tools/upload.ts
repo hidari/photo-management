@@ -14,7 +14,7 @@
  */
 
 import { parse } from 'https://deno.land/std@0.208.0/flags/mod.ts';
-import { dirname, join } from 'https://deno.land/std@0.208.0/path/mod.ts';
+import { dirname, join, relative } from 'https://deno.land/std@0.208.0/path/mod.ts';
 import config from '../config.ts';
 import type { EventModel } from '../types/distribution-config.ts';
 import { createArchive, resolveArchiveTool } from './lib/archive-helper.ts';
@@ -131,7 +131,7 @@ async function uploadAsArchive(
 }
 
 /**
- * フォルダ配布: アップロード処理
+ * フォルダ配布: アップロード処理（ディレクトリ構造を維持）
  */
 async function uploadAsFolder(
   distDir: string,
@@ -165,11 +165,52 @@ async function uploadAsFolder(
     eventFolderId
   );
 
-  // 3. 配布ファイルを個別にアップロード
+  // 3. サブフォルダIDをキャッシュするためのMap（相対パス → フォルダID）
+  const folderCache = new Map<string, string>();
+  folderCache.set('', modelFolderId); // ルートフォルダ
+
+  // 4. 配布ファイルを個別にアップロード（ディレクトリ構造を維持）
   console.log(`  ファイルをアップロード中...`);
   for (let i = 0; i < distributionFiles.length; i++) {
     const filePath = distributionFiles[i];
-    await uploadFile(accessToken, filePath, modelFolderId);
+
+    // distDirからの相対パスを計算
+    const relativePath = relative(distDir, filePath);
+    const relativeDir = dirname(relativePath);
+
+    // 必要に応じてサブフォルダを作成
+    let targetFolderId = modelFolderId;
+    if (relativeDir !== '.' && relativeDir !== '') {
+      // キャッシュにあればそれを使用
+      const cachedFolderId = folderCache.get(relativeDir);
+      if (cachedFolderId) {
+        targetFolderId = cachedFolderId;
+      } else {
+        // サブフォルダを作成（階層的に）
+        const pathParts = relativeDir.split('/');
+        let currentPath = '';
+        let currentParentId = modelFolderId;
+
+        for (const part of pathParts) {
+          currentPath = currentPath ? `${currentPath}/${part}` : part;
+
+          const cachedId = folderCache.get(currentPath);
+          if (cachedId) {
+            currentParentId = cachedId;
+          } else {
+            // 新しいサブフォルダを作成
+            const newFolderId = await createFolderWithParent(accessToken, part, currentParentId);
+            folderCache.set(currentPath, newFolderId);
+            currentParentId = newFolderId;
+          }
+        }
+
+        targetFolderId = currentParentId;
+      }
+    }
+
+    // ファイルをアップロード
+    await uploadFile(accessToken, filePath, targetFolderId);
 
     // 進捗表示
     if ((i + 1) % 10 === 0 || i === distributionFiles.length - 1) {
@@ -177,7 +218,7 @@ async function uploadAsFolder(
     }
   }
 
-  // 4. フォルダを公開設定してURLを取得
+  // 5. フォルダを公開設定してURLを取得
   console.log(`  共有URLを取得中...`);
   const downloadUrl = await makeFolderPublic(accessToken, modelFolderId);
 
