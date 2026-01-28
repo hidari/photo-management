@@ -75,6 +75,13 @@ function removeEmptyHashtagLine(message: string): string {
   return message.replace(/^At\.[ \t]*\n/gm, '');
 }
 
+/**
+ * リンクURLが既に設定済みかどうかを判定する
+ */
+function isAlreadyLinked(linkUrl: string | null): boolean {
+  return linkUrl !== null && linkUrl !== '';
+}
+
 // ==================== テスト ====================
 
 Deno.test('validateRow - すべての必須項目が入力されている場合はtrue', () => {
@@ -267,4 +274,18 @@ Deno.test('removeEmptyHashtagLine - At.がない場合はそのまま', () => {
   const result = removeEmptyHashtagLine(message);
 
   assertEquals(result, 'タイトル\n説明文\n#ハッシュタグ');
+});
+
+// ==================== isAlreadyLinked テスト ====================
+
+Deno.test('isAlreadyLinked - リンクURLがnullの場合はfalse', () => {
+  assertEquals(isAlreadyLinked(null), false);
+});
+
+Deno.test('isAlreadyLinked - リンクURLが空文字の場合はfalse', () => {
+  assertEquals(isAlreadyLinked(''), false);
+});
+
+Deno.test('isAlreadyLinked - リンクURLがある場合はtrue', () => {
+  assertEquals(isAlreadyLinked('https://drive.google.com/file/d/xxx'), true);
 });

@@ -68,6 +68,9 @@ function generateMessages(): void {
     const dataRange = sheet.getRange(2, 1, lastRow - 1, 11);
     const data = dataRange.getValues();
 
+    // Listedフォルダを取得（ループ外で1回だけ呼び出してAPI呼び出しを最小化）
+    const listedFolder = findListedFolder();
+
     let processedCount = 0;
 
     // 各行を処理
@@ -127,6 +130,23 @@ function generateMessages(): void {
 
       // MESSAGE列に書き込み
       sheet.getRange(rowIndex, COLUMNS.MESSAGE).setValue(message);
+
+      // FILE列にハイパーリンクを設定
+      if (listedFolder !== null) {
+        const existingRichText = sheet.getRange(rowIndex, COLUMNS.FILE).getRichTextValue();
+        const existingLink = existingRichText?.getLinkUrl() ?? null;
+        if (existingLink === null || existingLink === '') {
+          const fileUrl = findFileUrl(listedFolder, rowData.file);
+          if (fileUrl !== null) {
+            setFileLink(sheet, rowIndex, rowData.file, fileUrl);
+          } else {
+            Logger.log(
+              `行 ${rowIndex}: Listedフォルダにファイルが見つかりません（${rowData.file}）`
+            );
+          }
+        }
+      }
+
       processedCount++;
     }
 
@@ -333,6 +353,58 @@ function handleDataColumnEdit(sheet: GoogleAppsScript.Spreadsheet.Sheet, row: nu
   if (emptyColumns.length > 0) {
     readyCell.setValue(false);
   }
+}
+
+/**
+ * スプレッドシートの親フォルダからListedサブフォルダを取得する
+ * @returns Listedフォルダ。見つからない場合はnull
+ */
+function findListedFolder(): GoogleAppsScript.Drive.Folder | null {
+  const spreadsheetId = SpreadsheetApp.getActiveSpreadsheet().getId();
+  const file = DriveApp.getFileById(spreadsheetId);
+  const parents = file.getParents();
+  if (!parents.hasNext()) {
+    Logger.log('スプレッドシートの親フォルダが見つかりません');
+    return null;
+  }
+  const parentFolder = parents.next();
+  const listedFolders = parentFolder.getFoldersByName('Listed');
+  if (!listedFolders.hasNext()) {
+    Logger.log('Listedフォルダが見つかりません');
+    return null;
+  }
+  return listedFolders.next();
+}
+
+/**
+ * 指定フォルダ内でファイル名からファイルURLを取得する
+ * @param folder 検索対象フォルダ
+ * @param fileName ファイル名
+ * @returns ファイルのURL。見つからない場合はnull
+ */
+function findFileUrl(folder: GoogleAppsScript.Drive.Folder, fileName: string): string | null {
+  const files = folder.getFilesByName(fileName);
+  if (!files.hasNext()) {
+    return null;
+  }
+  return files.next().getUrl();
+}
+
+/**
+ * FILE列のセルにハイパーリンクを設定する
+ * @param sheet スプレッドシート
+ * @param row 行番号
+ * @param fileName ファイル名（表示テキスト）
+ * @param fileUrl リンク先URL
+ */
+function setFileLink(
+  sheet: GoogleAppsScript.Spreadsheet.Sheet,
+  row: number,
+  fileName: string,
+  fileUrl: string
+): void {
+  const richText = SpreadsheetApp.newRichTextValue().setText(fileName).setLinkUrl(fileUrl).build();
+  sheet.getRange(row, COLUMNS.FILE).setRichTextValue(richText);
 }
 
 /**
