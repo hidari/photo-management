@@ -45,7 +45,11 @@ interface RowData {
 // biome-ignore lint/correctness/noUnusedVariables: GAS環境でグローバル関数として使用される
 function onOpen(): void {
   const ui = SpreadsheetApp.getUi();
-  ui.createMenu('📝 メッセージ生成').addItem('メッセージを生成する', 'generateMessages').addToUi();
+  ui.createMenu('メッセージ操作')
+    .addItem('メッセージを生成する', 'generateMessages')
+    .addSeparator()
+    .addItem('投稿済みデータを移動する', 'movePublishedData')
+    .addToUi();
 }
 
 /**

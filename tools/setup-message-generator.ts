@@ -16,6 +16,12 @@ import { join } from 'jsr:@std/path@1';
 import { config } from '../config.ts';
 
 const APPS_SCRIPT_DIR = join(import.meta.dirname ?? '.', '..', 'apps-script', 'message-generator');
+const PUBLISHED_CLEANER_DIR = join(
+  import.meta.dirname ?? '.',
+  '..',
+  'apps-script',
+  'published_data_cleaner'
+);
 const CLASP_JSON_PATH = join(APPS_SCRIPT_DIR, '.clasp.json');
 
 /**
@@ -192,7 +198,20 @@ async function setupProperties(properties: Record<string, string>): Promise<void
   }).output();
 
   if (!tscResult.success) {
-    throw new Error('TypeScriptのコンパイルに失敗しました');
+    throw new Error('TypeScriptのコンパイルに失敗しました（message-generator）');
+  }
+
+  // published-data-cleanerもコンパイル（出力先はmessage-generator/dist）
+  console.log('published-data-cleanerをコンパイルしています...');
+  const tscPublishedResult = await new Deno.Command('npx', {
+    args: ['tsc', '--project', join(PUBLISHED_CLEANER_DIR, 'tsconfig.json')],
+    cwd: PUBLISHED_CLEANER_DIR,
+    stdout: 'inherit',
+    stderr: 'inherit',
+  }).output();
+
+  if (!tscPublishedResult.success) {
+    throw new Error('TypeScriptのコンパイルに失敗しました（published-data-cleaner）');
   }
 
   // appsscript.jsonをdistディレクトリにコピー

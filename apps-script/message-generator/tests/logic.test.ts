@@ -176,6 +176,7 @@ Deno.test('validateRow - 複数の必須項目が空の場合はfalse', () => {
 
 Deno.test('replaceTemplateVariables - すべての変数が正しく置換される', () => {
   const template =
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: GASテンプレート変数のテストのため意図的にシングルクォートを使用
     '${PHOTO_TITLE}\n${TITLE}\n${CHARACTER}\nModel: ${MODEL_NAME} (${MODEL_ACCOUNT})\n${OPTIONAL_EVENT_HASHTAGS}';
   const data: RowData = {
     id: '001',
@@ -198,6 +199,7 @@ Deno.test('replaceTemplateVariables - すべての変数が正しく置換され
 });
 
 Deno.test('replaceTemplateVariables - 同じ変数が複数回出現する場合', () => {
+  // biome-ignore lint/suspicious/noTemplateCurlyInString: GASテンプレート変数のテストのため意図的にシングルクォートを使用
   const template = '${TITLE} - ${TITLE} - ${TITLE}';
   const data: RowData = {
     id: '001',
@@ -217,6 +219,7 @@ Deno.test('replaceTemplateVariables - 同じ変数が複数回出現する場合
 });
 
 Deno.test('replaceTemplateVariables - 空文字列の変数も正しく置換される', () => {
+  // biome-ignore lint/suspicious/noTemplateCurlyInString: GASテンプレート変数のテストのため意図的にシングルクォートを使用
   const template = 'Title: ${TITLE}\nHashtags: ${OPTIONAL_EVENT_HASHTAGS}';
   const data: RowData = {
     id: '001',
