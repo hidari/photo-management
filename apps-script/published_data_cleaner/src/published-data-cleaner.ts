@@ -3,6 +3,8 @@
  *
  * スプレッドシートにバインドされたGoogle Apps Scriptで、
  * PUBLISHED=TRUEのレコードを「published」シートに移動する機能を提供します。
+ * 移動時にFILE列のファイルをListedフォルダから検索してリンクを設定し、
+ * ListedにあったファイルはDoneフォルダに移動します。
  *
  * ビルド設計:
  * - tsconfig.json の outDir は ../message-generator/dist を向いている
@@ -24,6 +26,12 @@ const TOTAL_COLUMNS = 11;
 
 /** PUBLISHED列のインデックス（0始まり、配列アクセス用） */
 const PUBLISHED_COL_INDEX = 10;
+
+/** FILE列のインデックス（0始まり、配列アクセス用） */
+const FILE_COL_INDEX = 1;
+
+/** FILE列の列番号（1始まり、GAS列番号） */
+const FILE_COLUMN = 2;
 
 /**
  * PUBLISHED=TRUEの行をpublishedシートに移動する
@@ -64,15 +72,29 @@ function movePublishedData(): void {
     // publishedシートを取得または作成
     const publishedSheet = getOrCreatePublishedSheet(spreadsheet, sourceSheet);
 
+    // publishedシートの現在の最終行を記録（追加後の行番号計算用）
+    const publishedLastRow = publishedSheet.getLastRow();
+
     // publishedシートにデータを追加
     appendRowsToPublishedSheet(publishedSheet, data, publishedRowIndices);
+
+    // FILE列のリンク設定とListed→Done移動
+    const notFoundFiles = processFileLinksAndMove(
+      publishedSheet,
+      data,
+      publishedRowIndices,
+      publishedLastRow + 1
+    );
 
     // 元シートから行を削除（下から上に向かって削除）
     deleteRowsFromSource(sourceSheet, publishedRowIndices);
 
-    Browser.msgBox(
-      `${publishedRowIndices.length}件の投稿済みデータをpublishedシートに移動しました。`
-    );
+    // 完了メッセージ
+    let message = `${publishedRowIndices.length}件の投稿済みデータをpublishedシートに移動しました。`;
+    if (notFoundFiles.length > 0) {
+      message += `\n\n以下のファイルはListedフォルダにもDoneフォルダにも見つかりませんでした:\n${notFoundFiles.join('\n')}`;
+    }
+    Browser.msgBox(message);
     Logger.log(
       `投稿済みデータ移動完了: ${publishedRowIndices.length}件をpublishedシートに移動しました`
     );
@@ -165,4 +187,125 @@ function deleteRowsFromSource(
     const actualRow = index + DATA_START_ROW;
     sourceSheet.deleteRow(actualRow);
   }
+}
+
+/**
+ * スプレッドシートの親フォルダから指定名のサブフォルダを取得する
+ * @param folderName フォルダ名
+ * @returns フォルダ。見つからない場合はnull
+ */
+function findSubFolder(folderName: string): GoogleAppsScript.Drive.Folder | null {
+  const spreadsheetId = SpreadsheetApp.getActiveSpreadsheet().getId();
+  const file = DriveApp.getFileById(spreadsheetId);
+  const parents = file.getParents();
+  if (!parents.hasNext()) {
+    Logger.log('スプレッドシートの親フォルダが見つかりません');
+    return null;
+  }
+  const parentFolder = parents.next();
+  const folders = parentFolder.getFoldersByName(folderName);
+  if (!folders.hasNext()) {
+    Logger.log(`${folderName}フォルダが見つかりません`);
+    return null;
+  }
+  return folders.next();
+}
+
+/**
+ * フォルダ内でファイル名からファイルを検索する
+ * @param folder 検索対象フォルダ
+ * @param fileName ファイル名
+ * @returns ファイル。見つからない場合はnull
+ */
+function findFileInFolder(
+  folder: GoogleAppsScript.Drive.Folder,
+  fileName: string
+): GoogleAppsScript.Drive.File | null {
+  const files = folder.getFilesByName(fileName);
+  if (!files.hasNext()) {
+    return null;
+  }
+  return files.next();
+}
+
+/**
+ * publishedシートのFILE列にハイパーリンクを設定する
+ * @param sheet スプレッドシート
+ * @param row 行番号
+ * @param fileName ファイル名（表示テキスト）
+ * @param fileUrl リンク先URL
+ */
+function setPublishedFileLink(
+  sheet: GoogleAppsScript.Spreadsheet.Sheet,
+  row: number,
+  fileName: string,
+  fileUrl: string
+): void {
+  const richText = SpreadsheetApp.newRichTextValue().setText(fileName).setLinkUrl(fileUrl).build();
+  sheet.getRange(row, FILE_COLUMN).setRichTextValue(richText);
+}
+
+/**
+ * publishedシートに移動した行のFILE列にリンクを設定し、
+ * ListedフォルダのファイルをDoneフォルダに移動する
+ * @param publishedSheet publishedシート
+ * @param data 元データ配列
+ * @param rowIndices 対象行のインデックス（0始まり）
+ * @param publishedStartRow publishedシートでの追加開始行番号
+ * @returns 見つからなかったファイル名の配列
+ */
+function processFileLinksAndMove(
+  publishedSheet: GoogleAppsScript.Spreadsheet.Sheet,
+  data: unknown[][],
+  rowIndices: number[],
+  publishedStartRow: number
+): string[] {
+  const listedFolder = findSubFolder('Listed');
+  const doneFolder = findSubFolder('Done');
+  const notFoundFiles: string[] = [];
+
+  if (listedFolder === null && doneFolder === null) {
+    Logger.log('ListedフォルダもDoneフォルダも見つかりません。リンク設定をスキップします');
+    return notFoundFiles;
+  }
+
+  for (let i = 0; i < rowIndices.length; i++) {
+    const dataIndex = rowIndices[i];
+    const fileName = String(data[dataIndex][FILE_COL_INDEX] || '').trim();
+    const publishedRow = publishedStartRow + i;
+
+    if (fileName === '') {
+      continue;
+    }
+
+    // Listedフォルダから検索
+    if (listedFolder !== null) {
+      const file = findFileInFolder(listedFolder, fileName);
+      if (file !== null) {
+        setPublishedFileLink(publishedSheet, publishedRow, fileName, file.getUrl());
+        // Doneフォルダに移動
+        if (doneFolder !== null) {
+          file.moveTo(doneFolder);
+          Logger.log(`ファイル移動: ${fileName} (Listed → Done)`);
+        }
+        continue;
+      }
+    }
+
+    // Doneフォルダから検索
+    if (doneFolder !== null) {
+      const file = findFileInFolder(doneFolder, fileName);
+      if (file !== null) {
+        setPublishedFileLink(publishedSheet, publishedRow, fileName, file.getUrl());
+        Logger.log(`ファイルリンク設定: ${fileName} (Doneフォルダ)`);
+        continue;
+      }
+    }
+
+    // どちらにも見つからない
+    notFoundFiles.push(fileName);
+    Logger.log(`ファイル未発見: ${fileName}`);
+  }
+
+  return notFoundFiles;
 }
