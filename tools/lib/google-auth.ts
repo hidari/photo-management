@@ -90,7 +90,7 @@ async function getAuthCodeFromLocalServer(_client: OAuth2Client): Promise<string
     abortController = new AbortController();
     Deno.serve(
       {
-        port: 8080,
+        port: 8091,
         signal: abortController.signal,
         onListen: () => {},
       },
@@ -179,7 +179,7 @@ export async function getAuthClient(clientId: string, clientSecret: string): Pro
   const client = new OAuth2Client({
     clientId,
     clientSecret,
-    redirectUri: 'http://localhost:8080',
+    redirectUri: 'http://localhost:8091',
   });
 
   // 保存されたトークンを読み込む
